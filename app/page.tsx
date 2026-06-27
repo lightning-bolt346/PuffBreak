@@ -11,7 +11,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { BLOG_POSTS, BlogPost } from '@/lib/blog';
 import AmbientEngine, { type AmbientEngineHandle } from '@/components/engine/AmbientEngine';
-import usePartySocket from 'partysocket/react';
+import { db } from '@/lib/firebase';
+import { ref, runTransaction, onChildAdded, push, onDisconnect, remove, off } from 'firebase/database';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -131,8 +132,13 @@ const getRandomChatX = (): number => {
   return bestX;
 };
 
-// Moved to backend party/chat.ts to enforce globally
-const filterText = (text: string): string => text;
+const BANNED_WORDS = ['fuck','shit','bitch','asshole','dick','pussy','chutiya','madarchod','bhenchod','gandu','slur'];
+const filterText = (text: string): string => {
+  for (const word of BANNED_WORDS) {
+    if (new RegExp(word, 'gi').test(text)) return '🚫 Message filtered';
+  }
+  return text;
+};
 
 const TOTAL_TIME = 180; // seconds
 
@@ -483,52 +489,82 @@ export default function PuffBreak() {
     return () => clearInterval(id);
   }, []);
 
-  // ── PartyKit Real-time Integration ─────────────────────────────────────────
-  const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST || (process.env.NODE_ENV === 'development' ? 'localhost:1999' : undefined);
-  
+  // ── Firebase Real-time Integration ─────────────────────────────────────────
+  const [userId] = useState(() => (typeof window !== 'undefined' ? crypto.randomUUID() : ''));
+  const currentRoomRef = useRef<string | null>(null);
+
   // Fetch a subroom assignment when entering a new room
   useEffect(() => {
+    if (!currentRoom.id || !userId) return;
     let active = true;
-    const fetchRoom = async () => {
+
+    const assignRoom = async () => {
+      const envRef = ref(db, `lobbies/${currentRoom.id}`);
+      let assignedRoomId: string | null = null;
       try {
-        const host = PARTYKIT_HOST?.includes('localhost') ? `http://${PARTYKIT_HOST}` : `https://${PARTYKIT_HOST}`;
-        const res = await fetch(`${host}/parties/matchmaker/lobby?env=${currentRoom.id}`, { method: 'POST' });
-        const data = await res.json();
-        if (active) setSubRoomId(data.roomId);
+        await runTransaction(envRef, (lobbiesData) => {
+          if (!lobbiesData) lobbiesData = {};
+          let found = false;
+          for (const [roomId, roomData] of Object.entries(lobbiesData)) {
+            const users = (roomData as any).users || {};
+            if (Object.keys(users).length < 6) {
+              assignedRoomId = roomId;
+              users[userId] = true;
+              (roomData as any).users = users;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            assignedRoomId = `${currentRoom.id}-${Date.now().toString(36)}`;
+            lobbiesData[assignedRoomId] = { users: { [userId]: true } };
+          }
+          return lobbiesData;
+        });
+
+        if (active && assignedRoomId) {
+          currentRoomRef.current = assignedRoomId;
+          setSubRoomId(assignedRoomId);
+
+          // Manage presence
+          const userPresenceRef = ref(db, `lobbies/${currentRoom.id}/${assignedRoomId}/users/${userId}`);
+          onDisconnect(userPresenceRef).remove();
+        }
       } catch (err) {
         console.error("Matchmaker fetch failed", err);
       }
     };
-    fetchRoom();
-    return () => { active = false; };
-  }, [currentRoom.id, PARTYKIT_HOST]);
+    assignRoom();
 
-  const socket = usePartySocket({
-    host: PARTYKIT_HOST,
-    room: subRoomId || 'default',
-    onMessage: (e) => {
-      try {
-        const parsed = JSON.parse(e.data);
-        if (parsed.type === 'init') {
-          // Add historical messages on join, placing them locally to the side
-          setMessages(parsed.messages.map((m: any, i: number) => ({
-            ...m,
-            side: (i % 2 === 0 ? 'left' : 'right') as ChatMessage['side']
-          })));
-        } else if (parsed.type === 'chat') {
-          // Prevent exact duplicates just in case
-          setMessages(p => p.some(m => m.id === parsed.id) ? p : [...p.slice(-14), {
-            ...parsed,
-            side: parsed.nickname === nickname ? 'left' : 'right' // Current user always on left locally
-          }]);
-        } else if (parsed.type === 'reaction') {
-          setMessages(p => p.map(m => m.id === parsed.messageId ? { ...m, reactions: [...m.reactions, parsed.emoji] } : m));
-        }
-      } catch (err) {
-        console.error("Invalid websocket msg", err);
+    return () => {
+      active = false;
+      if (currentRoomRef.current) {
+        const userPresenceRef = ref(db, `lobbies/${currentRoom.id}/${currentRoomRef.current}/users/${userId}`);
+        remove(userPresenceRef);
       }
-    }
-  });
+    };
+  }, [currentRoom.id, userId]);
+
+  // Chat message listener
+  useEffect(() => {
+    if (!subRoomId) return;
+    const messagesRef = ref(db, `rooms/${subRoomId}/messages`);
+    
+    const listener = onChildAdded(messagesRef, (snapshot) => {
+      const parsed = snapshot.val();
+      if (!parsed) return;
+      if (parsed.type === 'reaction') {
+        setMessages(p => p.map(m => m.id === parsed.messageId ? { ...m, reactions: [...m.reactions, parsed.emoji] } : m));
+      } else {
+        setMessages(p => p.some(m => m.id === parsed.id) ? p : [...p.slice(-14), {
+          ...parsed,
+          side: parsed.nickname === nickname ? 'left' : 'right'
+        }]);
+      }
+    });
+
+    return () => { off(messagesRef, 'child_added', listener); };
+  }, [subRoomId, nickname]);
 
   // ── Room change: update mock seed messages ─────────────────────────────────
   const switchRoom = useCallback((room: Room) => {
@@ -1406,20 +1442,23 @@ export default function PuffBreak() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatText.trim()) return;
+    if (!chatText.trim() || !subRoomId) return;
     const now = Date.now();
     if (now - lastMsgTime < 3000) return;
     
-    // Broadcast via PartySocket instead of local push
-    socket.send(JSON.stringify({
+    const text = filterText(chatText);
+    const messagesRef = ref(db, `rooms/${subRoomId}/messages`);
+    
+    push(messagesRef, {
       type: "chat",
       id: `user-${now}`,
-      text: chatText, // backend will filter
+      text: text,
       nickname,
       color: nameColor,
       xPos: getRandomChatX(),
+      createdAt: now,
       reactions: []
-    }));
+    });
 
     setChatText(''); setChatOpen(false); setLastMsgTime(now);
   };
@@ -1429,13 +1468,14 @@ export default function PuffBreak() {
     // Optimistic local update
     setMessages(p => p.map(m => m.id === msgId ? { ...m, reactions: [...m.reactions, emoji] } : m));
     
-    // Broadcast reaction
-    socket.send(JSON.stringify({
+    if (!subRoomId) return;
+    const messagesRef = ref(db, `rooms/${subRoomId}/messages`);
+    push(messagesRef, {
       type: "reaction",
       id: `react-${Date.now()}`,
       messageId: msgId,
       emoji
-    }));
+    });
 
     setEmojiPicker(null);
   };

@@ -1,8 +1,0 @@
-{
-  "name": "puffbreak",
-  "main": "party/chat.ts",
-  "parties": {
-    "matchmaker": "party/matchmaker.ts"
-  },
-  "domain": "party.zivoxtv.watch"
-}
