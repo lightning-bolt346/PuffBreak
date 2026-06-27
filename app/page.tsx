@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { BLOG_POSTS, BlogPost } from '@/lib/blog';
 import AmbientEngine, { type AmbientEngineHandle } from '@/components/engine/AmbientEngine';
+import usePartySocket from 'partysocket/react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -130,13 +131,8 @@ const getRandomChatX = (): number => {
   return bestX;
 };
 
-const BANNED_WORDS = ['fuck','shit','bitch','asshole','dick','pussy','chutiya','madarchod','bhenchod','gandu','slur'];
-const filterText = (text: string): string => {
-  for (const word of BANNED_WORDS) {
-    if (new RegExp(word, 'gi').test(text)) return '🚫 Message filtered';
-  }
-  return text;
-};
+// Moved to backend party/chat.ts to enforce globally
+const filterText = (text: string): string => text;
 
 const TOTAL_TIME = 180; // seconds
 
@@ -305,6 +301,9 @@ export default function PuffBreak() {
   const [isOffline, setIsOffline]       = useState(false);
   const [chatOpen, setChatOpen]         = useState(false);
   
+  // PartyKit Real-time Room
+  const [subRoomId, setSubRoomId]       = useState<string | null>(null);
+  
   // YouTube Ambient
   const ytPlayersRef = useRef<Record<string, YouTubePlayer>>({});
 
@@ -436,16 +435,6 @@ export default function PuffBreak() {
       setIgniterType('lighter');
     }
 
-    // Seed mock messages
-    const now = Date.now();
-    const mocks = (MOCK_MESSAGES[ROOMS[0].id] ?? []).map((m, i) => ({
-      id: `seed-${i}`, ...m,
-      side: (i % 2 === 0 ? 'left' : 'right') as ChatMessage['side'],
-      xPos: i % 2 === 0 ? 8 + Math.random() * 14 : 68 + Math.random() * 18,
-      createdAt: now - (5 - i) * 4000, reactions: [],
-    }));
-    setMessages(mocks);
-
     // ─── Pre-load lighter & match audio eagerly so sound is ready on first use ───
     const preloadAudio = async () => {
       try {
@@ -494,49 +483,52 @@ export default function PuffBreak() {
     return () => clearInterval(id);
   }, []);
 
-  // ── Simulated typing indicator ─────────────────────────────────────────────
+  // ── PartyKit Real-time Integration ─────────────────────────────────────────
+  const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST || (process.env.NODE_ENV === 'development' ? 'localhost:1999' : undefined);
+  
+  // Fetch a subroom assignment when entering a new room
   useEffect(() => {
-    if (currentRoom.id === 'silent') { setIsTyping(false); return; }
-    const id = setInterval(() => {
-      if (Math.random() > 0.72) {
-        setIsTyping(true);
-        setTimeout(() => setIsTyping(false), 2200 + Math.random() * 2800);
+    let active = true;
+    const fetchRoom = async () => {
+      try {
+        const host = PARTYKIT_HOST?.includes('localhost') ? `http://${PARTYKIT_HOST}` : `https://${PARTYKIT_HOST}`;
+        const res = await fetch(`${host}/parties/matchmaker/lobby?env=${currentRoom.id}`, { method: 'POST' });
+        const data = await res.json();
+        if (active) setSubRoomId(data.roomId);
+      } catch (err) {
+        console.error("Matchmaker fetch failed", err);
       }
-    }, 6000);
-    return () => clearInterval(id);
-  }, [currentRoom.id]);
-
-  // ── Simulated incoming messages ────────────────────────────────────────────
-  useEffect(() => {
-    if (currentRoom.id === 'silent') return;
-    const BOT_MSGS: Record<string, string[]> = {
-      office:  ['Anyone else on their 4th coffee?', 'Back to back meetings 😮‍💨', 'I miss weekends', 'My boss is watching...', 'Deadlines hitting different today'],
-      beach:   ['Salty air vibes 🌊', 'Wish this was real', 'Summer anywhere 🌞', 'Life is good rn'],
-      space:   ['Houston we have a deadline', 'Floating... in stress', '🚀', 'Zero gravity, full anxiety'],
-      library: ['*whispers* hiii', 'Pages turning...', '📖', 'So peaceful in here'],
-      park:    ['The birds are judging me lol', 'Fresh air hits different', '🌿', 'Dog just stared at me for 3 mins'],
-      metro:   ['Mind the gap — in my productivity', 'Doors closing in 5...', '🚉', 'This delay tho'],
-      chai:    ['Cutting chai >>> everything', 'Adrak wali please ☕', 'Tapri vibes only', 'Extra sugar bhai'],
-      silent:  [],
     };
-    const msgs = BOT_MSGS[currentRoom.id] ?? [];
-    if (!msgs.length) return;
-    const id = setInterval(() => {
-      if (Math.random() > 0.6) {
-        const text = msgs[Math.floor(Math.random() * msgs.length)];
-        const nick = generateNickname();
-        const color = getRandomColor();
-        const msg: ChatMessage = {
-          id: `bot-${Date.now()}`, text, nickname: nick, color,
-          side: Math.random() > 0.5 ? 'left' : 'right',
-          xPos: getRandomChatX(),
-          createdAt: Date.now(), reactions: [],
-        };
-        setMessages(p => [...p.slice(-14), msg]);
+    fetchRoom();
+    return () => { active = false; };
+  }, [currentRoom.id, PARTYKIT_HOST]);
+
+  const socket = usePartySocket({
+    host: PARTYKIT_HOST,
+    room: subRoomId || 'default',
+    onMessage: (e) => {
+      try {
+        const parsed = JSON.parse(e.data);
+        if (parsed.type === 'init') {
+          // Add historical messages on join, placing them locally to the side
+          setMessages(parsed.messages.map((m: any, i: number) => ({
+            ...m,
+            side: (i % 2 === 0 ? 'left' : 'right') as ChatMessage['side']
+          })));
+        } else if (parsed.type === 'chat') {
+          // Prevent exact duplicates just in case
+          setMessages(p => p.some(m => m.id === parsed.id) ? p : [...p.slice(-14), {
+            ...parsed,
+            side: parsed.nickname === nickname ? 'left' : 'right' // Current user always on left locally
+          }]);
+        } else if (parsed.type === 'reaction') {
+          setMessages(p => p.map(m => m.id === parsed.messageId ? { ...m, reactions: [...m.reactions, parsed.emoji] } : m));
+        }
+      } catch (err) {
+        console.error("Invalid websocket msg", err);
       }
-    }, 7000 + Math.random() * 5000);
-    return () => clearInterval(id);
-  }, [currentRoom.id]);
+    }
+  });
 
   // ── Room change: update mock seed messages ─────────────────────────────────
   const switchRoom = useCallback((room: Room) => {
@@ -544,14 +536,8 @@ export default function PuffBreak() {
     setCurrentRoom(room);
     setYtPlaying(false);
     setRoomModalOpen(false);
-    const now = Date.now();
-    const mocks = (MOCK_MESSAGES[room.id] ?? []).map((m, i) => ({
-      id: `seed-r-${i}`, ...m,
-      side: (i % 2 === 0 ? 'left' : 'right') as ChatMessage['side'],
-      xPos: i % 2 === 0 ? 8 + Math.random() * 14 : 68 + Math.random() * 18,
-      createdAt: now - (3 - i) * 3000, reactions: [],
-    }));
-    setMessages(mocks);
+    // Messages reset, PartyKit useEffect will trigger auto-connect
+    setMessages([]);
   }, [currentRoom.bg]);
 
   // ── Audio init ─────────────────────────────────────────────────────────────
@@ -1423,19 +1409,34 @@ export default function PuffBreak() {
     if (!chatText.trim()) return;
     const now = Date.now();
     if (now - lastMsgTime < 3000) return;
-    const text = filterText(chatText);
-    setMessages(p => [...p.slice(-14), {
-      id: `user-${now}`, text, nickname, color: nameColor,
-      side: Math.random() > 0.5 ? 'left' : 'right',
+    
+    // Broadcast via PartySocket instead of local push
+    socket.send(JSON.stringify({
+      type: "chat",
+      id: `user-${now}`,
+      text: chatText, // backend will filter
+      nickname,
+      color: nameColor,
       xPos: getRandomChatX(),
-      createdAt: now, reactions: [],
-    }]);
+      reactions: []
+    }));
+
     setChatText(''); setChatOpen(false); setLastMsgTime(now);
   };
 
   const handleReaction = (msgId: string, emoji: string) => {
     vibrate(30);
+    // Optimistic local update
     setMessages(p => p.map(m => m.id === msgId ? { ...m, reactions: [...m.reactions, emoji] } : m));
+    
+    // Broadcast reaction
+    socket.send(JSON.stringify({
+      type: "reaction",
+      id: `react-${Date.now()}`,
+      messageId: msgId,
+      emoji
+    }));
+
     setEmojiPicker(null);
   };
 
