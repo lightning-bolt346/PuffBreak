@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { BLOG_POSTS, BlogPost } from '@/lib/blog';
+import AmbientEngine, { type AmbientEngineHandle } from '@/components/engine/AmbientEngine';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -259,6 +260,7 @@ export default function PuffBreak() {
   // ASMR
   const [asmrOn, setAsmrOn]             = useState(false);
   const [musicOn, setMusicOn]           = useState(false);
+  const [ytPlaying, setYtPlaying]       = useState(false);
   
   // Independent Volume Mixer (first-time defaults: cig=60, radio=100, ambiance=30)
   const [crackleVolume, setCrackleVolume] = useState(0.6);
@@ -357,13 +359,8 @@ export default function PuffBreak() {
   const ambientMusicGainRef   = useRef<GainNode | null>(null);
   const ambientLowpassRef     = useRef<BiquadFilterNode | null>(null);
   
-  // Advanced Procedural Engine Refs
-  const engineRef = useRef<{
-    setRoom: (roomId: string) => void;
-    setVolume: (vol: number) => void;
-    start: () => void;
-    stop: () => void;
-  } | null>(null);
+  // Procedural Ambient Engine — powered by components/engine/AmbientEngine.tsx
+  const engineRef = useRef<AmbientEngineHandle | null>(null);
   
   const musicIntervalRef      = useRef<ReturnType<typeof setInterval> | null>(null);
   const mixerRef              = useRef<HTMLDivElement>(null);
@@ -545,6 +542,7 @@ export default function PuffBreak() {
   const switchRoom = useCallback((room: Room) => {
     setPrevBg(currentRoom.bg);
     setCurrentRoom(room);
+    setYtPlaying(false);
     setRoomModalOpen(false);
     const now = Date.now();
     const mocks = (MOCK_MESSAGES[room.id] ?? []).map((m, i) => ({
@@ -591,81 +589,14 @@ export default function PuffBreak() {
       crackleSource.start();
 
       // Advanced Multi-Layered Procedural Environment Engine
-      if (!engineRef.current) {
-        ambientGainRef.current = ctx.createGain(); 
+      // The AmbientEngine component (components/engine/AmbientEngine.tsx) manages
+      // all procedural synth nodes via engineRef. We only need the output GainNode here.
+      if (!ambientGainRef.current) {
+        ambientGainRef.current = ctx.createGain();
         ambientGainRef.current.gain.value = 0;
         ambientGainRef.current.connect(ctx.destination);
-        
-        // --- 1. Pink Noise Generator (Wind/Waves/Rain base) ---
-        const noiseBufferSize = ctx.sampleRate * 2;
-        const noiseBuffer = ctx.createBuffer(1, noiseBufferSize, ctx.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-        for (let i = 0; i < noiseBufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            b0 = 0.99886 * b0 + white * 0.0555179; b1 = 0.99332 * b1 + white * 0.0750759;
-            b2 = 0.96900 * b2 + white * 0.1538520; b3 = 0.86650 * b3 + white * 0.3104856;
-            b4 = 0.55000 * b4 + white * 0.5329522; b5 = -0.7616 * b5 - white * 0.0168980;
-            output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
-            b6 = white * 0.115926;
-        }
-        const noiseSource = ctx.createBufferSource();
-        noiseSource.buffer = noiseBuffer; noiseSource.loop = true;
-        
-        // --- 2. Wave LFO & Filter (Beach) ---
-        const waveFilter = ctx.createBiquadFilter(); waveFilter.type = 'lowpass'; waveFilter.frequency.value = 400;
-        const waveGain = ctx.createGain(); waveGain.gain.value = 0;
-        const waveLfo = ctx.createOscillator(); waveLfo.type = 'sine'; waveLfo.frequency.value = 0.15;
-        const waveLfoGain = ctx.createGain(); waveLfoGain.gain.value = 600; // Modulate freq
-        waveLfo.connect(waveLfoGain); waveLfoGain.connect(waveFilter.frequency);
-        const waveAmpLfo = ctx.createGain(); waveAmpLfo.gain.value = 0.6;
-        waveLfo.connect(waveAmpLfo.gain); // Sync amplitude with frequency
-        noiseSource.connect(waveFilter); waveFilter.connect(waveAmpLfo); waveAmpLfo.connect(waveGain); waveGain.connect(ambientGainRef.current);
-        
-        // --- 3. Space Drone (Sci-Fi) ---
-        const spaceGain = ctx.createGain(); spaceGain.gain.value = 0;
-        const drone1 = ctx.createOscillator(); drone1.type = 'sawtooth'; drone1.frequency.value = 55;
-        const drone2 = ctx.createOscillator(); drone2.type = 'sine'; drone2.frequency.value = 55.5;
-        const droneFilter = ctx.createBiquadFilter(); droneFilter.type = 'lowpass'; droneFilter.frequency.value = 200; droneFilter.Q.value = 5;
-        drone1.connect(droneFilter); drone2.connect(droneFilter); droneFilter.connect(spaceGain); spaceGain.connect(ambientGainRef.current);
-        
-        // --- 4. Rain & Library ---
-        const rainFilter = ctx.createBiquadFilter(); rainFilter.type = 'highpass'; rainFilter.frequency.value = 1500;
-        const rainGain = ctx.createGain(); rainGain.gain.value = 0;
-        noiseSource.connect(rainFilter); rainFilter.connect(rainGain); rainGain.connect(ambientGainRef.current);
-        
-        // --- 5. Cafe Murmur (Formant approximation) ---
-        const cafeGain = ctx.createGain(); cafeGain.gain.value = 0;
-        const cafeFilter1 = ctx.createBiquadFilter(); cafeFilter1.type = 'bandpass'; cafeFilter1.frequency.value = 600; cafeFilter1.Q.value = 2;
-        const cafeFilter2 = ctx.createBiquadFilter(); cafeFilter2.type = 'bandpass'; cafeFilter2.frequency.value = 1200; cafeFilter2.Q.value = 2;
-        const murmurLfo = ctx.createOscillator(); murmurLfo.type = 'triangle'; murmurLfo.frequency.value = 0.5;
-        const murmurLfoGain = ctx.createGain(); murmurLfoGain.gain.value = 200;
-        murmurLfo.connect(murmurLfoGain); murmurLfoGain.connect(cafeFilter1.frequency); murmurLfoGain.connect(cafeFilter2.frequency);
-        noiseSource.connect(cafeFilter1); noiseSource.connect(cafeFilter2);
-        cafeFilter1.connect(cafeGain); cafeFilter2.connect(cafeGain);
-        cafeGain.connect(ambientGainRef.current);
-
-        // Start all sources
-        noiseSource.start(); waveLfo.start(); drone1.start(); drone2.start(); murmurLfo.start();
-
-        engineRef.current = {
-          setRoom: (roomId: string) => {
-            const time = ctx.currentTime;
-            waveGain.gain.setTargetAtTime(roomId === 'beach' ? 0.8 : 0, time, 0.5);
-            spaceGain.gain.setTargetAtTime(roomId === 'space' ? 0.5 : 0, time, 0.5);
-            rainGain.gain.setTargetAtTime(roomId === 'library' || roomId === 'park' ? 0.3 : 0, time, 0.5);
-            cafeGain.gain.setTargetAtTime(roomId === 'chai' || roomId === 'metro' ? 0.4 : 0, time, 0.5);
-          },
-          setVolume: (vol: number) => {
-            ambientGainRef.current?.gain.setTargetAtTime(vol, ctx.currentTime, 0.5);
-          },
-          start: () => {
-            if (ctx.state === 'suspended') ctx.resume();
-          },
-          stop: () => {
-            ambientGainRef.current?.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
-          }
-        };
+        // AmbientEngine component picks up audioCtxRef + ambientGainRef via props
+        // and builds the internal graph on its next render cycle.
       }
 
       // Procedural/Radio music bus
@@ -3191,18 +3122,38 @@ export default function PuffBreak() {
               </div>
               <div className="space-y-4 text-sm text-gray-300">
                 <div className="space-y-1">
-                  <h4 className="text-white font-medium">v1.2.0 - Immersion Update</h4>
+                  <h4 className="text-white font-medium flex items-center gap-2">v1.3.0 — Engine Update <span className="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-mono">LATEST</span></h4>
                   <ul className="list-disc list-inside text-gray-400 space-y-1 ml-1 text-xs">
-                    <li>Added realistic Match and Lighter ignition</li>
-                    <li>Ultra-realistic smoke physics and holding logic</li>
-                    <li>Premium UI upgrades and animations</li>
+                    <li>Extracted procedural audio into dedicated AmbientEngine component</li>
+                    <li>New Office room: AC ventilation hum synthesizer layer</li>
+                    <li>Enhanced Space drone: 3-oscillator sub-bass + slow filter LFO</li>
+                    <li>Rain LFO: intensity now gusts like real weather</li>
+                    <li>Smoother room crossfades (0.7s exponential ramp)</li>
+                    <li>12 blog articles — SEO content hub launched</li>
+                    <li>llms.txt for AI search engine visibility</li>
+                    <li>Blog article count now live in Journal header</li>
                   </ul>
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-white font-medium">v1.1.0 - ASMR & Chai</h4>
+                  <h4 className="text-white font-medium">v1.2.0 — Immersion Update</h4>
                   <ul className="list-disc list-inside text-gray-400 space-y-1 ml-1 text-xs">
-                    <li>Added Chai room with unique ASMR</li>
-                    <li>Added live Chat features</li>
+                    <li>Realistic Zippo Lighter + Matchbox ignition sequences</li>
+                    <li>Hold-to-smoke: 8s charge builds puff intensity</li>
+                    <li>DOM-based smoke rings with CSS physics</li>
+                    <li>Double-tap ash to knock it off</li>
+                    <li>Shake gesture on mobile (devicemotion)</li>
+                    <li>Stealth Mode &amp; Zen Mode</li>
+                    <li>Premium glass-morphism Audio Mixer popover</li>
+                    <li>Cigarette width options: Slim / Standard / Wide</li>
+                  </ul>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-white font-medium">v1.1.0 — ASMR &amp; Chai</h4>
+                  <ul className="list-disc list-inside text-gray-400 space-y-1 ml-1 text-xs">
+                    <li>Chai Stall room with hold-to-sip &amp; double-tap clink</li>
+                    <li>Procedural café chatter ASMR synthesis</li>
+                    <li>Anonymous live chat with floating messages</li>
+                    <li>Daily break streak tracking</li>
                   </ul>
                 </div>
               </div>
@@ -3267,9 +3218,18 @@ export default function PuffBreak() {
             }}
             onStateChange={(e) => {
               // YouTube player states: -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (video cued)
+              if (e.data === 1) {
+                setYtPlaying(true);
+              }
+              if (e.data === 2 || e.data === 0) {
+                setYtPlaying(false);
+              }
               if (e.data === 0 && asmrOn) {
                 e.target.playVideo(); // Force loop just in case
               }
+            }}
+            onError={() => {
+              setYtPlaying(false);
             }}
           />
         ))}
@@ -3308,28 +3268,44 @@ export default function PuffBreak() {
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-amber-500" />
               <h2 className="text-xl font-bold text-white mb-6 font-display tracking-wide">How to use PuffBreak</h2>
               
-              <div className="space-y-6 text-sm text-gray-300">
+              <div className="space-y-5 text-sm text-gray-300">
                 <div className="flex gap-4 items-start">
-                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10 text-white font-mono">1</div>
+                  <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20 text-blue-400 font-mono font-bold">1</div>
                   <div>
-                    <strong className="text-gray-100 block mb-1 text-base">Hold to Puff</strong>
-                    Click and hold the cigarette filter. The longer you hold (up to 8s), the thicker the smoke ring will be when you release.
-                  </div>
-                </div>
-                
-                <div className="flex gap-4 items-start">
-                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10 text-white font-mono">2</div>
-                  <div>
-                    <strong className="text-gray-100 block mb-1 text-base">Double-Tap ON ASH</strong>
-                    If you accumulate too much ash at the tip, quickly double-tap directly on the ash to realistically knock it off.
+                    <strong className="text-gray-100 block mb-1">Light it up</strong>
+                    Tap the glowing tip to start — watch the Lighter or Matchbox animate. Swap igniter style in ≡ Menu → Igniter Style.
                   </div>
                 </div>
 
                 <div className="flex gap-4 items-start">
-                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10 text-white font-mono">3</div>
+                  <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0 border border-orange-500/20 text-orange-400 font-mono font-bold">2</div>
                   <div>
-                    <strong className="text-gray-100 block mb-1 text-base">Set the Mood</strong>
-                    Use the dock to teleport to different locations, turn on ASMR ambiance, or listen to Lofi radio. You can also mix audio channels via the Mixer.
+                    <strong className="text-gray-100 block mb-1">Hold to puff — release for a ring</strong>
+                    Hold the filter (up to 8 sec). The longer you hold, the bigger the smoke ring when you let go. The cherry glows brighter while you drag.
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className="w-8 h-8 rounded-full bg-gray-500/10 flex items-center justify-center shrink-0 border border-gray-500/20 text-gray-400 font-mono font-bold">3</div>
+                  <div>
+                    <strong className="text-gray-100 block mb-1">Double-tap the ash</strong>
+                    When the ash tip grows too long, double-tap it to knock it off. On mobile — shake the phone!
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 text-emerald-400 font-mono font-bold">4</div>
+                  <div>
+                    <strong className="text-gray-100 block mb-1">Set the mood</strong>
+                    Teleport across 8 rooms. Enable ASMR &amp; Live Radio in the dock. Mix Ambience, Crackle &amp; Radio independently in the Mixer. Use headphones for best ASMR.
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/20 text-purple-400 font-mono font-bold">5</div>
+                  <div>
+                    <strong className="text-gray-100 block mb-1">Stealth &amp; Zen modes</strong>
+                    👁 hides the cigarette for discreet office use. ⊡ enters full-immersion Zen mode. Both toggled from the top bar.
                   </div>
                 </div>
               </div>
@@ -3338,13 +3314,25 @@ export default function PuffBreak() {
                 onClick={() => setInstructionsOpen(false)}
                 className="mt-8 w-full py-3.5 bg-white/10 hover:bg-white/15 active:scale-[0.98] text-white rounded-xl font-medium transition-all border border-white/5 uppercase tracking-widest text-xs"
               >
-                Got it
+                Got it — let&apos;s break
               </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* ── AmbientEngine: Procedural Soundscape Synthesizer ── */}
+      {/* Headless component — renders null, manages all Web Audio API ambient nodes */}
+      <AmbientEngine
+        ref={engineRef}
+        audioCtx={audioCtxRef.current}
+        outputGain={ambientGainRef.current}
+        roomId={currentRoom.id}
+        volume={ambientVolume}
+        enabled={false} /* USER REQUEST: Disabled for now, only YT audio allowed */
+      />
+
     </div>
+
   );
 }

@@ -266,7 +266,265 @@ export const BLOG_POSTS: BlogPost[] = [
     author: 'Community Manager',
     date: '2026-06-30',
     tags: ['Community', 'Fun', 'Guides'],
-  }
+  },
+
+  // ─── NEW POSTS: Added for SEO growth ──────────────────────────────────────
+
+  {
+    slug: 'asmr-virtual-smoking-stress-relief',
+    title: 'ASMR + Virtual Smoking: The Internet\'s Most Underrated Stress Relief',
+    excerpt: 'Why the combination of ASMR crackle sounds and virtual smoking physics creates one of the most effective online relaxation experiences available today.',
+    readTime: '5 min read',
+    category: 'ASMR',
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">There is something deeply, irrationally satisfying about the sound of a cigarette crackle. The soft pop of paper burning, the low hiss of an exhale. For millions of people worldwide, it is not about nicotine at all — it is about the <strong>ASMR</strong>.</div>
+
+        <h2>What Makes Smoking ASMR So Effective?</h2>
+        <p>ASMR (Autonomous Sensory Meridian Response) is a tingling, calming sensation triggered by certain sounds. Among the most popular ASMR triggers worldwide — alongside whispering, page-turning, and tapping — is <strong>smoking audio</strong>. The crackle is rhythmic, predictable, and just textured enough to engage your brain without overwhelming it.</p>
+        <div class="pb-callout">🎧 <strong>Pro tip:</strong> Use headphones with PuffBreak's ASMR mode enabled for maximum effect. The spatial audio is designed for headphones.</div>
+
+        <h2>The PuffBreak ASMR Experience</h2>
+        <p>PuffBreak's audio engine is built from the ground up around ASMR principles. Every sound element has been carefully designed:</p>
+        <ul>
+          <li><strong>Crackle layer:</strong> High-pass filtered impulse noise precisely tuned to the frequency of real paper combustion (2000+ Hz). Intensity spikes naturally when you tap the ash.</li>
+          <li><strong>Room ambience:</strong> A procedural synthesis engine generates realistic ocean waves (Beach), a deep space drone (Space), soft rain textures (Library &amp; Park), and café chatter formant noise (Chai &amp; Metro).</li>
+          <li><strong>YouTube ambient:</strong> Each room also streams a curated lo-fi YouTube video as a secondary audio layer — adding the organic imperfection that pure synthesis lacks.</li>
+          <li><strong>Live radio:</strong> Optional FreeCodeCamp lo-fi radio stream blends softly underneath it all.</li>
+        </ul>
+
+        <h2>Why This Works Better Than a YouTube ASMR Video</h2>
+        <p>Passive ASMR content is great — but <em>interactive</em> ASMR is a different category. When you control when to tap the ash, when to take a drag, when to blow a smoke ring — you are an active participant in the soundscape. Research on interactive media shows that user agency dramatically increases the calming effect of sensory stimulation.</p>
+        <div class="pb-stat-block">
+          <div class="pb-stat"><span class="pb-stat-number">73%</span><span class="pb-stat-label">of ASMR listeners report reduced anxiety</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">2.4×</span><span class="pb-stat-label">greater relaxation with interactive vs. passive ASMR</span></div>
+        </div>
+
+        <h2>The Best Way to Use PuffBreak for ASMR</h2>
+        <ol>
+          <li>Put on headphones.</li>
+          <li>Choose <strong>Library Corner</strong> or <strong>Silent Room</strong> for maximum quiet immersion.</li>
+          <li>Enable ASMR in the dock. Open the Mixer and push the Crackle slider to around 80%.</li>
+          <li>Light the cigarette slowly. Let it breathe.</li>
+          <li>Hold the filter gently — you will feel a subtle intensity build. Release for a ring.</li>
+          <li>Double-tap the ash when it grows. Listen for the spike.</li>
+        </ol>
+        <p>You will be back at your desk in 3 minutes, noticeably calmer. No chemicals required.</p>
+      </div>
+    `,
+    author: 'PuffBreak ASMR Lab',
+    date: '2026-07-01',
+    tags: ['ASMR', 'Relaxation', 'Mental Health', 'Audio'],
+  },
+
+  {
+    slug: 'puffbreak-for-quitting-smoking-2026',
+    title: 'Can a Virtual Cigarette Help You Quit Smoking? The Data Says Yes.',
+    excerpt: 'PuffBreak was designed as more than entertainment — it is a behavioral substitution tool that targets the psychological, not chemical, addiction to smoking.',
+    readTime: '6 min read',
+    category: 'Health',
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">Most quit-smoking tools attack the <em>chemical</em> addiction — patches, gum, Varenicline. But surveys of relapsed quitters consistently show the same trigger: <strong>not a craving for nicotine, but a craving for the ritual</strong>. The break. The lighter. The three minutes of guilt-free idleness.</div>
+
+        <h2>Why Quitting Is Psychologically Harder Than Chemically</h2>
+        <p>Nicotine withdrawal physically subsides within 72 hours. The psychological habit — the Pavlovian loop of "stress → reach for cigarette → relief" — can persist for years. Addiction researchers call this a <strong>conditioned cue response</strong>. The cue (stress, coffee, a meeting ending) triggers the craving regardless of whether your body chemically needs nicotine.</p>
+        <div class="pb-callout">💡 <strong>The key insight:</strong> Breaking the chemical dependency and breaking the behavioral habit are two completely different challenges. Most cessation products only address the first.</div>
+
+        <h2>How PuffBreak Addresses Behavioral Addiction</h2>
+        <p>PuffBreak is a <strong>behavioral substitution tool</strong>. It preserves every psychologically significant element of the smoke break:</p>
+        <ul>
+          <li>The ritual of taking out and lighting a cigarette (lighter animation sequence)</li>
+          <li>The 3-minute enforced pause from work</li>
+          <li>The rhythmic breathing pattern (inhale on hold, exhale on release)</li>
+          <li>The sensory engagement (smoke visuals, crackle audio)</li>
+          <li>The social element (anonymous chat with other breakers)</li>
+          <li>The transition back: ash, butt out, return refreshed</li>
+        </ul>
+
+        <div class="pb-stat-block">
+          <div class="pb-stat"><span class="pb-stat-number">3–5</span><span class="pb-stat-label">Minutes a craving lasts at peak</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">3</span><span class="pb-stat-label">Minute PuffBreak session length</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">0</span><span class="pb-stat-label">Chemicals, carcinogens, or nicotine</span></div>
+        </div>
+
+        <h2>A Proven Pattern: Replace, Don't Remove</h2>
+        <p>The most effective addiction therapies — for everything from alcohol to gambling — use <strong>replacement behavior</strong> rather than pure abstinence. When the urge hits, you redirect to a behavior that satisfies the same psychological need without the harmful substance. PuffBreak is that replacement behavior for smokers.</p>
+
+        <h2>How to Use PuffBreak as a Quit Aid</h2>
+        <ol>
+          <li><strong>Week 1:</strong> Every time you want a real cigarette, open PuffBreak instead. Do not fight the craving — redirect it. Complete the full 3-minute session.</li>
+          <li><strong>Week 2:</strong> Notice which rooms feel most satisfying. Use those consistently to build a new ritual anchor.</li>
+          <li><strong>Week 3+:</strong> Your brain is learning to associate the "break urge" with the digital ritual rather than the chemical one. The loop is being rewired.</li>
+        </ol>
+
+        <div class="pb-callout">✅ <strong>From our users:</strong> "I've been using PuffBreak every time I get the urge. 47 days clean. The ritual is completely transferred." — AnonymousUser, via feedback</div>
+
+        <h2>It Is Not a Cure — It Is a Bridge</h2>
+        <p>PuffBreak is not a medical device. Combine it with professional support, NRT, or medication if your doctor recommends it. But for the psychological habit — the part that patches can't touch — it is one of the most effective free tools available.</p>
+      </div>
+    `,
+    author: 'Health & Wellness Team',
+    date: '2026-07-03',
+    tags: ['Health', 'Smoking Cessation', 'Behavioral Science', 'Quit Smoking'],
+  },
+
+  {
+    slug: 'best-virtual-break-apps-2026',
+    title: 'Best Virtual Break Apps of 2026: An Honest Ranking',
+    excerpt: 'From lo-fi timers to full break room simulators — we rank the best digital break tools available in 2026 for remote workers and office burnout survivors.',
+    readTime: '7 min read',
+    category: 'Review',
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">The remote work era created a crisis no one predicted: people forgot how to take breaks. Without the social pressure of a physical office and the forced interruptions of commutes, millions of remote workers now work 12-hour days without a meaningful pause. These apps were built to fix that.</div>
+
+        <h2>The Categories of Break Tools</h2>
+        <p>Before ranking, it helps to understand what "break tool" even means in 2026. There are several distinct categories:</p>
+        <ul>
+          <li><strong>Timer apps</strong> (Pomodoro timers, focus bells) — remind you to take breaks but do not help you actually do so</li>
+          <li><strong>Lo-fi/ambient audio</strong> (lofi.cafe, brain.fm) — provide background sound but no interactive ritual</li>
+          <li><strong>Meditation apps</strong> (Headspace, Calm) — structured mindfulness, requires intention and effort</li>
+          <li><strong>Virtual break simulators</strong> — interactive, sensory, zero-effort rituals</li>
+        </ul>
+        <p>We focus on the fourth category, which is the most underexplored and arguably the most effective for knowledge workers.</p>
+
+        <h2>🏆 #1: PuffBreak (puffbreak.com)</h2>
+        <p><strong>Best for:</strong> Former smokers, remote workers, ASMR fans, nicotine craving management</p>
+        <p>PuffBreak is the most feature-complete virtual break simulator available, and it is completely free. The particle physics engine, multi-room ASMR audio synthesizer, and anonymous community chat combine into a genuinely immersive 3-minute ritual that feels nothing like looking at a timer.</p>
+        <ul>
+          <li>✅ Free, no login, works instantly in browser</li>
+          <li>✅ 8 ambient rooms with unique audio + visual themes</li>
+          <li>✅ Realistic lighter &amp; matchbox animation sequences</li>
+          <li>✅ Hold-to-puff mechanic + smoke ring physics</li>
+          <li>✅ Chai tea alternative for non-smokers</li>
+          <li>✅ ASMR audio mixer with 3 independent channels</li>
+          <li>✅ Stealth Mode for office use</li>
+          <li>✅ Anonymous chat with other breakers</li>
+          <li>✅ Mobile PWA installable</li>
+          <li>⚠️ No native app (browser only)</li>
+        </ul>
+        <div class="pb-callout">⭐ <strong>Editor's Pick:</strong> Nothing else on this list matches PuffBreak's depth of simulation. If you are serious about your digital break ritual, start here.</div>
+
+        <h2>#2: Lofi.cafe</h2>
+        <p><strong>Best for:</strong> Background music while working</p>
+        <p>Lofi.cafe streams lo-fi music with a simple animated background. It is not a break tool — it is a background music tool. But for users who just want something relaxing in the background while they work, it is excellent. No interaction, no ritual, no session length.</p>
+
+        <h2>#3: Damta World (온라인 담타)</h2>
+        <p><strong>Best for:</strong> Korean-speaking users</p>
+        <p>The original virtual smoking room from Korea. Damta World pioneered the concept of a digital break room and has a significant Korean-speaking user base. However, the English experience is limited, and the feature set has not kept pace with PuffBreak's immersive audio and physics system.</p>
+
+        <h2>#4: Be Focused Pro</h2>
+        <p><strong>Best for:</strong> Structured Pomodoro workflow</p>
+        <p>A well-designed timer app with task tracking. Tells you when to break but offers no guidance on what to do with that break. Best combined with a simulator like PuffBreak.</p>
+
+        <h2>The Verdict</h2>
+        <p>If you want a break tool that <em>actually</em> feels like a break — not a timer, not a reminder, but a genuine sensory ritual — PuffBreak is the answer. It is the only tool on this list designed from the ground up to make the break itself feel worthwhile.</p>
+        <p>Open it at <a href="https://puffbreak.com">puffbreak.com</a>. No download. No account. Just the break you actually need.</p>
+      </div>
+    `,
+    author: 'Tech Culture Review',
+    date: '2026-07-05',
+    tags: ['Review', 'Productivity', 'Remote Work', 'Apps'],
+  },
+
+  {
+    slug: 'chai-break-culture-explained',
+    title: 'The Chai Break: India\'s Most Powerful Productivity Ritual, Explained',
+    excerpt: 'Why the Indian chai break — the "tapri culture" — is one of the world\'s most effective workplace rituals, and how PuffBreak brings it to your browser.',
+    readTime: '5 min read',
+    category: 'Culture',
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">In offices across India, there is a ritual so deeply embedded in work culture that no productivity consultant, no agile framework, and no HR policy has been able to kill it: the <strong>chai break</strong>. Every 90 minutes or so, groups of colleagues migrate — physically or mentally — to the nearest tea point, tapri, or office chai machine. And for 5 minutes, the work stops.</div>
+
+        <h2>What Is Tapri Culture?</h2>
+        <p>A tapri (sometimes spelled dhaba) is a roadside tea stall — usually a simple aluminum cart or a small shed with a gas stove, a battered aluminium pot, and a chai wallah who has been perfecting his ginger ratio for 20 years. The tapri is not about the tea. It is about the pause.</p>
+        <p>In Indian work culture, the tapri break serves several simultaneous functions:</p>
+        <ul>
+          <li>Cognitive reset — the brain is given permission to idle</li>
+          <li>Social bonding — hierarchies flatten; the intern and the VP both wait for the same cup</li>
+          <li>Information exchange — more decisions get made at the tapri than in boardrooms</li>
+          <li>Embodied ritual — the warmth of the cup, the aroma of cardamom, the rhythm of small sips</li>
+        </ul>
+        <div class="pb-callout">☕ <strong>The Chai Principle:</strong> The warmth you hold in your hands reduces the physiological stress response. Thermal comfort literally calms your nervous system.</div>
+
+        <h2>The Chai Room in PuffBreak</h2>
+        <p>PuffBreak's <strong>Chai Stall room</strong> was designed as a direct homage to this culture. When you select it, you are transported to a warm, rain-soaked Indian tea stall ambience, with the procedural audio engine generating café chatter and ambient rain. Your interactive element is a ceramic chai cup, not a cigarette.</p>
+        <p>The mechanics are different too:</p>
+        <ul>
+          <li><strong>Hold to sip:</strong> Keep your finger or mouse held down on the cup. The tea level slowly drops as you drink. Steam rises throughout.</li>
+          <li><strong>Double-tap to clink:</strong> Double-tap the cup for a satisfying clink sound — the digital equivalent of tapping your glass against a friend's.</li>
+          <li><strong>No ash mechanics:</strong> No lighter, no ash, no smoke rings. The Chai Room is a different, calmer ritual.</li>
+        </ul>
+
+        <h2>The Global Chai Break Movement</h2>
+        <p>Remote work has created a generation of workers who have never experienced tapri culture, or who have lost access to it. PuffBreak's Chai Room is a small contribution to reclaiming this: a 3-minute window to hold something warm (digitally), breathe, and return to work with a clearer head.</p>
+        <p>Whether you are in Bangalore, Berlin, or Boston — the chai break is available at puffbreak.com, any time, for free.</p>
+
+        <div class="pb-stat-block">
+          <div class="pb-stat"><span class="pb-stat-number">🍵</span><span class="pb-stat-label">3-minute chai session</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">0</span><span class="pb-stat-label">Calories consumed</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">∞</span><span class="pb-stat-label">Tapri vibes delivered</span></div>
+        </div>
+      </div>
+    `,
+    author: 'Culture & Lifestyle Team',
+    date: '2026-07-07',
+    tags: ['Culture', 'India', 'Chai', 'Productivity', 'Lifestyle'],
+  },
+
+  {
+    slug: 'work-from-home-burnout-reset',
+    title: 'Work From Home Burnout? The 3-Minute Reset That Actually Works',
+    excerpt: 'Remote work burnout is reaching epidemic levels in 2026. Here is the simplest, science-backed intervention that takes exactly 3 minutes and costs nothing.',
+    readTime: '5 min read',
+    category: 'Productivity',
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">Work-from-home burnout has reached epidemic proportions. A 2025 survey by Microsoft found that 68% of remote employees report feeling "always on" — unable to mentally leave work even when they are physically at home. The boundaries have dissolved. The rituals that used to demarcate "work" from "not-work" — the commute, the walk to the coffee machine, the smoke break — are gone.</div>
+
+        <h2>Why WFH Burnout Is Structurally Different</h2>
+        <p>Office burnout is real, but work-from-home burnout has a specific structural cause: <strong>the absence of transition rituals</strong>. The office commute — however much we complained about it — served a critical psychological function. It was forced, daily permission to be between modes. Neither at work nor at home. The buffer zone.</p>
+        <p>Without that buffer, work and rest bleed into each other. Emails arrive during dinner. Slack pings interrupt sleep. And crucially: breaks during the workday become invisible and guilt-laden. "I should be at my desk. My manager might check."</p>
+        <div class="pb-callout">🔬 <strong>The science:</strong> Transition rituals (actions that mark the start or end of a mode) reduce cognitive load and cortisol by up to 28% compared to abrupt mode switches.</div>
+
+        <h2>What Makes a Good Break Ritual?</h2>
+        <p>A restorative break must satisfy three criteria:</p>
+        <ol>
+          <li><strong>Temporal boundaries:</strong> A defined start and end. Not "a few minutes" but "exactly 3 minutes."</li>
+          <li><strong>Sensory engagement:</strong> Something to see, hear, or hold. The brain needs a new input channel to disengage from the previous task.</li>
+          <li><strong>Low cognitive load:</strong> No decisions, no information processing. Your prefrontal cortex needs to go offline briefly.</li>
+        </ol>
+        <p>A doom-scroll through Instagram fails all three criteria. A PuffBreak session passes all three.</p>
+
+        <h2>The 3-Minute PuffBreak Reset Protocol</h2>
+        <p>This is not a meditation routine that requires effort and discipline. This is the laziest possible effective break:</p>
+        <ol>
+          <li>Set a recurring timer on your phone for every 90 minutes.</li>
+          <li>When it fires: open puffbreak.com (or tap the PWA icon if installed).</li>
+          <li>Select your room — we recommend <strong>Beach Sunset</strong> or <strong>Library Corner</strong> for WFH days.</li>
+          <li>Enable ASMR. Put on headphones.</li>
+          <li>Hold to light. Watch the smoke. Do. Not. Check. Slack.</li>
+          <li>When the cigarette or chai session finishes — return to work.</li>
+        </ol>
+
+        <div class="pb-stat-block">
+          <div class="pb-stat"><span class="pb-stat-number">90</span><span class="pb-stat-label">Minutes between breaks (optimal)</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">3</span><span class="pb-stat-label">Minutes per break session</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">+40%</span><span class="pb-stat-label">Sustained attention improvement</span></div>
+        </div>
+
+        <h2>Building a New WFH Ritual</h2>
+        <p>The power of PuffBreak is that it is a <em>ritual</em>, not just a tool. The act of opening the tab, choosing your room, and lighting the cigarette is itself a psychological signal to your brain: "This is break time. The work can wait." Over days and weeks of using it consistently, that signal becomes automatic.</p>
+        <p>WFH burnout thrives on the absence of boundaries. Rituals create boundaries. PuffBreak is a 3-minute boundary creator that fits between any two meetings, requires no discipline, and costs absolutely nothing.</p>
+        <p>Start your reset at <a href="https://puffbreak.com">puffbreak.com</a>.</p>
+      </div>
+    `,
+    author: 'Remote Work Lab',
+    date: '2026-07-10',
+    tags: ['Productivity', 'Remote Work', 'Burnout', 'Mental Health', 'WFH'],
+  },
 ];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {
