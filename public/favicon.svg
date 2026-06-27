@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Dark background tile -->
+  <rect width="32" height="32" rx="7" fill="#0a0a0f"/>
+
+  <!-- Smoke wisps curling from ember -->
+  <path d="M14.5 5.5 Q12.5 3.5 14.5 1.5" stroke="rgba(255,255,255,0.28)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <path d="M17.5 6 Q20 3.5 17.5 1" stroke="rgba(255,255,255,0.18)" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+
+  <!-- Cigarette body (unburned white paper) -->
+  <rect x="12.5" y="9" width="7" height="15" fill="#eeeeee"/>
+
+  <!-- Paper texture lines -->
+  <line x1="12.5" y1="12" x2="19.5" y2="12" stroke="rgba(0,0,0,0.06)" stroke-width="0.5"/>
+  <line x1="12.5" y1="15" x2="19.5" y2="15" stroke="rgba(0,0,0,0.06)" stroke-width="0.5"/>
+  <line x1="12.5" y1="18" x2="19.5" y2="18" stroke="rgba(0,0,0,0.06)" stroke-width="0.5"/>
+
+  <!-- Side shadow on paper -->
+  <rect x="12.5" y="9" width="1.5" height="15" fill="rgba(0,0,0,0.12)"/>
+  <rect x="18" y="9" width="1.5" height="15" fill="rgba(0,0,0,0.12)"/>
+
+  <!-- Ash (grey burned tip) -->
+  <rect x="12.5" y="9" width="7" height="3" rx="0.5" fill="#5a5a5a"/>
+  <rect x="12.5" y="9" width="7" height="1" rx="0.5" fill="#3a3a3a"/>
+
+  <!-- Ember glow line -->
+  <rect x="12.5" y="11.5" width="7" height="1.5" rx="0.75" fill="#f97316" opacity="0.9"/>
+
+  <!-- Ember outer glow (radial) -->
+  <ellipse cx="16" cy="12" rx="6" ry="3" fill="rgba(249,115,22,0.25)"/>
+
+  <!-- Filter (amber/cork) -->
+  <rect x="12.5" y="24" width="7" height="5" rx="0 0 2 2" fill="#c8943c"/>
+  <rect x="12.5" y="24" width="7" height="1" fill="#b07d2a"/>
+  <!-- Filter texture dots -->
+  <circle cx="14" cy="26" r="0.5" fill="rgba(0,0,0,0.15)"/>
+  <circle cx="16" cy="25.5" r="0.5" fill="rgba(0,0,0,0.15)"/>
+  <circle cx="18" cy="26.5" r="0.5" fill="rgba(0,0,0,0.15)"/>
+  <circle cx="15" cy="27.5" r="0.5" fill="rgba(0,0,0,0.1)"/>
+  <circle cx="17" cy="27" r="0.5" fill="rgba(0,0,0,0.1)"/>
+</svg>

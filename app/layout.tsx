@@ -1,5 +1,6 @@
 import type {Metadata, Viewport} from 'next';
 import './globals.css';
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://puffbreak.com'),
@@ -85,7 +86,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.ico' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '48x48' },
+    ],
+    apple: [
+      { url: '/favicon.svg' },
     ],
   },
 };
@@ -101,7 +106,10 @@ export const viewport: Viewport = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased selection:bg-white/20 font-display" suppressHydrationWarning>{children}</body>
+      <body className="antialiased selection:bg-white/20 font-display" suppressHydrationWarning>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
