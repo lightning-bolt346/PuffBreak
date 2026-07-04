@@ -81,17 +81,17 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: 'digital-break-room-vs-damta-world',
-    title: 'PuffBreak vs. Damta World: The Best Virtual Break Simulator',
-    excerpt: 'Looking for a Damta World alternative? Discover why PuffBreak is the ultimate digital break room for mindful relaxation.',
+    title: 'PuffBreak vs. Other Virtual Break Platforms: The Best Virtual Break Simulator',
+    excerpt: 'Looking for a Other Virtual Break Platforms alternative? Discover why PuffBreak is the ultimate digital break room for mindful relaxation.',
     readTime: '5 min read',
     category: 'Review',
     content: `
       <div class="pb-article">
-        <div class="pb-lead">As remote work and digital stress become more prevalent, the need for quick, mindful pauses has never been greater. For years, platforms like <strong>Damta World (온라인 담타)</strong> have offered a virtual space to take a break. But users are increasingly seeking more immersive, realistic, and accessible alternatives.</div>
+        <div class="pb-lead">As remote work and digital stress become more prevalent, the need for quick, mindful pauses has never been greater. For years, platforms like <strong>Other Virtual Break Platforms</strong> have offered a virtual space to take a break. But users are increasingly seeking more immersive, realistic, and accessible alternatives.</div>
         <h2>Why Virtual Break Simulators Exist</h2>
         <p>The modern workplace demands near-constant focus on a screen. The smoke break forced people <em>outside</em>, into a brief, unstructured period of idleness. That ritual had real psychological value.</p>
         <div class="pb-callout">💡 <strong>The core insight:</strong> The value of a break was never about the cigarette — it was about the ritual, the pause, and the breathing.</div>
-        <h2>PuffBreak vs. Damta World</h2>
+        <h2>PuffBreak vs. Other Virtual Break Platforms</h2>
         <div class="pb-comparison">
           <div class="pb-comparison-item pb-win">
             <div class="pb-comparison-label">PuffBreak ✓</div>
@@ -106,7 +106,7 @@ export const BLOG_POSTS: BlogPost[] = [
             </ul>
           </div>
           <div class="pb-comparison-item">
-            <div class="pb-comparison-label">Damta World</div>
+            <div class="pb-comparison-label">Other Virtual Break Platforms</div>
             <ul>
               <li>Requires Korean account / login</li>
               <li>Simpler 2D graphics</li>
@@ -123,7 +123,7 @@ export const BLOG_POSTS: BlogPost[] = [
     `,
     author: 'PuffBreak Team',
     date: '2026-06-27',
-    tags: ['Review', 'Alternatives', 'Damta World', 'Virtual Break'],
+    tags: ['Review', 'Alternatives', 'Other Virtual Break Platforms', 'Virtual Break'],
   },
   {
     slug: 'manage-nicotine-cravings-at-work',
@@ -389,7 +389,7 @@ export const BLOG_POSTS: BlogPost[] = [
         </ul>
         <p>We focus on the fourth category, which is the most underexplored and arguably the most effective for knowledge workers.</p>
 
-        <h2>🏆 #1: PuffBreak (puffbreak.com)</h2>
+        <h2>🏆 #1: PuffBreak (puff-break.vercel.app)</h2>
         <p><strong>Best for:</strong> Former smokers, remote workers, ASMR fans, nicotine craving management</p>
         <p>PuffBreak is the most feature-complete virtual break simulator available, and it is completely free. The particle physics engine, multi-room ASMR audio synthesizer, and anonymous community chat combine into a genuinely immersive 3-minute ritual that feels nothing like looking at a timer.</p>
         <ul>
@@ -410,9 +410,9 @@ export const BLOG_POSTS: BlogPost[] = [
         <p><strong>Best for:</strong> Background music while working</p>
         <p>Lofi.cafe streams lo-fi music with a simple animated background. It is not a break tool — it is a background music tool. But for users who just want something relaxing in the background while they work, it is excellent. No interaction, no ritual, no session length.</p>
 
-        <h2>#3: Damta World (온라인 담타)</h2>
+        <h2>#3: Other Virtual Break Platforms</h2>
         <p><strong>Best for:</strong> Korean-speaking users</p>
-        <p>The original virtual smoking room from Korea. Damta World pioneered the concept of a digital break room and has a significant Korean-speaking user base. However, the English experience is limited, and the feature set has not kept pace with PuffBreak's immersive audio and physics system.</p>
+        <p>The original virtual smoking room from Korea. Other Virtual Break Platforms pioneered the concept of a digital break room and has a significant Korean-speaking user base. However, the English experience is limited, and the feature set has not kept pace with PuffBreak's immersive audio and physics system.</p>
 
         <h2>#4: Be Focused Pro</h2>
         <p><strong>Best for:</strong> Structured Pomodoro workflow</p>
@@ -420,7 +420,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
         <h2>The Verdict</h2>
         <p>If you want a break tool that <em>actually</em> feels like a break — not a timer, not a reminder, but a genuine sensory ritual — PuffBreak is the answer. It is the only tool on this list designed from the ground up to make the break itself feel worthwhile.</p>
-        <p>Open it at <a href="https://puffbreak.com">puffbreak.com</a>. No download. No account. Just the break you actually need.</p>
+        <p>Open it at <a href="https://puff-break.vercel.app">puff-break.vercel.app</a>. No download. No account. Just the break you actually need.</p>
       </div>
     `,
     author: 'Tech Culture Review',
@@ -460,7 +460,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
         <h2>The Global Chai Break Movement</h2>
         <p>Remote work has created a generation of workers who have never experienced tapri culture, or who have lost access to it. PuffBreak's Chai Room is a small contribution to reclaiming this: a 3-minute window to hold something warm (digitally), breathe, and return to work with a clearer head.</p>
-        <p>Whether you are in Bangalore, Berlin, or Boston — the chai break is available at puffbreak.com, any time, for free.</p>
+        <p>Whether you are in Bangalore, Berlin, or Boston — the chai break is available at puff-break.vercel.app, any time, for free.</p>
 
         <div class="pb-stat-block">
           <div class="pb-stat"><span class="pb-stat-number">🍵</span><span class="pb-stat-label">3-minute chai session</span></div>
@@ -502,7 +502,7 @@ export const BLOG_POSTS: BlogPost[] = [
         <p>This is not a meditation routine that requires effort and discipline. This is the laziest possible effective break:</p>
         <ol>
           <li>Set a recurring timer on your phone for every 90 minutes.</li>
-          <li>When it fires: open puffbreak.com (or tap the PWA icon if installed).</li>
+          <li>When it fires: open puff-break.vercel.app (or tap the PWA icon if installed).</li>
           <li>Select your room — we recommend <strong>Beach Sunset</strong> or <strong>Library Corner</strong> for WFH days.</li>
           <li>Enable ASMR. Put on headphones.</li>
           <li>Hold to light. Watch the smoke. Do. Not. Check. Slack.</li>
@@ -518,7 +518,7 @@ export const BLOG_POSTS: BlogPost[] = [
         <h2>Building a New WFH Ritual</h2>
         <p>The power of PuffBreak is that it is a <em>ritual</em>, not just a tool. The act of opening the tab, choosing your room, and lighting the cigarette is itself a psychological signal to your brain: "This is break time. The work can wait." Over days and weeks of using it consistently, that signal becomes automatic.</p>
         <p>WFH burnout thrives on the absence of boundaries. Rituals create boundaries. PuffBreak is a 3-minute boundary creator that fits between any two meetings, requires no discipline, and costs absolutely nothing.</p>
-        <p>Start your reset at <a href="https://puffbreak.com">puffbreak.com</a>.</p>
+        <p>Start your reset at <a href="https://puff-break.vercel.app">puff-break.vercel.app</a>.</p>
       </div>
     `,
     author: 'Remote Work Lab',

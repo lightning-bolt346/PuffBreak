@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Coffee, EyeOff, Eye, Minimize2, MoreHorizontal, RotateCcw, Share2,
   MessageSquare, FileText, Linkedin, Star, RotateCcw as RestoreIcon,
@@ -1495,7 +1496,31 @@ export default function PuffBreak() {
 
   // ─── RENDER ───────────────────────────────────────────────────────────────
   return (
-    <div
+    <>
+      {/* JSON-LD Structured Data for SEO and LLMs */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'PuffBreak',
+        url: 'https://puff-break.vercel.app',
+        applicationCategory: 'HealthApplication',
+        applicationSubCategory: 'Stress Relief',
+        description: 'A mindful virtual break room. Light a virtual cigarette or sip chai in 8 immersive ambient rooms. Free, anonymous, no account needed.',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        isAccessibleForFree: true,
+      })}} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: [
+          { '@type': 'Question', name: 'What is PuffBreak?', acceptedAnswer: { '@type': 'Answer', text: 'PuffBreak is a free, anonymous, browser-based virtual break room. You light a digital cigarette or enjoy a virtual cup of chai tea in 8 immersive ambient environments with ASMR audio and live anonymous chat. No account required.' } },
+          { '@type': 'Question', name: 'Is PuffBreak free?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, 100% free. No subscriptions, no ads, no premium tiers.' } },
+          { '@type': 'Question', name: 'Does PuffBreak collect my data?', acceptedAnswer: { '@type': 'Answer', text: 'No. Zero personal data collected. All preferences live in your browser localStorage and never leave your device.' } },
+          { '@type': 'Question', name: 'Can PuffBreak help me quit smoking?', acceptedAnswer: { '@type': 'Answer', text: 'PuffBreak can serve as a mindful substitute during nicotine cravings. The 3-minute session matches peak craving duration. Not a medical device.' } },
+          { '@type': 'Question', name: 'Does it work on mobile?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Fully responsive. Installable as a PWA. Shake-to-ash gesture supported on mobile.' } },
+        ],
+      })}} />
+      <div
       ref={mainScreenRef}
       className={`relative flex flex-col items-center justify-center min-h-screen min-h-dvh overflow-hidden select-none font-display ${highContrast ? 'grayscale contrast-125' : ''}`}
       style={{ backgroundColor: currentRoom.bg, transition: 'background-color 1.2s ease' }}
@@ -1517,8 +1542,8 @@ export default function PuffBreak() {
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
               'name': 'PuffBreak',
-              'alternateName': ['Online Damta', '온라인 담타', 'Damta World', '담타'],
-              'url': 'https://puffbreak.com',
+              'alternateName': ['Online Other platforms', '온라인 담타', 'Other Virtual Break Platforms', '담타'],
+              'url': 'https://puff-break.vercel.app',
               'description': 'A mindful, interactive 3-minute digital break room experience. Take a mental pause by lighting a virtual cigarette or sipping a cup of hot chai with ambient audio, realistic particle physics, and a live anonymous community.',
               'applicationCategory': 'RelaxationApplication, HealthApplication',
               'operatingSystem': 'All',
@@ -1542,10 +1567,10 @@ export default function PuffBreak() {
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               'name': 'PuffBreak',
-              'url': 'https://puffbreak.com',
+              'url': 'https://puff-break.vercel.app',
               'potentialAction': {
                 '@type': 'SearchAction',
-                'target': 'https://puffbreak.com/?q={search_term_string}',
+                'target': 'https://puff-break.vercel.app/?q={search_term_string}',
                 'query-input': 'required name=search_term_string'
               }
             },
@@ -1603,10 +1628,10 @@ export default function PuffBreak() {
           Use PuffBreak as an interactive habit-replacement tool to quit smoking, manage nicotine withdrawal cravings, do breathing exercises, or simply step away from your desk. Teleport between the Office Rooftop, Beach Sunset, Space Station, Library Corner, Park Bench, Metro Platform, Chai Stall, or Silent Room. No registration required.
         </p>
 
-        {/* Korean Competitor Targeting (damta.world / 온라인 담타) */}
-        <h2>온라인 담타 (Online Damta) 글로벌 영어 버전 - PuffBreak</h2>
+        {/* Korean Competitor Targeting (other platforms / 온라인 담타) */}
+        <h2>온라인 담타 (Online Other platforms) 글로벌 영어 버전 - PuffBreak</h2>
         <p>
-          PuffBreak은 글로벌 이용자를 위한 온라인 담타(Online Damta) 및 가상 흡연실 시뮬레이션 서비스입니다.
+          PuffBreak은 글로벌 이용자를 위한 온라인 담타(Online Other platforms) 및 가상 흡연실 시뮬레이션 서비스입니다.
           가상 담배를 피우거나 따뜻한 차이 티(Chai)를 마시며 전세계 각지의 사람들과 실시간 익명 채팅으로 소근소근 대화를 나눠보세요.
           금연 보조제, 스트레스 해소, 심호흡 훈련 및 일상의 소소한 리프레시를 위해 최적화되었습니다.
           회사 옥상, 노을진 해변, 우주 정거장, 조용한 도서관, 공원 벤치, 지하철 플랫폼, 차이 가판대 등 다양한 테마의 방에서 휴식을 취하세요.
@@ -2298,7 +2323,7 @@ export default function PuffBreak() {
           BOTTOM PANEL — always visible
           ─────────────────────────────────────────────────────────────────── */}
       {!isZenMode && (
-        <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}>
+        <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }}>
 
           {/* Controls & Chat Container */}
           <AnimatePresence mode="wait">
@@ -2324,20 +2349,21 @@ export default function PuffBreak() {
                 <span>670 breaks today</span>
               </div>
 
-              {/* Unified Controls Dock Row */}
-              <div className="flex justify-center w-full px-4 pb-4 sm:pb-6">
-                <div className="flex items-center bg-[#0f0f13]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl p-1.5 gap-1 sm:gap-3 w-full max-w-[420px] sm:max-w-fit justify-between h-[44px] md:h-[52px] md:px-3 md:rounded-3xl">
-                  
+              {/* ── Unified Controls Dock ── */}
+              <div className="flex justify-center w-full px-3 dock-safe-bottom">
+
+                {/* ── DESKTOP: Single pill (sm and above) ── */}
+                <div className="hidden sm:flex items-center bg-[#0f0f13]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 gap-2 sm:max-w-fit h-[52px] px-3 md:px-3 md:rounded-3xl">
+
                   {/* Teleport */}
                   <button
                     onClick={() => setRoomModalOpen(true)}
-                    aria-label="Teleport"
-                    className="flex-1 min-w-0 h-full px-3 md:px-4 flex justify-center items-center gap-1.5 md:gap-2 rounded-xl text-[11px] sm:text-xs md:text-[13px] text-blue-100 bg-gradient-to-r from-blue-600/30 to-indigo-600/30 hover:from-blue-500/40 hover:to-indigo-500/40 active:scale-95 transition-all border border-blue-400/20 group relative overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_25px_rgba(59,130,246,0.4)]"
+                    aria-label="Change Room"
+                    className="h-full px-4 flex items-center gap-2 rounded-xl text-[13px] text-blue-100 bg-gradient-to-r from-blue-600/30 to-indigo-600/30 hover:from-blue-500/40 hover:to-indigo-500/40 active:scale-95 transition-all border border-blue-400/20 group relative overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_25px_rgba(59,130,246,0.4)]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-400/10 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <MapPin className="w-3.5 h-3.5 opacity-80 shrink-0 group-hover:scale-110 group-hover:-translate-y-0.5 transition-transform duration-300 relative z-10" />
-                    <span className="font-medium truncate hidden min-[360px]:inline sm:hidden relative z-10 group-hover:text-blue-200 transition-colors">Loc</span>
-                    <span className="font-medium hidden sm:inline relative z-10 group-hover:text-blue-200 transition-colors">Teleport</span>
+                    <span className="font-semibold relative z-10 group-hover:text-blue-200 transition-colors whitespace-nowrap">Change Room</span>
                   </button>
 
                   <div className="w-px h-5 bg-white/10 shrink-0" />
@@ -2345,35 +2371,32 @@ export default function PuffBreak() {
                   {/* ASMR */}
                   <button
                     onClick={toggleAsmr}
-                    className={`flex-1 min-w-0 h-full md:px-4 flex justify-center items-center gap-1.5 md:gap-2 rounded-xl text-[11px] sm:text-xs md:text-[13px] transition-all ${asmrOn ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    className={`h-full px-4 flex items-center gap-2 rounded-xl text-[13px] transition-all ${asmrOn ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
                   >
                     {asmrOn ? <Volume2 className="w-3.5 h-3.5 shrink-0" /> : <VolumeX className="w-3.5 h-3.5 opacity-60 shrink-0" />}
-                    <span className="font-medium truncate hidden min-[360px]:inline sm:hidden">Amb</span>
-                    <span className="font-medium hidden sm:inline">ASMR</span>
+                    <span className="font-semibold whitespace-nowrap">Ambience</span>
                   </button>
-                  
+
                   <div className="w-px h-5 bg-white/10 shrink-0" />
-                  
+
                   {/* Radio */}
                   <button
                     onClick={toggleMusic}
-                    className={`flex-1 min-w-0 h-full md:px-4 flex justify-center items-center gap-1.5 md:gap-2 rounded-xl text-[11px] sm:text-xs md:text-[13px] transition-all ${musicOn ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    className={`h-full px-4 flex items-center gap-2 rounded-xl text-[13px] transition-all ${musicOn ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
                   >
-                    <span className="text-[13px] leading-none mb-[1px] shrink-0">♫</span>
-                    <span className="font-medium truncate hidden min-[360px]:inline sm:hidden">Rad</span>
-                    <span className="font-medium hidden sm:inline">Radio</span>
+                    <span className="text-[13px] leading-none shrink-0">♫</span>
+                    <span className="font-semibold whitespace-nowrap">Live Radio</span>
                   </button>
-                  
+
                   <div className="w-px h-5 bg-white/10 shrink-0" />
 
                   {/* Mixer */}
                   <button
                     onClick={() => setAudioMixerOpen(!audioMixerOpen)}
-                    className={`flex-1 min-w-0 h-full md:px-4 flex justify-center items-center gap-1.5 md:gap-2 rounded-xl text-[11px] sm:text-xs md:text-[13px] transition-all ${audioMixerOpen ? 'bg-blue-500/20 text-blue-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    className={`h-full px-4 flex items-center gap-2 rounded-xl text-[13px] transition-all ${audioMixerOpen ? 'bg-blue-500/20 text-blue-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
                   >
                     <Sliders className="w-3.5 h-3.5 shrink-0" />
-                    <span className="font-medium truncate hidden min-[360px]:inline sm:hidden">Mix</span>
-                    <span className="font-medium hidden sm:inline">Mixer</span>
+                    <span className="font-semibold whitespace-nowrap">Mixer</span>
                   </button>
 
                   {currentRoom.id !== 'silent' && (
@@ -2382,14 +2405,80 @@ export default function PuffBreak() {
                       {/* Chat */}
                       <button
                         onClick={() => setChatOpen(o => !o)}
-                        className="flex-1 min-w-0 h-full md:px-4 flex justify-center items-center gap-1.5 md:gap-2 rounded-xl text-[11px] sm:text-xs md:text-[13px] text-gray-300 bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all relative border border-white/5"
+                        className="h-full px-4 flex items-center gap-2 rounded-xl text-[13px] text-gray-300 bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all relative border border-white/5"
                       >
                         <MessageSquare className="w-3.5 h-3.5 opacity-80 shrink-0" />
-                        <span className="font-medium hidden sm:inline">Chat</span>
-                        <span className="absolute top-1 right-1 sm:top-1.5 sm:right-2 w-[6px] h-[6px] rounded-full bg-emerald-400 border border-black/40 anim-pulse-dot" />
+                        <span className="font-semibold whitespace-nowrap">Chat</span>
+                        <span className="absolute top-1.5 right-1.5 w-[6px] h-[6px] rounded-full bg-emerald-400 border border-black/40 anim-pulse-dot" />
                       </button>
                     </>
                   )}
+                </div>
+
+                {/* ── MOBILE: Two-row pill (below sm) ── */}
+                <div className="flex sm:hidden flex-col w-full max-w-[400px] bg-[#0f0f13]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 gap-1">
+
+                  {/* Row 1: Room · ASMR · Radio */}
+                  <div className="flex items-center gap-0.5 h-[44px]">
+                    <button
+                      onClick={() => setRoomModalOpen(true)}
+                      aria-label="Change Room"
+                      className="flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] text-blue-100 bg-gradient-to-r from-blue-600/30 to-indigo-600/30 hover:from-blue-500/40 hover:to-indigo-500/40 active:scale-95 transition-all border border-blue-400/20 group relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-400/10 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <MapPin className="w-3 h-3 opacity-80 shrink-0 relative z-10" />
+                      <span className="font-semibold relative z-10 truncate">Room</span>
+                    </button>
+
+                    <div className="w-px h-5 bg-white/10 shrink-0 mx-0.5" />
+
+                    <button
+                      onClick={toggleAsmr}
+                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${asmrOn ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    >
+                      {asmrOn ? <Volume2 className="w-3 h-3 shrink-0" /> : <VolumeX className="w-3 h-3 opacity-60 shrink-0" />}
+                      <span className="font-semibold truncate">Ambience</span>
+                    </button>
+
+                    <div className="w-px h-5 bg-white/10 shrink-0 mx-0.5" />
+
+                    <button
+                      onClick={toggleMusic}
+                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${musicOn ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    >
+                      <span className="text-[11px] leading-none shrink-0">♫</span>
+                      <span className="font-semibold truncate">Radio</span>
+                    </button>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="h-px bg-white/[0.06] mx-1" />
+
+                  {/* Row 2: Mixer · Chat */}
+                  <div className="flex items-center gap-0.5 h-[40px]">
+                    <button
+                      onClick={() => setAudioMixerOpen(!audioMixerOpen)}
+                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${audioMixerOpen ? 'bg-blue-500/20 text-blue-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    >
+                      <Sliders className="w-3 h-3 shrink-0" />
+                      <span className="font-semibold truncate">Mixer</span>
+                    </button>
+
+                    {currentRoom.id !== 'silent' && (
+                      <>
+                        <div className="w-px h-5 bg-white/10 shrink-0 mx-0.5" />
+                        <button
+                          onClick={() => setChatOpen(o => !o)}
+                          className="flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] text-gray-300 bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all relative border border-white/5"
+                        >
+                          <MessageSquare className="w-3 h-3 opacity-80 shrink-0" />
+                          <span className="font-semibold truncate">Chat</span>
+                          <span className="absolute top-1 right-1 w-[5px] h-[5px] rounded-full bg-emerald-400 border border-black/40 anim-pulse-dot" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
                 </div>
               </div>
             
@@ -2471,7 +2560,7 @@ export default function PuffBreak() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full px-4 pb-4 sm:pb-6 mb-safe relative z-50 pointer-events-auto"
+                className="w-full px-3 dock-safe-bottom relative z-50 pointer-events-auto"
                 onClick={e => e.stopPropagation()}
               >
                 <div className="bg-[#0f0f13]/90 backdrop-blur-3xl border border-white/[0.08] rounded-full max-w-lg mx-auto shadow-2xl p-1.5 flex items-center gap-2">
@@ -2786,9 +2875,9 @@ export default function PuffBreak() {
                   <div className="p-6 sm:p-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto pb-8">
                       {BLOG_POSTS.map((post, i) => (
-                        <button
+                        <Link
                           key={post.slug}
-                          onClick={() => setActiveBlogPost(post)}
+                          href={`/blog/${post.slug}`}
                           className="text-left group flex flex-col h-full rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-emerald-500/20 transition-all duration-300 overflow-hidden hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/5"
                         >
                           {/* Card top accent bar */}
@@ -2807,7 +2896,7 @@ export default function PuffBreak() {
                               <span className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200">→</span>
                             </div>
                           </div>
-                        </button>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -3374,6 +3463,6 @@ export default function PuffBreak() {
       />
 
     </div>
-
+    </>
   );
 }

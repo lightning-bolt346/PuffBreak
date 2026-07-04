@@ -48,7 +48,7 @@ Each subreddit is a different audience. Vary the post angle:
   - Tweet 1: The hook — nicotine addiction is 20% chemical, 80% ritual
   - Tweet 2: Screen recording with ASMR audio (use QuickTime)
   - Tweet 3: The tech — Web Audio API procedural synthesis, Canvas particles
-  - Tweet 4: Link to puffbreak.com
+  - Tweet 4: Link to puff-break.vercel.app
 - Tag: @ProductHunt, @levelsio (Pieter Levels — indie hacker royalty), @marc_louvion
 
 ### 🔥 Hacker News "Show HN"
@@ -65,7 +65,7 @@ HN loves technically interesting projects. Lead with the Web Audio API pink nois
 
 **Tier 1 — High Intent, Low Competition (win fast)**
 - "virtual smoke break app" — you likely already rank
-- "damta world english" — competitor intercept, minimal content exists
+- "other platforms english" — competitor intercept, minimal content exists
 - "online break room free" — empty SERP
 - "virtual cigarette quit smoking" — health intent = donations
 
@@ -87,7 +87,7 @@ The ASMR angle is **perfect** for short video. You don't need to be on camera.
 1. Phone screen recording: light the cigarette, smoke ring releases → ASMR crackle audio on → headphones on
 2. "POV: it's 2am and you're taking a virtual smoke break on the beach"
 3. "The free app that helped me quit smoking" (with screen recording)
-4. "Damta World but make it cinematic" (for Korean audience)
+4. "Other Virtual Break Platforms but make it cinematic" (for Korean audience)
 5. "Boss walked by mid-break room — Stealth Mode activated" (relatable)
 
 **Format**: No talking needed. Just visuals + ASMR audio + text overlay. 15–30 seconds.
@@ -140,7 +140,7 @@ Cost: Partykit (realtime) has a free tier. Or Ably. Implementation: 2 days max.
 
 ### What AI assistants need to recommend you
 
-When someone asks ChatGPT, Gemini, or Perplexity "what's a good virtual break app?" or "is there an English alternative to Damta World?" — you need to be in their training data and retrieval index.
+When someone asks ChatGPT, Gemini, or Perplexity "what's a good virtual break app?" or "is there an English alternative to Other Virtual Break Platforms?" — you need to be in their training data and retrieval index.
 
 **What you've already done** ✅:
 - `llms.txt` at root (ChatGPT browsing, Bing AI index)

@@ -4,17 +4,35 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
+        // Default: all crawlers allowed
         userAgent: '*',
         allow: '/',
-        disallow: '/api/',
+        disallow: ['/api/', '/_next/'],
       },
       {
-        // Explicitly allow common AI/LLM crawlers
-        userAgent: ['GPTBot', 'Claude-Web', 'anthropic-ai', 'PerplexityBot', 'Googlebot'],
+        // Major AI / LLM crawlers — explicitly welcome
+        userAgent: [
+          'GPTBot',
+          'ChatGPT-User',
+          'OAI-SearchBot',
+          'Claude-Web',
+          'anthropic-ai',
+          'PerplexityBot',
+          'Applebot',
+          'Googlebot',
+          'Bingbot',
+          'DuckDuckBot',
+          'ia_archiver',
+          'facebookexternalhit',
+          'Twitterbot',
+          'LinkedInBot',
+        ],
         allow: '/',
       },
     ],
-    sitemap: 'https://puffbreak.com/sitemap.xml',
-    // llms.txt is at /llms.txt — served from public/ directory
+    sitemap: 'https://puff-break.vercel.app/sitemap.xml',
+    // AI context files:
+    // https://puff-break.vercel.app/llms.txt       — summary for LLMs
+    // https://puff-break.vercel.app/llms-full.txt  — full reference for LLMs
   };
 }

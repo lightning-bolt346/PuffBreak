@@ -1,0 +1,38 @@
+import { MetadataRoute } from 'next';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        // Default: all crawlers allowed
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/api/', '/_next/'],
+      },
+      {
+        // Major AI / LLM crawlers — explicitly welcome
+        userAgent: [
+          'GPTBot',            // OpenAI / ChatGPT
+          'ChatGPT-User',      // ChatGPT browsing
+          'OAI-SearchBot',     // OpenAI search
+          'Claude-Web',        // Anthropic Claude
+          'anthropic-ai',      // Anthropic
+          'PerplexityBot',     // Perplexity AI
+          'Applebot',          // Apple Siri / Spotlight
+          'Googlebot',         // Google Search + Gemini
+          'Bingbot',           // Bing / Copilot
+          'DuckDuckBot',       // DuckDuckGo
+          'ia_archiver',       // Wayback Machine / Internet Archive
+          'facebookexternalhit', // Facebook / Meta AI
+          'Twitterbot',        // Twitter / X cards
+          'LinkedInBot',       // LinkedIn preview
+        ],
+        allow: '/',
+      },
+    ],
+    sitemap: 'https://puff-break.vercel.app/sitemap.xml',
+    // AI context files:
+    // https://puff-break.vercel.app/llms.txt        — summary for LLMs
+    // https://puff-break.vercel.app/llms-full.txt   — full reference for LLMs
+  };
+}

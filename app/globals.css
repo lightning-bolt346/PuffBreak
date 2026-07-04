@@ -14,8 +14,6 @@
 html, body {
   font-family: 'Space Grotesk', system-ui, sans-serif;
   overscroll-behavior: none;
-  overflow: hidden;
-  height: 100%;
   width: 100%;
 }
 
@@ -283,11 +281,19 @@ html, body {
   border-top: 1px solid rgba(255,255,255,0.07);
 }
 
-/* Safe area support */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .safe-bottom {
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-  }
+/* Safe area support — iOS notch + Android gesture bar */
+.safe-bottom {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* Dock safe bottom — gives the dock pill itself bottom clearance */
+.dock-safe-bottom {
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+}
+
+/* For elements that need bottom margin above the safe area */
+.mb-safe {
+  margin-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 /* =============================================
