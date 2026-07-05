@@ -330,7 +330,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           {children}
         </GlobalAppWrapper>
         <Analytics />
-        <GoogleAnalytics gaId="G-001HXTS86Y" />
+        <GoogleAnalytics gaId="G-L5H6ZLBNSF" />
       </body>
     </html>
   );
