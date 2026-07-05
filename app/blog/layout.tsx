@@ -56,7 +56,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
       <footer className="border-t border-white/[0.06] bg-[#0a0a0f] mt-12">
         <div className="max-w-6xl mx-auto px-6 py-12">
 
-          {/* Ko-fi Support Banner */}
+          {/* Support Banner */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-2xl bg-amber-400/5 border border-amber-400/15 mb-10">
             <div className="flex items-center gap-3">
               <span className="text-2xl">☕</span>
@@ -66,20 +66,12 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <a
-                href="https://ko-fi.com/puffbreak"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#FF5E5B]/10 hover:bg-[#FF5E5B]/20 border border-[#FF5E5B]/30 text-[#FF5E5B] font-semibold text-sm px-5 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95"
+              <Link
+                href="/support"
+                className="inline-flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-semibold text-sm px-6 py-2.5 rounded-full transition-all duration-200 hover:scale-105 active:scale-95"
               >
-                ☕ Ko-fi
-              </a>
-              <a
-                href="upi://pay?pa=sgbro33@okicici&pn=PuffBreak&cu=INR"
-                className="inline-flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-semibold text-sm px-5 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                🇮🇳 UPI
-              </a>
+                Support PuffBreak
+              </Link>
             </div>
           </div>
 
@@ -118,12 +110,9 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               <p className="text-xs uppercase tracking-widest text-gray-600 font-mono mb-3">Support Us</p>
               <ul className="space-y-2">
                 <li>
-                  <a href="https://ko-fi.com/puffbreak" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">
-                    Ko-fi ☕
-                  </a>
-                </li>
-                <li>
-                  <span className="text-sm text-gray-400">UPI: sgbro33@okicici</span>
+                  <Link href="/support" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">
+                    Donate ☕
+                  </Link>
                 </li>
               </ul>
             </div>

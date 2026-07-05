@@ -15,6 +15,8 @@ html, body {
   font-family: 'Space Grotesk', system-ui, sans-serif;
   overscroll-behavior: none;
   width: 100%;
+  background-color: #0a0a0f;
+  color: #f3f4f6;
 }
 
 ::-webkit-scrollbar { width: 3px; }

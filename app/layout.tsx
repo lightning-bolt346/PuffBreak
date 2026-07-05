@@ -320,11 +320,15 @@ const jsonLdWebSite = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+import GlobalAppWrapper from '@/components/GlobalAppWrapper';
+
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased selection:bg-white/20 font-display" suppressHydrationWarning>
-        {children}
+        <GlobalAppWrapper>
+          {children}
+        </GlobalAppWrapper>
         <Analytics />
         <GoogleAnalytics gaId="G-001HXTS86Y" />
       </body>

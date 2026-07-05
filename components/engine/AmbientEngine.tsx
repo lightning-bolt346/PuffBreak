@@ -75,7 +75,7 @@ const ROOM_LEVELS: Record<string, Partial<Record<keyof EngineNodes, number>>> = 
   beach:   { waveGain:   0.15 },
   space:   { spaceGain:  0.15 },
   library: { rainGain:   0.08 },
-  park:    { rainGain:   0.06, officeGain: 0.02 }, // gentle wind + barely-there hum
+  park:    { rainGain:   0.12, officeGain: 0.04 }, // gentle wind + barely-there hum (Boosted 2x)
   metro:   { cafeGain:   0.12 },
   chai:    { cafeGain:   0.15 },
   silent:  {},
