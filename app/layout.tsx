@@ -1,6 +1,7 @@
 import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Analytics } from "@vercel/analytics/next";
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const SITE_URL = 'https://puff-break.vercel.app';
 const SITE_NAME = 'PuffBreak';
@@ -325,6 +326,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className="antialiased selection:bg-white/20 font-display" suppressHydrationWarning>
         {children}
         <Analytics />
+        <GoogleAnalytics gaId="G-001HXTS86Y" />
       </body>
     </html>
   );

@@ -525,6 +525,289 @@ export const BLOG_POSTS: BlogPost[] = [
     date: '2026-07-10',
     tags: ['Productivity', 'Remote Work', 'Burnout', 'Mental Health', 'WFH'],
   },
+  {
+    slug: 'damta-world-english-alternative',
+    title: 'Damta World (담타) in English? Meet PuffBreak — The Global Alternative',
+    excerpt: 'Damta World is the Korean virtual smoking room that went viral. But if you want the same experience in English with more features, PuffBreak is your answer.',
+    readTime: '5 min read',
+    category: 'Comparison',
+    author: 'PuffBreak Team',
+    date: '2026-07-12',
+    tags: ['Damta', 'Comparison', 'Virtual Break Room', 'Korean', 'Alternative'],
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">If you've been searching for Damta World in English — you're in the right place. <strong>PuffBreak</strong> is the English-language global alternative to Damta (담타), offering everything you love about the Korean virtual smoking room and much more.</div>
+
+        <h2>What Is Damta World (담타)?</h2>
+        <p>Damta World (damta.world, 온라인 담타) is a South Korean web application that went viral in 2023–2024. The concept is simple: a virtual smoking room where you can take a simulated cigarette break online, anonymously, with other users. The name comes from "담배 타임" (dambe taim) — Korean for "cigarette time."</p>
+        <p>It struck a deep cultural nerve. In Korean office culture, the "담타" — stepping out for a quick smoke — is a social ritual. Damta World brought that ritual online for the remote work era.</p>
+
+        <h2>The Problem: Damta Is Korean-Only</h2>
+        <p>If you don't read Korean, Damta World is nearly unusable. The interface, the chat, and all the features are exclusively in Korean. For the global audience of remote workers, students, and quit-smoking communities outside Korea, there was no equivalent — until PuffBreak.</p>
+
+        <div class="pb-callout">🌍 <strong>PuffBreak is built for everyone.</strong> English interface, global community, and features designed for users worldwide — from India to the UK to the US.</div>
+
+        <h2>PuffBreak vs. Damta World: Feature Comparison</h2>
+        <div class="pb-stat-block">
+          <div class="pb-stat"><span class="pb-stat-number">8</span><span class="pb-stat-label">PuffBreak Rooms vs. Damta's 1</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">English</span><span class="pb-stat-label">Interface language (global)</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">Free</span><span class="pb-stat-label">100% forever, no sign-up</span></div>
+        </div>
+
+        <table style="width:100%;border-collapse:collapse;margin:24px 0;font-size:0.9rem;">
+          <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1)"><th style="text-align:left;padding:8px 12px;color:#9ca3af">Feature</th><th style="padding:8px 12px;color:#10b981">PuffBreak</th><th style="padding:8px 12px;color:#6b7280">Damta World</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:8px 12px;color:#d1d5db">Language</td><td style="padding:8px 12px;text-align:center">🌍 English + Global</td><td style="padding:8px 12px;text-align:center">🇰🇷 Korean only</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:8px 12px;color:#d1d5db">Ambient Rooms</td><td style="padding:8px 12px;text-align:center">8 unique rooms</td><td style="padding:8px 12px;text-align:center">1 room</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:8px 12px;color:#d1d5db">ASMR Audio Mixer</td><td style="padding:8px 12px;text-align:center">✅ 3-channel mixer</td><td style="padding:8px 12px;text-align:center">❌</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:8px 12px;color:#d1d5db">Chai / Tea Mode</td><td style="padding:8px 12px;text-align:center">✅</td><td style="padding:8px 12px;text-align:center">❌</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:8px 12px;color:#d1d5db">Live Anonymous Chat</td><td style="padding:8px 12px;text-align:center">✅</td><td style="padding:8px 12px;text-align:center">✅</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:8px 12px;color:#d1d5db">PWA / Mobile App</td><td style="padding:8px 12px;text-align:center">✅ Installable</td><td style="padding:8px 12px;text-align:center">❌</td></tr>
+            <tr><td style="padding:8px 12px;color:#d1d5db">Data Privacy</td><td style="padding:8px 12px;text-align:center">✅ Zero data collected</td><td style="padding:8px 12px;text-align:center">Unknown</td></tr>
+          </tbody>
+        </table>
+
+        <h2>How to Use PuffBreak (The English Damta)</h2>
+        <ol>
+          <li>Open <strong>puff-break.vercel.app</strong> — no sign-up, no download.</li>
+          <li>Choose your room: Office Rooftop, Beach Sunset, Library Corner, Chai Stall, and more.</li>
+          <li>Click the cigarette (or tea cup) to light up and start your 3-minute break.</li>
+          <li>Chat anonymously with others in the break room.</li>
+          <li>Walk away refreshed.</li>
+        </ol>
+
+        <p>Whether you found Damta World and wished it was in English, or you're simply looking for a mindful virtual break room for the global community — PuffBreak is your home.</p>
+
+        <p>Try it now: <a href="https://puff-break.vercel.app">puff-break.vercel.app</a></p>
+      </div>
+    `,
+  },
+  {
+    slug: 'how-long-does-nicotine-craving-last',
+    title: 'How Long Does a Nicotine Craving Last? The Science & What to Do',
+    excerpt: 'Nicotine cravings peak at 3–5 minutes. If you can get through those 300 seconds, the urge passes. Here is the science and exactly how to ride it out.',
+    readTime: '6 min read',
+    category: 'Science',
+    author: 'PuffBreak Research',
+    date: '2026-07-14',
+    tags: ['Quit Smoking', 'Nicotine', 'Science', 'Cravings', 'Health'],
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">The single most important fact about quitting smoking: <strong>a nicotine craving lasts only 3 to 5 minutes</strong> at its peak. After that, it fades — whether you give in or not. The entire battle is those 300 seconds.</div>
+
+        <h2>The Biology of a Craving</h2>
+        <p>When you smoke, nicotine binds to acetylcholine receptors in your brain, triggering a dopamine release. Over time, your brain creates more receptors to accommodate the nicotine. When you quit, those receptors are left hungry — and they send signals we experience as "cravings."</p>
+        <p>But these signals are time-limited. Studies from the journal <em>Addiction</em> consistently show that craving intensity peaks within 3–5 minutes and begins subsiding within 10 minutes regardless of whether you smoke.</p>
+
+        <div class="pb-stat-block">
+          <div class="pb-stat"><span class="pb-stat-number">3–5</span><span class="pb-stat-label">minutes — peak craving duration</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">10</span><span class="pb-stat-label">minutes — craving subsides naturally</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">72hrs</span><span class="pb-stat-label">until nicotine leaves your system</span></div>
+        </div>
+
+        <h2>What Triggers Cravings (It's Not What You Think)</h2>
+        <p>Most ex-smokers don't relapse because of nicotine withdrawal — they relapse because of <strong>conditioned cue response</strong>. Your brain has linked cigarettes to:</p>
+        <ul>
+          <li>Finishing a meal or coffee</li>
+          <li>Stress at work or in meetings</li>
+          <li>The physical act of a break (stepping outside)</li>
+          <li>Seeing or smelling someone else smoke</li>
+          <li>Specific times of day (9am, after lunch, 5pm)</li>
+        </ul>
+        <p>The chemical dependency ends in 72 hours. The psychological habit can last years. That's why nicotine patches don't fully work — they address the chemistry but not the ritual.</p>
+
+        <h2>The 3-Minute Strategy: Surfing the Craving</h2>
+        <p>Psychologists call it "urge surfing" — treating a craving like a wave. It rises, peaks, and falls. Your only job is to ride it without acting on it. Here are the proven techniques:</p>
+        <ul>
+          <li><strong>The 5-5-5 breath:</strong> Inhale for 5 counts, hold for 5, exhale for 5. Repeat 3×. Uses the exact same breathing pattern as smoking, activates the parasympathetic nervous system.</li>
+          <li><strong>Behavioral substitution:</strong> Replace the ritual, not just the substance. The break, the lighter, the physical pause — these matter as much as nicotine.</li>
+          <li><strong>Virtual break simulation:</strong> Apps like PuffBreak give you the ritual (the 3 minutes, the hand motion, the exhale simulation) without any nicotine.</li>
+          <li><strong>Cold water:</strong> Drinking cold water during a craving physically distracts the vagus nerve and reduces intensity.</li>
+        </ul>
+
+        <div class="pb-callout">🚬 <strong>PuffBreak was designed for exactly this 3-minute window.</strong> Each session is timed to the peak craving duration. Light a virtual cigarette, breathe through it, and walk away clean. <a href="https://puff-break.vercel.app">Try it free.</a></div>
+
+        <h2>The Timeline of Quitting: What to Expect</h2>
+        <ul>
+          <li><strong>20 minutes:</strong> Heart rate and blood pressure drop.</li>
+          <li><strong>12 hours:</strong> Carbon monoxide in blood returns to normal.</li>
+          <li><strong>72 hours:</strong> Nicotine is fully cleared. Physical withdrawal peaks then fades.</li>
+          <li><strong>2–12 weeks:</strong> Circulation improves, cravings become less frequent.</li>
+          <li><strong>1 year:</strong> Risk of coronary heart disease is half that of a smoker.</li>
+        </ul>
+
+        <p>The hardest part is the first 10 days. If you can get through 300 seconds at a time, you can get through it all.</p>
+      </div>
+    `,
+  },
+  {
+    slug: 'best-cigarette-break-replacement-apps-2026',
+    title: 'Best Cigarette Break Replacement Apps in 2026 (Free & Paid)',
+    excerpt: 'Looking for something to replace your smoke break without giving up the ritual? These apps help you take a real break without the cigarette.',
+    readTime: '7 min read',
+    category: 'Comparison',
+    author: 'PuffBreak Reviews',
+    date: '2026-07-16',
+    tags: ['Apps', 'Quit Smoking', 'Productivity', 'Comparison', 'Wellness'],
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">The smoke break isn't about the cigarette. It's about the 3-minute pause, the step away from your screen, the ritual. These apps help you keep the break and lose the habit.</div>
+
+        <h2>Why Replacement Apps Work Better Than Willpower</h2>
+        <p>Cold-turkey quitting has a 95% relapse rate within the first year. The most successful cessation strategies replace the <em>behavior</em>, not just the substance. A break replacement app gives your brain the ritual it craves — the pause, the breathing, the social detachment — without the nicotine.</p>
+
+        <h2>The Best Break Replacement Apps in 2026</h2>
+
+        <h3>1. PuffBreak — Best Overall (Free)</h3>
+        <p><strong>Platform:</strong> Web (PWA, works on all devices)</p>
+        <p><strong>Price:</strong> 100% Free</p>
+        <p>PuffBreak is the most complete virtual break experience available. You get a realistic cigarette or chai tea simulation with particle physics, ASMR audio, 8 ambient rooms, and live anonymous chat with other people on break. It's the closest thing to the full smoke break ritual — just without nicotine.</p>
+        <div class="pb-callout">✅ <strong>Best for:</strong> Anyone who misses the ritual of a smoke break. Available at <a href="https://puff-break.vercel.app">puff-break.vercel.app</a> — no install required.</div>
+
+        <h3>2. Smoke Free — Best Quit-Smoking Tracker (Free/Premium)</h3>
+        <p><strong>Platform:</strong> iOS, Android</p>
+        <p><strong>Price:</strong> Free (premium $3.99/month)</p>
+        <p>Smoke Free focuses on the data side — tracking how many cigarettes you've avoided, money saved, and health improvements. It's excellent for motivation but doesn't replace the ritual itself.</p>
+
+        <h3>3. Headspace — Best for Mindfulness (Paid)</h3>
+        <p><strong>Platform:</strong> iOS, Android, Web</p>
+        <p><strong>Price:</strong> $12.99/month</p>
+        <p>Headspace's "Break" mini-meditations are great for using your cigarette break time productively. However, they're generic mindfulness, not break-specific.</p>
+
+        <h3>4. Calm — Best for Breathing Exercises (Paid)</h3>
+        <p><strong>Platform:</strong> iOS, Android</p>
+        <p><strong>Price:</strong> $14.99/month</p>
+        <p>Calm's breathing exercises can substitute for the breathing ritual of smoking. Its "Daily Calm" sessions fit neatly in a 3-minute break window.</p>
+
+        <h3>5. Quit Now — Best Free Tracker (Free)</h3>
+        <p><strong>Platform:</strong> Android</p>
+        <p><strong>Price:</strong> Free</p>
+        <p>A simple, no-frills quit tracker with motivational badges and health milestones. Best used alongside a ritual replacement app like PuffBreak.</p>
+
+        <div class="pb-stat-block">
+          <div class="pb-stat"><span class="pb-stat-number">$0</span><span class="pb-stat-label">PuffBreak — forever free</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">8</span><span class="pb-stat-label">ambient environments</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">3 min</span><span class="pb-stat-label">perfectly timed break</span></div>
+        </div>
+
+        <h2>Our Recommendation</h2>
+        <p>The most effective strategy: combine a <strong>ritual replacement</strong> (PuffBreak) with a <strong>tracker</strong> (Smoke Free or Quit Now). The first replaces the behavior, the second motivates you with data.</p>
+        <p>Start your ritual-free break now: <a href="https://puff-break.vercel.app">puff-break.vercel.app</a></p>
+      </div>
+    `,
+  },
+  {
+    slug: 'virtual-cigarette-online-free-no-download',
+    title: 'Virtual Cigarette Online — Free, No Download, No Sign-Up',
+    excerpt: 'Want to try a virtual cigarette online for free? PuffBreak gives you a hyper-realistic digital smoking experience in your browser — nothing to install.',
+    readTime: '4 min read',
+    category: 'Guides',
+    author: 'PuffBreak',
+    date: '2026-07-18',
+    tags: ['Virtual Cigarette', 'Online', 'Free', 'Browser', 'Digital Smoking'],
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">A <strong>virtual cigarette online</strong>, completely free, with no download or sign-up — that's exactly what PuffBreak is. Open your browser, and you're smoking in under 5 seconds.</div>
+
+        <h2>What Is a Virtual Cigarette?</h2>
+        <p>A virtual cigarette is a digital simulation of the smoking experience. Rather than burning tobacco, you interact with a realistic on-screen cigarette — tapping to drag, watching smoke physics, hearing the ASMR crackle of paper burning. The experience targets the <em>ritual</em> of smoking, not the chemical dependency.</p>
+
+        <h2>Why People Use Virtual Cigarettes</h2>
+        <ul>
+          <li><strong>Quitting smoking:</strong> Replacing the ritual during cravings while nixing the nicotine</li>
+          <li><strong>Stress relief:</strong> The breathing mechanics of "smoking" are genuinely calming</li>
+          <li><strong>ASMR:</strong> The cigarette crackle and smoke sounds are deeply satisfying to many people</li>
+          <li><strong>Breaking boredom:</strong> A 3-minute sensory experience during a boring meeting or commute</li>
+          <li><strong>Curiosity:</strong> Non-smokers curious about the experience without the health risks</li>
+        </ul>
+
+        <h2>How PuffBreak's Virtual Cigarette Works</h2>
+        <p>PuffBreak uses a custom particle physics engine and Web Audio API synthesis to create one of the most realistic virtual smoking experiences in the browser:</p>
+        <ul>
+          <li><strong>Ignition animation:</strong> Choose a Zippo lighter or matchstick — watch the flame catch the tip</li>
+          <li><strong>Drag mechanic:</strong> Hold the filter to simulate inhaling — the cherry glows, the ash grows</li>
+          <li><strong>Smoke physics:</strong> Release to exhale a procedurally generated smoke ring</li>
+          <li><strong>ASMR crackle:</strong> High-frequency paper combustion audio, tuned to real cigarette frequencies</li>
+          <li><strong>Ash tapping:</strong> Double-tap the ash when it builds up — a satisfying sensory spike</li>
+        </ul>
+
+        <div class="pb-callout">🎯 <strong>3-minute timer:</strong> Each session is exactly 3 minutes — the average smoke break and the peak window of a nicotine craving. Perfectly designed.</div>
+
+        <h2>Is It Free? Does It Require Download?</h2>
+        <p><strong>100% free. No download. No sign-up. No account.</strong> Just open <a href="https://puff-break.vercel.app">puff-break.vercel.app</a> in any browser on any device — desktop, tablet, or mobile.</p>
+        <p>You can also install it as a PWA (Progressive Web App) from your mobile browser's menu — it will appear on your home screen like a real app, with no App Store required.</p>
+
+        <h2>Beyond the Cigarette: 8 Environments</h2>
+        <p>Unlike basic virtual cigarette apps, PuffBreak places you in one of 8 fully immersive ambient environments — each with its own animated background, weather particles, and audio track. Choose from:</p>
+        <ul>
+          <li>🏙️ Office Rooftop — city skyline and drizzle</li>
+          <li>🏖️ Beach Sunset — ocean waves</li>
+          <li>🌌 Space Station — deep space ambient drone</li>
+          <li>📚 Library Corner — soft rain and pages turning</li>
+          <li>🌳 Park Bench — birdsong and wind</li>
+          <li>🚇 Metro Platform — urban transit sounds</li>
+          <li>☕ Chai Stall — Indian tapri vibes</li>
+          <li>🔇 Silent Room — pure silence for focus</li>
+        </ul>
+
+        <p>Ready? <a href="https://puff-break.vercel.app">Light up your first virtual cigarette →</a></p>
+      </div>
+    `,
+  },
+  {
+    slug: 'pomodoro-vs-smoke-break-productivity',
+    title: 'Pomodoro vs. Smoke Break: Which Break System Actually Works?',
+    excerpt: 'Pomodoro is scientifically structured. Smoke breaks are culturally embedded. We compare both — and introduce the virtual break that combines the best of each.',
+    readTime: '6 min read',
+    category: 'Productivity',
+    author: 'PuffBreak Lab',
+    date: '2026-07-20',
+    tags: ['Productivity', 'Pomodoro', 'Breaks', 'Science', 'Focus', 'Work'],
+    content: `
+      <div class="pb-article">
+        <div class="pb-lead">The Pomodoro Technique has 30 years of research behind it. The smoke break has 100 years of cultural embedding. Both are trying to solve the same problem: <em>how do you sustainably maintain focus over a long workday?</em></div>
+
+        <h2>The Pomodoro Technique: Structure Over Ritual</h2>
+        <p>Developed by Francesco Cirillo in the 1980s, the Pomodoro Technique is simple: work for 25 minutes, take a 5-minute break, repeat. Every 4 rounds, take a longer 15–30 minute break.</p>
+        <p><strong>The science behind it:</strong> Short, timed work periods reduce decision fatigue and protect against the "flow state crash" — the mental exhaustion that comes from working for 2–3 hours without a cognitive reset.</p>
+        <p><strong>Weakness:</strong> Pomodoro breaks are structureless. 5 minutes of scrolling Instagram is not the same as 5 minutes of genuine mental rest. Many users find they can't actually disconnect during the break.</p>
+
+        <h2>The Smoke Break: Ritual Over Schedule</h2>
+        <p>For decades, the cigarette break dominated workplace productivity culture. Not because nicotine is a cognitive enhancer (it's not), but because the smoke break enforces three powerful behaviors:</p>
+        <ol>
+          <li><strong>Physical displacement:</strong> You actually leave your desk and change your environment.</li>
+          <li><strong>Timed ritual:</strong> A cigarette has a defined start and end. 6 minutes, approximately. No scrolling.</li>
+          <li><strong>Social bonding:</strong> The smoking area became an informal networking hub. Many careers were built in smoking areas.</li>
+        </ol>
+        <p><strong>Weakness:</strong> Obviously, the nicotine addiction, the health damage, and the social stigma that has grown around smoking in most workplaces.</p>
+
+        <div class="pb-stat-block">
+          <div class="pb-stat"><span class="pb-stat-number">25min</span><span class="pb-stat-label">Pomodoro work sprint</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">5min</span><span class="pb-stat-label">Pomodoro break (unstructured)</span></div>
+          <div class="pb-stat"><span class="pb-stat-number">3min</span><span class="pb-stat-label">PuffBreak session (structured ritual)</span></div>
+        </div>
+
+        <h2>The Research: What Kind of Break Actually Restores Focus?</h2>
+        <p>A 2019 study in <em>Cognition</em> found that brief breaks are only effective if they involve <strong>true cognitive disengagement</strong> — not switching to a different task (like checking email), but genuinely stepping away from work-mode thinking.</p>
+        <p>A 2021 study in <em>Applied Ergonomics</em> found that breaks involving <strong>physical sensation</strong> — movement, touch, sound — produced significantly better post-break focus scores than passive breaks (sitting, scrolling).</p>
+        <p>This is why the smoke break, for all its flaws, worked. It was a full sensory ritual that forced genuine cognitive disengagement.</p>
+
+        <h2>The Hybrid Approach: Pomodoro Structure + Smoke Break Ritual</h2>
+        <p>The optimal system combines the best of both worlds:</p>
+        <ul>
+          <li>Use Pomodoro's <strong>25-minute work timer</strong> for task structure</li>
+          <li>Use a <strong>ritualized break</strong> instead of unstructured scrolling</li>
+          <li>That ritual can be: a walk, a tea, a breathing exercise — or a virtual cigarette break</li>
+        </ul>
+
+        <div class="pb-callout">🚬 <strong>PuffBreak is engineered for the Pomodoro break slot.</strong> 3 minutes. A defined sensory ritual. Full cognitive disengagement. No nicotine. Try it: <a href="https://puff-break.vercel.app">puff-break.vercel.app</a></div>
+
+        <h2>The Verdict</h2>
+        <p>Neither system is perfect alone. Pomodoro without a proper break ritual fails. Smoke breaks without structure lead to hour-long "breaks" that tank productivity.</p>
+        <p>The winning formula: <strong>Pomodoro timing + ritualized break content</strong>. Define what you do in your 5 minutes. Make it sensory. Make it repeatable. And if you can, replace the cigarette with something that gives you the ritual without the damage.</p>
+      </div>
+    `,
+  },
 ];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {
