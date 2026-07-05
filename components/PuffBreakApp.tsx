@@ -13,7 +13,8 @@ import YouTube, { YouTubePlayer } from 'react-youtube';
 import { BLOG_POSTS, BlogPost } from '@/lib/blog';
 import AmbientEngine, { type AmbientEngineHandle } from '@/components/engine/AmbientEngine';
 import { db } from '@/lib/firebase';
-import { ref, runTransaction, onChildAdded, push, onDisconnect, remove, off } from 'firebase/database';
+import { ref, runTransaction, onChildAdded, push, onDisconnect, remove, off, query, limitToLast, onValue } from 'firebase/database';
+import { useRoomCounts } from '@/hooks/useRoomCounts';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -80,12 +81,44 @@ interface ChatMessage {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ADJECTIVES = ['Sleepy','Grumpy','Tiny','Cloudy','Happy','Brave','Shy','Clever','Clumsy','Cozy','Wild','Misty'];
-const ANIMALS    = ['Panda','Koala','Tiger','Muffin','Penguin','Bear','Fox','Owl','Bunny','Cat','Duck','Otter'];
-const COLORS     = ['#f87171','#fb923c','#fbbf24','#a3e635','#34d399','#22d3ee','#818cf8','#c084fc','#f472b6'];
+// 100 × 100 × 90 = 900,000 unique nickname combinations
+const ADJECTIVES = [
+  'Sleepy','Grumpy','Tiny','Cloudy','Happy','Brave','Shy','Clever','Clumsy','Cozy',
+  'Wild','Misty','Bold','Calm','Crisp','Dark','Dusty','Eager','Fancy','Fluffy',
+  'Ghostly','Golden','Gruff','Hollow','Icy','Jazzy','Jumpy','Keen','Lazy','Lofty',
+  'Lucky','Mellow','Mighty','Moody','Murky','Mystic','Neon','Noble','Plush','Quirky',
+  'Rogue','Rusty','Sage','Sandy','Sharp','Silent','Silky','Smoky','Snowy','Stormy',
+  'Swift','Tawny','Tender','Tidy','Toasty','Turbo','Velvet','Vivid','Arctic','Amber',
+  'Ashen','Blazing','Breezy','Brisk','Cinder','Cobalt','Copper','Coral','Cosmic','Crystal',
+  'Dappled','Dreamy','Dusky','Feral','Frosted','Gloomy','Glowing','Granite','Hazy','Infernal',
+  'Lunar','Marble','Mossy','Nocturnal','Obsidian','Pale','Phantom','Primal','Radiant','Scarlet',
+  'Serene','Solar','Stealthy','Timber','Toxic','Zen','Blunt','Drifting','Ether','Flint',
+];
+const ANIMALS = [
+  'Panda','Koala','Tiger','Penguin','Bear','Fox','Owl','Bunny','Cat','Duck',
+  'Otter','Lynx','Wolf','Elk','Crow','Crane','Coyote','Raven','Hawk','Dingo',
+  'Finch','Goat','Hare','Jaguar','Lemur','Llama','Magpie','Mink','Moose','Narwhal',
+  'Newt','Parrot','Puma','Quail','Rhino','Seal','Sloth','Swan','Walrus','Wren',
+  'Axolotl','Bison','Capybara','Ferret','Gecko','Iguana','Loris','Oryx','Stoat','Viper',
+  'Ibis','Tapir','Quokka','Pangolin','Manatee','Ocelot','Platypus','Meerkat','Wolverine','Wombat',
+  'Caracal','Okapi','Gopher','Cheetah','Armadillo','Porcupine','Tamarin','Pika','Chinchilla','Kinkajou',
+  'Fossa','Saiga','Jabiru','Kakapo','Kestrel','Cassowary','Roadrunner','Muffin','Dhole','Ermine',
+  'Numbat','Binturong','Galago','Tarsier','Marmoset','Capuchin','Macaque','Jackal','Serval','Caracara',
+  'Albatross','Toucan','Flamingo','Pelican','Puffin','Hornbill','Cockatoo','Mandrill','Addax','Marmot',
+];
+const COLORS = ['#f87171','#fb923c','#fbbf24','#a3e635','#34d399','#22d3ee','#818cf8','#c084fc','#f472b6'];
 
-const generateNickname = (): string =>
-  `${ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]}${ANIMALS[Math.floor(Math.random() * ANIMALS.length)]}`;
+/**
+ * Generates a unique nickname: Adjective + Animal + 2-digit number (10-99)
+ * Pool: 100 × 100 × 90 = 900,000 combinations
+ * Saved to localStorage so the same user always gets the same name.
+ */
+const generateNickname = (): string => {
+  const adj    = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+  const num    = 10 + Math.floor(Math.random() * 90); // 10-99, avoids leading zero
+  return `${adj}${animal}${num}`;
+};
 
 const getRandomColor = (): string => COLORS[Math.floor(Math.random() * COLORS.length)];
 
@@ -491,7 +524,19 @@ export default function PuffBreak() {
   }, []);
 
   // ── Firebase Real-time Integration ─────────────────────────────────────────
-  const [userId] = useState(() => (typeof window !== 'undefined' ? crypto.randomUUID() : ''));
+  // Live room presence counts for room picker (from Firebase lobbies)
+  const roomCounts = useRoomCounts();
+
+  // Persistent anonymous user ID — stable across page refreshes on same device.
+  // Stored in localStorage so onDisconnect + lobby assignment are consistent.
+  const [userId] = useState((): string => {
+    if (typeof window === 'undefined') return '';
+    const stored = localStorage.getItem('pb_user_id');
+    if (stored) return stored;
+    const newId = crypto.randomUUID();
+    try { localStorage.setItem('pb_user_id', newId); } catch { /* private mode */ }
+    return newId;
+  });
   const currentRoomRef = useRef<string | null>(null);
 
   // Fetch a subroom assignment when entering a new room
@@ -508,9 +553,17 @@ export default function PuffBreak() {
           let found = false;
           for (const [roomId, roomData] of Object.entries(lobbiesData)) {
             const users = (roomData as any).users || {};
+            // Evict zombie entries: users who joined > 2 hours ago without cleanup
+            const now = Date.now();
+            for (const [uid, meta] of Object.entries(users)) {
+              const joinedAt = (meta as any)?.joinedAt;
+              if (joinedAt && now - joinedAt > 2 * 60 * 60 * 1000) {
+                delete users[uid];
+              }
+            }
             if (Object.keys(users).length < 6) {
               assignedRoomId = roomId;
-              users[userId] = true;
+              users[userId] = { joinedAt: now }; // Store as object with timestamp
               (roomData as any).users = users;
               found = true;
               break;
@@ -518,7 +571,7 @@ export default function PuffBreak() {
           }
           if (!found) {
             assignedRoomId = `${currentRoom.id}-${Date.now().toString(36)}`;
-            lobbiesData[assignedRoomId] = { users: { [userId]: true } };
+            lobbiesData[assignedRoomId] = { users: { [userId]: { joinedAt: Date.now() } } };
           }
           return lobbiesData;
         });
@@ -546,25 +599,33 @@ export default function PuffBreak() {
     };
   }, [currentRoom.id, userId]);
 
-  // Chat message listener
+  // Chat message listener — limitToLast(50) prevents loading entire history on join
   useEffect(() => {
     if (!subRoomId) return;
     const messagesRef = ref(db, `rooms/${subRoomId}/messages`);
-    
-    const listener = onChildAdded(messagesRef, (snapshot) => {
+    const messagesQuery = query(messagesRef, limitToLast(50));
+
+    const listener = onChildAdded(messagesQuery, (snapshot) => {
       const parsed = snapshot.val();
       if (!parsed) return;
+      // Skip messages that have exceeded their TTL (5 min)
+      if (parsed.expiresAt && Date.now() > parsed.expiresAt) return;
       if (parsed.type === 'reaction') {
-        setMessages(p => p.map(m => m.id === parsed.messageId ? { ...m, reactions: [...m.reactions, parsed.emoji] } : m));
+        // Guard against undefined reactions array (shouldn't happen, but belt-and-suspenders)
+        setMessages(p => p.map(m => m.id === parsed.messageId
+          ? { ...m, reactions: [...(m.reactions ?? []), parsed.emoji] }
+          : m
+        ));
       } else {
         setMessages(p => p.some(m => m.id === parsed.id) ? p : [...p.slice(-14), {
           ...parsed,
-          side: parsed.nickname === nickname ? 'left' : 'right'
+          reactions: Array.isArray(parsed.reactions) ? parsed.reactions : [], // always initialize
+          side: parsed.nickname === nickname ? 'left' : 'right',
         }]);
       }
     });
 
-    return () => { off(messagesRef, 'child_added', listener); };
+    return () => { off(messagesQuery, 'child_added', listener); };
   }, [subRoomId, nickname]);
 
   // ── Room change: update mock seed messages ─────────────────────────────────
@@ -1457,7 +1518,7 @@ export default function PuffBreak() {
 
   // ── Chat ──────────────────────────────────────────────────────────────────
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
     if (!chatText.trim() || !subRoomId) return;
     const now = Date.now();
@@ -1467,14 +1528,15 @@ export default function PuffBreak() {
     const messagesRef = ref(db, `rooms/${subRoomId}/messages`);
     
     push(messagesRef, {
-      type: "chat",
+      type: 'chat',
       id: `user-${now}`,
-      text: text,
+      text,
       nickname,
       color: nameColor,
       xPos: getRandomChatX(),
       createdAt: now,
-      reactions: []
+      expiresAt: now + 5 * 60 * 1000, // 5-minute TTL — DB never bloats
+      reactions: [],                   // Initialize so reaction handlers never throw
     });
 
     setChatText(''); setChatOpen(false); setLastMsgTime(now);
@@ -2987,25 +3049,35 @@ export default function PuffBreak() {
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
-                {ROOMS.map(r => (
-                  <motion.button
-                    key={r.id}
-                    whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                    onClick={() => switchRoom(r)}
-                    className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition-all ${currentRoom.id === r.id ? 'border-blue-500/40 text-blue-300' : 'border-white/5 text-gray-400 hover:border-white/15 hover:text-gray-200'}`}
-                    style={{
-                      background: currentRoom.id === r.id
-                        ? `${r.bg}dd`
-                        : 'rgba(255,255,255,0.03)',
-                    }}
-                  >
-                    <span className="text-2xl mb-1.5">{r.icon}</span>
-                    <span className="text-[11px] font-medium tracking-wide text-center leading-tight">{r.name}</span>
-                    {currentRoom.id === r.id && (
-                      <span className="text-[9px] mt-1 text-blue-400/80 uppercase tracking-widest font-mono-display">Active</span>
-                    )}
-                  </motion.button>
-                ))}
+                {ROOMS.map(r => {
+                  const onlineCount = roomCounts[r.id] ?? 0;
+                  return (
+                    <motion.button
+                      key={r.id}
+                      whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                      onClick={() => switchRoom(r)}
+                      className={`relative flex flex-col items-center justify-center p-3.5 rounded-xl border transition-all ${currentRoom.id === r.id ? 'border-blue-500/40 text-blue-300' : 'border-white/5 text-gray-400 hover:border-white/15 hover:text-gray-200'}`}
+                      style={{
+                        background: currentRoom.id === r.id
+                          ? `${r.bg}dd`
+                          : 'rgba(255,255,255,0.03)',
+                      }}
+                    >
+                      {/* Live user count badge */}
+                      {onlineCount > 0 && (
+                        <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[9px] text-emerald-400/90 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded-full">
+                          <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                          {onlineCount}
+                        </span>
+                      )}
+                      <span className="text-2xl mb-1.5">{r.icon}</span>
+                      <span className="text-[11px] font-medium tracking-wide text-center leading-tight">{r.name}</span>
+                      {currentRoom.id === r.id && (
+                        <span className="text-[9px] mt-1 text-blue-400/80 uppercase tracking-widest font-mono-display">Active</span>
+                      )}
+                    </motion.button>
+                  );
+                })}
               </div>
             </motion.div>
           </>
