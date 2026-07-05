@@ -406,6 +406,7 @@ export default function PuffBreak() {
   
   const musicIntervalRef      = useRef<ReturnType<typeof setInterval> | null>(null);
   const mixerRef              = useRef<HTMLDivElement>(null);
+  const chatInputRef          = useRef<HTMLInputElement>(null);
 
   // ── Persistence ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -546,6 +547,16 @@ export default function PuffBreak() {
   }, []);
 
   const isKeyboardOpen = keyboardHeight > 50;
+
+  // ── Auto-focus chat input when opened ─────────────────────────────────
+  // Small delay lets the AnimatePresence mount animation start first so the
+  // keyboard doesn't kill the open transition on slower Android devices.
+  useEffect(() => {
+    if (chatOpen) {
+      const t = setTimeout(() => chatInputRef.current?.focus(), 80);
+      return () => clearTimeout(t);
+    }
+  }, [chatOpen]);
 
   // ── Sync total breaks today ────────────────────────────────────────────────
   useEffect(() => {
@@ -1964,41 +1975,50 @@ export default function PuffBreak() {
               </button>
             </div>
 
-          <div className="flex space-x-1 items-center">
-              {/* Total platform count — subtle badge in top bar */}
+          {/* ── Right pill: live count + timer + actions ── */}
+          <div className="flex items-center gap-1.5">
+
+            {/* Live count + timer — unified pill */}
+            <div className="flex items-center gap-2 bg-black/30 backdrop-blur-md border border-white/[0.08] rounded-full px-3 h-8">
+              {/* Live dot + count */}
               {(() => {
                 const totalOnline = Object.values(roomCounts).reduce((a: number, b: number) => a + b, 0) || 1;
                 return (
-                  <div className="flex items-center gap-1 text-[10px] text-emerald-400/70 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full mr-1">
-                    <span className="inline-block w-1 h-1 rounded-full bg-emerald-400 anim-pulse-dot" />
-                    <span>{totalOnline}</span>
-                  </div>
+                  <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium tabular-nums">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 anim-pulse-dot shrink-0" />
+                    {totalOnline}
+                  </span>
                 );
               })()}
-              {/* Timer — moved to the right */}
-              <div className="font-mono-display text-sm tracking-widest pointer-events-none mr-2" aria-live="polite">
+
+              {/* Divider — only when timer is active */}
+              {(isLit || isFinished) && <span className="w-px h-3 bg-white/15 shrink-0" />}
+
+              {/* Timer */}
+              <div className="font-mono-display text-[11px] tracking-wider pointer-events-none" aria-live="polite">
                 {isLit || isFinished ? (
-                  <motion.span key="timer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={isFinished ? "text-gray-400" : "text-gray-200"}>
+                  <motion.span key="timer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={isFinished ? 'text-gray-500' : 'text-gray-200 font-semibold'}>
                     {formatTime(displayTimeSeconds)}
                   </motion.span>
-                ) : (
-                  <span className="opacity-30">— : ——</span>
-                )}
+                ) : null}
               </div>
+            </div>
 
-              {isOffline && (
-                <WifiOff className="w-4 h-4 text-orange-400 mr-1" aria-label="Offline" />
-              )}
-              <button onClick={reset} className="p-2.5 hover:bg-white/10 active:bg-white/15 rounded-full transition-colors" aria-label="Reset">
-                <RotateCcw className="w-5 h-5" />
+            {isOffline && <WifiOff className="w-4 h-4 text-orange-400" aria-label="Offline" />}
+
+            {/* Icon actions */}
+            <div className="flex items-center bg-black/30 backdrop-blur-md border border-white/[0.08] rounded-full h-8 px-1 gap-0.5">
+              <button onClick={reset} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/15 transition-colors text-gray-400 hover:text-white" aria-label="Reset">
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
-              <button onClick={() => setSupportModalOpen(true)} className="p-2.5 hover:bg-amber-400/20 active:bg-amber-400/30 rounded-full transition-colors text-amber-400/70 hover:text-amber-400" aria-label="Support / Donate">
-                <Coffee className="w-5 h-5" />
+              <button onClick={() => setSupportModalOpen(true)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-amber-400/20 active:bg-amber-400/30 transition-colors text-amber-400/60 hover:text-amber-400" aria-label="Support">
+                <Coffee className="w-3.5 h-3.5" />
               </button>
-              <button onClick={() => setIsZenMode(true)} className="p-2.5 hover:bg-white/10 active:bg-white/15 rounded-full transition-colors" aria-label="Zen Mode">
-                <Minimize2 className="w-5 h-5" />
+              <button onClick={() => setIsZenMode(true)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/15 transition-colors text-gray-400 hover:text-white" aria-label="Zen Mode">
+                <Minimize2 className="w-3.5 h-3.5" />
               </button>
             </div>
+          </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -2455,26 +2475,29 @@ export default function PuffBreak() {
        {!isZenMode && (
         <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }}>
 
-          {/* Room count badge floating above the dock — shows users in this specific room */}
-          {currentRoom.id !== 'silent' && !chatOpen && (() => {
-            const roomCount = roomCounts[currentRoom.id] || 1;
+          {/* Single unified stats row: icon · room name · live count · breaks */}
+          {!chatOpen && (() => {
+            const roomCount = currentRoom.id !== 'silent' ? (roomCounts[currentRoom.id] || 1) : null;
             return (
-              <div className="flex justify-center mb-2 pointer-events-none">
-                <span className="flex items-center gap-1.5 text-[10px] text-emerald-400/80 bg-black/30 backdrop-blur-sm border border-emerald-400/20 px-2.5 py-1 rounded-full">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 anim-pulse-dot" />
-                  <span>{roomCount} in {currentRoom.name}</span>
-                  <span className="opacity-40">·</span>
-                  <span className="text-gray-400">{totalBreaksToday} breaks today</span>
+              <div className="flex justify-center mb-2 pointer-events-none px-4">
+                <span className="flex items-center gap-2 text-[11px] text-gray-400/90 font-medium">
+                  <span className="text-[14px] leading-none">{currentRoom.icon}</span>
+                  <span>{currentRoom.name}</span>
+                  {roomCount !== null && (
+                    <>
+                      <span className="opacity-30">·</span>
+                      <span className="flex items-center gap-1 text-emerald-400">
+                        <span className="inline-block w-1 h-1 rounded-full bg-emerald-400 anim-pulse-dot" />
+                        {roomCount}
+                      </span>
+                      <span className="opacity-30">·</span>
+                      <span className="text-gray-500">{totalBreaksToday} breaks</span>
+                    </>
+                  )}
                 </span>
               </div>
             );
           })()}
-
-          {/* Stats row — desktop only, gives context without eating mobile space */}
-          <div className="hidden sm:flex text-center text-[11px] sm:text-[13px] text-gray-400 opacity-90 font-medium pointer-events-none mb-1 px-4 items-center justify-center gap-2 truncate">
-            <span>{currentRoom.icon}</span>
-            <span>{currentRoom.name}</span>
-          </div>
 
           {/* Controls & Chat Container */}
           <AnimatePresence mode="wait">
@@ -2698,7 +2721,7 @@ export default function PuffBreak() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full px-3 relative z-50 pointer-events-auto"
+                className="w-full px-4 sm:px-4 relative z-50 pointer-events-auto"
                 style={{
                   // On mobile with keyboard open: fixed to float above keyboard
                   // On desktop or keyboard-closed: let the normal doc flow place it
@@ -2724,12 +2747,14 @@ export default function PuffBreak() {
                   
                   <form onSubmit={handleSendMessage} className="flex-1 flex items-center relative">
                     <input
+                      ref={chatInputRef}
                       type="text"
                       value={chatText}
                       onChange={e => setChatText(e.target.value)}
                       placeholder={`Whisper in ${currentRoom.name}...`}
                       className="w-full bg-transparent text-sm text-gray-200 placeholder-gray-500 focus:outline-none pl-3 pr-14 py-2"
                       maxLength={60}
+                      enterKeyHint="send"
                     />
                     
                     <div className="absolute right-2 flex items-center gap-2 pointer-events-none">
