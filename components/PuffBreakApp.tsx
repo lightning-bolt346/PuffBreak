@@ -1653,7 +1653,7 @@ export default function PuffBreak() {
       })}} />
       <div
       ref={mainScreenRef}
-      className={`relative flex flex-col items-center justify-center min-h-screen min-h-dvh overflow-hidden select-none font-display ${highContrast ? 'grayscale contrast-125' : ''}`}
+      className={`relative flex flex-col items-center justify-center h-[100dvh] w-full overflow-hidden select-none font-display ${highContrast ? 'grayscale contrast-125' : ''}`}
       style={{ backgroundColor: currentRoom.bg, transition: 'background-color 1.2s ease' }}
       onClick={(e) => {
         if ((e.target as HTMLElement).id === 'bg-layer' && currentRoom.id !== 'silent' && !chatOpen) {
@@ -1976,46 +1976,40 @@ export default function PuffBreak() {
             </div>
 
           {/* ── Right pill: live count + timer + actions ── */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-3">
+            
+            {/* Live dot + count */}
+            {(() => {
+              const totalOnline = Object.values(roomCounts).reduce((a: number, b: number) => a + b, 0) || 1;
+              return (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/[0.05]">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 anim-pulse-dot shrink-0" />
+                  <span className="text-[11px] text-emerald-400 font-medium tabular-nums">{totalOnline}</span>
+                </div>
+              );
+            })()}
 
-            {/* Live count + timer — unified pill */}
-            <div className="flex items-center gap-2 bg-black/30 backdrop-blur-md border border-white/[0.08] rounded-full px-3 h-8">
-              {/* Live dot + count */}
-              {(() => {
-                const totalOnline = Object.values(roomCounts).reduce((a: number, b: number) => a + b, 0) || 1;
-                return (
-                  <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium tabular-nums">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 anim-pulse-dot shrink-0" />
-                    {totalOnline}
-                  </span>
-                );
-              })()}
-
-              {/* Divider — only when timer is active */}
-              {(isLit || isFinished) && <span className="w-px h-3 bg-white/15 shrink-0" />}
-
-              {/* Timer */}
-              <div className="font-mono-display text-[11px] tracking-wider pointer-events-none" aria-live="polite">
-                {isLit || isFinished ? (
-                  <motion.span key="timer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={isFinished ? 'text-gray-500' : 'text-gray-200 font-semibold'}>
-                    {formatTime(displayTimeSeconds)}
-                  </motion.span>
-                ) : null}
-              </div>
+            {/* Timer */}
+            <div className="font-mono-display text-[12px] tracking-wider pointer-events-none" aria-live="polite">
+              {isLit || isFinished ? (
+                <motion.span key="timer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={isFinished ? 'text-gray-500' : 'text-gray-200 font-medium'}>
+                  {formatTime(displayTimeSeconds)}
+                </motion.span>
+              ) : null}
             </div>
 
             {isOffline && <WifiOff className="w-4 h-4 text-orange-400" aria-label="Offline" />}
 
             {/* Icon actions */}
-            <div className="flex items-center bg-black/30 backdrop-blur-md border border-white/[0.08] rounded-full h-8 px-1 gap-0.5">
-              <button onClick={reset} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/15 transition-colors text-gray-400 hover:text-white" aria-label="Reset">
-                <RotateCcw className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1">
+              <button onClick={reset} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/15 transition-colors text-gray-400 hover:text-white" aria-label="Reset">
+                <RotateCcw className="w-4 h-4" />
               </button>
-              <button onClick={() => setSupportModalOpen(true)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-amber-400/20 active:bg-amber-400/30 transition-colors text-amber-400/60 hover:text-amber-400" aria-label="Support">
-                <Coffee className="w-3.5 h-3.5" />
+              <button onClick={() => setSupportModalOpen(true)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-amber-400/20 active:bg-amber-400/30 transition-colors text-amber-400/70 hover:text-amber-400" aria-label="Support">
+                <Coffee className="w-4 h-4" />
               </button>
-              <button onClick={() => setIsZenMode(true)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/15 transition-colors text-gray-400 hover:text-white" aria-label="Zen Mode">
-                <Minimize2 className="w-3.5 h-3.5" />
+              <button onClick={() => setIsZenMode(true)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/15 transition-colors text-gray-400 hover:text-white" aria-label="Zen Mode">
+                <Minimize2 className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -2721,7 +2715,7 @@ export default function PuffBreak() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full px-4 sm:px-4 relative z-50 pointer-events-auto"
+                className="w-full px-4 sm:px-4 relative z-50 pointer-events-auto mb-4 sm:mb-6 dock-safe-bottom"
                 style={{
                   // On mobile with keyboard open: fixed to float above keyboard
                   // On desktop or keyboard-closed: let the normal doc flow place it
@@ -2730,6 +2724,7 @@ export default function PuffBreak() {
                   left: isKeyboardOpen ? 0 : undefined,
                   right: isKeyboardOpen ? 0 : undefined,
                   paddingBottom: isKeyboardOpen ? 0 : undefined,
+                  marginBottom: isKeyboardOpen ? 0 : undefined,
                 }}
                 onClick={e => e.stopPropagation()}
               >
