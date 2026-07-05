@@ -340,6 +340,7 @@ export default function PuffBreak() {
   const [isTyping, setIsTyping]         = useState(false);
   const [isOffline, setIsOffline]       = useState(false);
   const [chatOpen, setChatOpen]         = useState(false);
+  const [totalBreaksToday, setTotalBreaksToday] = useState(0);
   
   // PartyKit Real-time Room
   const [subRoomId, setSubRoomId]       = useState<string | null>(null);
@@ -521,6 +522,19 @@ export default function PuffBreak() {
   useEffect(() => {
     const id = setInterval(() => setMessages(p => p.filter(m => Date.now() - m.createdAt < 22000)), 1000);
     return () => clearInterval(id);
+  }, []);
+
+  // ── Sync total breaks today ────────────────────────────────────────────────
+  useEffect(() => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const breaksRef = ref(db, `stats/breaks/${todayStr}`);
+    const unsub = onValue(breaksRef, (snapshot) => {
+      const val = snapshot.val();
+      setTotalBreaksToday(val || 0);
+    }, () => {
+      setTotalBreaksToday(0);
+    });
+    return () => unsub();
   }, []);
 
   // ── Firebase Real-time Integration ─────────────────────────────────────────
@@ -971,6 +985,11 @@ export default function PuffBreak() {
         setLastTapProgress(1); 
         displayLastTapRef.current = 1; 
         vibrate([300, 100, 300]); 
+
+        // Safely record completed break in Firebase
+        const todayStr = new Date().toISOString().split('T')[0];
+        const breaksRef = ref(db, `stats/breaks/${todayStr}`);
+        runTransaction(breaksRef, (count) => (count || 0) + 1).catch(() => {});
       }
       else frame = requestAnimationFrame(update);
     };
@@ -2400,8 +2419,25 @@ export default function PuffBreak() {
       {/* ──────────────────────────────────────────────────────────────────────
           BOTTOM PANEL — always visible
           ─────────────────────────────────────────────────────────────────── */}
-      {!isZenMode && (
+       {!isZenMode && (
         <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }}>
+          
+          {(() => {
+            const totalOnline = Object.values(roomCounts).reduce((a: number, b: number) => a + b, 0) || 1;
+            return (
+              <div className="text-center text-[11px] sm:text-[13px] text-gray-400 opacity-90 font-medium pointer-events-none mb-2 px-4 flex items-center justify-center gap-2 truncate">
+                <span>{currentRoom.icon}</span>
+                <span className="hidden sm:inline">{currentRoom.name}</span>
+                <span className="opacity-40 hidden sm:inline">·</span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 anim-pulse-dot" />
+                  <span>{totalOnline} online</span>
+                </span>
+                <span className="opacity-40">·</span>
+                <span>{totalBreaksToday} breaks today</span>
+              </div>
+            );
+          })()}
 
           {/* Controls & Chat Container */}
           <AnimatePresence mode="wait">
@@ -2414,21 +2450,8 @@ export default function PuffBreak() {
                 transition={{ duration: 0.2 }}
                 className="flex flex-col w-full"
               >
-                {/* Stats row */}
-                <div className="text-center text-[11px] sm:text-[13px] text-gray-400 opacity-90 font-medium pointer-events-none mb-2 px-4 flex items-center justify-center gap-2 truncate">
-                <span>{currentRoom.icon}</span>
-                <span className="hidden sm:inline">{currentRoom.name}</span>
-                <span className="opacity-40 hidden sm:inline">·</span>
-                <span className="flex items-center gap-1">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 anim-pulse-dot" />
-                  <span>3 online</span>
-                </span>
-                <span className="opacity-40">·</span>
-                <span>670 breaks today</span>
-              </div>
-
-              {/* ── Unified Controls Dock ── */}
-              <div className="flex justify-center w-full px-3 dock-safe-bottom">
+                {/* ── Unified Controls Dock ── */}
+                <div className="flex justify-center w-full px-3 dock-safe-bottom">
 
                 {/* ── DESKTOP: Single pill (sm and above) ── */}
                 <div className="hidden sm:flex items-center bg-[#0f0f13]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 gap-2 sm:max-w-fit h-[52px] px-3 md:px-3 md:rounded-3xl">
@@ -2671,7 +2694,7 @@ export default function PuffBreak() {
                       ) : (
                         <span className="flex items-center gap-1 text-[10px] text-emerald-400/80 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
                           <span className="w-1 h-1 rounded-full bg-emerald-400 anim-pulse-dot" />
-                          3
+                          {roomCounts[currentRoom.id] || 1}
                         </span>
                       )}
                     </div>
