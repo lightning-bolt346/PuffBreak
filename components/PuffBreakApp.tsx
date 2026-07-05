@@ -2650,7 +2650,7 @@ export default function PuffBreak() {
                 >
                   <div className="flex items-center justify-between border-b border-white/[0.06] pb-2.5 mb-0.5">
                     <span className="text-[11px] font-mono-display uppercase tracking-widest text-gray-500 font-semibold">Audio Mixer</span>
-                    <button onClick={() => setAudioMixerOpen(false)} className="text-gray-500 hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
+                    <button aria-label="Close Audio Mixer" onClick={() => setAudioMixerOpen(false)} className="text-gray-500 hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -2659,7 +2659,7 @@ export default function PuffBreak() {
                   <div className={`flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 ${asmrOn ? 'bg-[#181005] border-amber-500/30 shadow-[inset_0_0_20px_rgba(245,158,11,0.03)]' : 'bg-white/[0.02] border-white/[0.04]'}`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-[12px] font-bold tracking-wide ${asmrOn ? 'text-amber-400' : 'text-gray-400'}`}>Room Ambience</span>
-                      <button onClick={toggleAsmr} className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${asmrOn ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-white/10'}`}>
+                      <button aria-label="Toggle Room Ambience" onClick={toggleAsmr} className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${asmrOn ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-white/10'}`}>
                         <div className={`absolute top-[2px] w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ease-spring ${asmrOn ? 'translate-x-[18px]' : 'translate-x-[2px]'}`} />
                       </button>
                     </div>
@@ -2690,7 +2690,7 @@ export default function PuffBreak() {
                   <div className={`flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 ${musicOn ? 'bg-[#05150a] border-emerald-500/30 shadow-[inset_0_0_20px_rgba(16,185,129,0.03)]' : 'bg-white/[0.02] border-white/[0.04]'}`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-[12px] font-bold tracking-wide ${musicOn ? 'text-emerald-400' : 'text-gray-400'}`}>Live Radio</span>
-                      <button onClick={toggleMusic} className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${musicOn ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-white/10'}`}>
+                      <button aria-label="Toggle Live Radio" onClick={toggleMusic} className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${musicOn ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-white/10'}`}>
                         <div className={`absolute top-[2px] w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ease-spring ${musicOn ? 'translate-x-[18px]' : 'translate-x-[2px]'}`} />
                       </button>
                     </div>
@@ -2731,6 +2731,7 @@ export default function PuffBreak() {
                 <div className="bg-[#0f0f13]/90 backdrop-blur-3xl border border-white/[0.08] rounded-full max-w-lg mx-auto shadow-2xl p-1.5 flex items-center gap-2">
                   <button 
                     type="button" 
+                    aria-label="Add Random Emoji"
                     onClick={() => {
                       const emojis = ['😊', '💨', '☕', '🔥', '✨', '🌿', '✌️', '❤️', '☁️', '🌙'];
                       setChatText(prev => prev + emojis[Math.floor(Math.random() * emojis.length)]);
