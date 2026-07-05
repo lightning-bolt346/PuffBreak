@@ -341,8 +341,8 @@ export default function PuffBreak() {
   const [isOffline, setIsOffline]       = useState(false);
   const [chatOpen, setChatOpen]         = useState(false);
   const [totalBreaksToday, setTotalBreaksToday] = useState(0);
-  // Keyboard height tracking for mobile — avoids chat bar being hidden by keyboard
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  // Visual viewport height tracking — for keyboard-aware chat bar on mobile
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   
   // PartyKit Real-time Room
   const [subRoomId, setSubRoomId]       = useState<string | null>(null);
@@ -496,24 +496,6 @@ export default function PuffBreak() {
     preloadAudio();
   }, []);
 
-  // ── Visual Viewport / Keyboard Listener (mobile) ───────────────────────────
-  // When the software keyboard opens, the visual viewport shrinks. We track
-  // the gap and use it to push the fixed dock above the keyboard.
-  useEffect(() => {
-    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
-    if (!vv) return;
-    const update = () => {
-      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKeyboardOffset(offset);
-    };
-    vv.addEventListener('resize', update);
-    vv.addEventListener('scroll', update);
-    return () => {
-      vv.removeEventListener('resize', update);
-      vv.removeEventListener('scroll', update);
-    };
-  }, []);
-
 
   // ── Click outside to close mixer ──────────────────────────────────────────
   useEffect(() => {
@@ -543,6 +525,27 @@ export default function PuffBreak() {
     const id = setInterval(() => setMessages(p => p.filter(m => Date.now() - m.createdAt < 22000)), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // ── Visual Viewport (keyboard) tracking ───────────────────────────────
+  // Tracks how much the virtual keyboard is covering the screen on mobile.
+  // When the keyboard opens, `keyboardHeight` becomes positive, letting us push
+  // the chat bar exactly above it instead of hiding under it.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    const vv = window.visualViewport!;
+    const update = () => {
+      const gap = window.innerHeight - vv.height - vv.offsetTop;
+      setKeyboardHeight(gap > 50 ? gap : 0); // threshold 50px to avoid false positives
+    };
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
+
+  const isKeyboardOpen = keyboardHeight > 50;
 
   // ── Sync total breaks today ────────────────────────────────────────────────
   useEffect(() => {
@@ -1639,8 +1642,8 @@ export default function PuffBreak() {
       })}} />
       <div
       ref={mainScreenRef}
-      className={`relative flex flex-col items-center justify-center w-full overflow-hidden select-none font-display ${highContrast ? 'grayscale contrast-125' : ''}`}
-      style={{ backgroundColor: currentRoom.bg, transition: 'background-color 1.2s ease', height: '100dvh' }}
+      className={`relative flex flex-col items-center justify-center min-h-screen min-h-dvh overflow-hidden select-none font-display ${highContrast ? 'grayscale contrast-125' : ''}`}
+      style={{ backgroundColor: currentRoom.bg, transition: 'background-color 1.2s ease' }}
       onClick={(e) => {
         if ((e.target as HTMLElement).id === 'bg-layer' && currentRoom.id !== 'silent' && !chatOpen) {
           if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -1959,19 +1962,19 @@ export default function PuffBreak() {
               <button onClick={() => setIsStealth(!isStealth)} className={`p-2.5 rounded-full transition-colors ${isStealth ? 'bg-white/10 text-white' : 'hover:bg-white/10'}`} aria-label="Toggle Stealth">
                 {isStealth ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
               </button>
-              {/* Platform-wide live count — subtle, lives in top-left */}
+            </div>
+
+          <div className="flex space-x-1 items-center">
+              {/* Total platform count — subtle badge in top bar */}
               {(() => {
                 const totalOnline = Object.values(roomCounts).reduce((a: number, b: number) => a + b, 0) || 1;
                 return (
-                  <span className="hidden sm:flex items-center gap-1 text-[10px] text-emerald-400/60 bg-emerald-400/8 px-2 py-1 rounded-full border border-emerald-400/15 ml-1 pointer-events-none">
+                  <div className="flex items-center gap-1 text-[10px] text-emerald-400/70 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full mr-1">
                     <span className="inline-block w-1 h-1 rounded-full bg-emerald-400 anim-pulse-dot" />
-                    {totalOnline} on platform
-                  </span>
+                    <span>{totalOnline}</span>
+                  </div>
                 );
               })()}
-            </div>
-
-            <div className="flex space-x-1 items-center">
               {/* Timer — moved to the right */}
               <div className="font-mono-display text-sm tracking-widest pointer-events-none mr-2" aria-live="polite">
                 {isLit || isFinished ? (
@@ -2109,7 +2112,7 @@ export default function PuffBreak() {
       {/* CIGARETTE */}
       {!isStealth && currentRoom.id !== 'chai' && (
         <div
-          className={`relative ${cigWidthClass} h-[65vh] sm:h-[70vh] max-h-[480px] sm:max-h-[560px] flex flex-col cursor-pointer mt-16 sm:mt-20 z-20 touch-none`}
+          className={`relative ${cigWidthClass} h-[50vh] sm:h-[65vh] max-h-[400px] sm:max-h-[560px] flex flex-col cursor-pointer mt-12 sm:mt-20 z-20 touch-none`}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
@@ -2446,30 +2449,33 @@ export default function PuffBreak() {
         </div>
       )}
 
-      {/* Room-specific online count — floats just below the main element */}
-      {!isStealth && !isZenMode && (
-        <div className="absolute z-30 pointer-events-none flex flex-col items-center gap-1.5"
-          style={{ bottom: 'calc(var(--dock-height, 96px) + env(safe-area-inset-bottom, 0px) + 12px)', left: '50%', transform: 'translateX(-50%)' }}
-        >
-          <div className="flex flex-col items-center gap-1">
-            <span className="flex items-center gap-1.5 text-[10px] text-emerald-400/80 bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full border border-emerald-400/20">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 anim-pulse-dot" />
-              {roomCounts[currentRoom.id] || 1} in this room
-            </span>
-            <span className="text-[9px] text-gray-500/60">{totalBreaksToday} breaks today</span>
-          </div>
-        </div>
-      )}
+      {/* ──────────────────────────────────────────────────────────────────────
+          BOTTOM PANEL — always visible
+          ─────────────────────────────────────────────────────────────────── */}
        {!isZenMode && (
-        <div
-          className="fixed left-0 right-0 z-40 pointer-events-auto"
-          style={{
-            bottom: keyboardOffset,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
-            transition: 'bottom 0.2s ease',
-          }}
-        >
-          
+        <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }}>
+
+          {/* Room count badge floating above the dock — shows users in this specific room */}
+          {currentRoom.id !== 'silent' && !chatOpen && (() => {
+            const roomCount = roomCounts[currentRoom.id] || 1;
+            return (
+              <div className="flex justify-center mb-2 pointer-events-none">
+                <span className="flex items-center gap-1.5 text-[10px] text-emerald-400/80 bg-black/30 backdrop-blur-sm border border-emerald-400/20 px-2.5 py-1 rounded-full">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 anim-pulse-dot" />
+                  <span>{roomCount} in {currentRoom.name}</span>
+                  <span className="opacity-40">·</span>
+                  <span className="text-gray-400">{totalBreaksToday} breaks today</span>
+                </span>
+              </div>
+            );
+          })()}
+
+          {/* Stats row — desktop only, gives context without eating mobile space */}
+          <div className="hidden sm:flex text-center text-[11px] sm:text-[13px] text-gray-400 opacity-90 font-medium pointer-events-none mb-1 px-4 items-center justify-center gap-2 truncate">
+            <span>{currentRoom.icon}</span>
+            <span>{currentRoom.name}</span>
+          </div>
+
           {/* Controls & Chat Container */}
           <AnimatePresence mode="wait">
             {!chatOpen ? (
@@ -2547,55 +2553,70 @@ export default function PuffBreak() {
                   )}
                 </div>
 
-                {/* ── MOBILE: Compact single-row pill ── */}
-                <div className="flex sm:hidden items-center w-full max-w-sm bg-[#0f0f13]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 gap-0.5 h-[52px]">
+                {/* ── MOBILE: Two-row pill (below sm) ── */}
+                <div className="flex sm:hidden flex-col w-full max-w-[400px] bg-[#0f0f13]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1 gap-0.5">
 
-                  {/* Room */}
-                  <button
-                    onClick={() => setRoomModalOpen(true)}
-                    aria-label="Change Room"
-                    className="flex-1 h-full flex justify-center items-center gap-1 rounded-xl text-[11px] text-blue-100 bg-gradient-to-r from-blue-600/30 to-indigo-600/30 active:scale-95 transition-all border border-blue-400/20 relative overflow-hidden"
-                  >
-                    <MapPin className="w-3.5 h-3.5 opacity-80 shrink-0" />
-                    <span className="font-semibold">Room</span>
-                  </button>
+                  {/* Row 1: Room · ASMR · Radio */}
+                  <div className="flex items-center gap-0.5 h-[40px]">
+                    <button
+                      onClick={() => setRoomModalOpen(true)}
+                      aria-label="Change Room"
+                      className="flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] text-blue-100 bg-gradient-to-r from-blue-600/30 to-indigo-600/30 hover:from-blue-500/40 hover:to-indigo-500/40 active:scale-95 transition-all border border-blue-400/20 group relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-400/10 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <MapPin className="w-3 h-3 opacity-80 shrink-0 relative z-10" />
+                      <span className="font-semibold relative z-10 truncate">Room</span>
+                    </button>
 
-                  <div className="w-px h-5 bg-white/10 shrink-0 mx-0.5" />
+                    <div className="w-px h-4 bg-white/10 shrink-0 mx-0.5" />
 
-                  {/* Ambience */}
-                  <button
-                    onClick={toggleAsmr}
-                    className={`flex-1 h-full flex justify-center items-center gap-1 rounded-xl text-[11px] transition-all ${asmrOn ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400'}`}
-                  >
-                    {asmrOn ? <Volume2 className="w-3.5 h-3.5 shrink-0" /> : <VolumeX className="w-3.5 h-3.5 opacity-60 shrink-0" />}
-                    <span className="font-semibold">Audio</span>
-                  </button>
+                    <button
+                      onClick={toggleAsmr}
+                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${asmrOn ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    >
+                      {asmrOn ? <Volume2 className="w-3 h-3 shrink-0" /> : <VolumeX className="w-3 h-3 opacity-60 shrink-0" />}
+                      <span className="font-semibold truncate">Ambience</span>
+                    </button>
 
-                  <div className="w-px h-5 bg-white/10 shrink-0 mx-0.5" />
+                    <div className="w-px h-4 bg-white/10 shrink-0 mx-0.5" />
 
-                  {/* Mixer */}
-                  <button
-                    onClick={() => setAudioMixerOpen(!audioMixerOpen)}
-                    className={`flex-1 h-full flex justify-center items-center gap-1 rounded-xl text-[11px] transition-all ${audioMixerOpen ? 'bg-blue-500/20 text-blue-300' : 'text-gray-400'}`}
-                  >
-                    <Sliders className="w-3.5 h-3.5 shrink-0" />
-                    <span className="font-semibold">Mixer</span>
-                  </button>
+                    <button
+                      onClick={toggleMusic}
+                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${musicOn ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    >
+                      <span className="text-[11px] leading-none shrink-0">♫</span>
+                      <span className="font-semibold truncate">Radio</span>
+                    </button>
+                  </div>
 
-                  {currentRoom.id !== 'silent' && (
-                    <>
-                      <div className="w-px h-5 bg-white/10 shrink-0 mx-0.5" />
-                      {/* Chat */}
-                      <button
-                        onClick={() => setChatOpen(o => !o)}
-                        className="flex-1 h-full flex justify-center items-center gap-1 rounded-xl text-[11px] text-gray-300 bg-white/5 transition-all relative border border-white/5"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5 opacity-80 shrink-0" />
-                        <span className="font-semibold">Chat</span>
-                        <span className="absolute top-1 right-1 w-[5px] h-[5px] rounded-full bg-emerald-400 border border-black/40 anim-pulse-dot" />
-                      </button>
-                    </>
-                  )}
+                  {/* Separator */}
+                  <div className="h-px bg-white/[0.06] mx-1" />
+
+                  {/* Row 2: Mixer · Chat */}
+                  <div className="flex items-center gap-0.5 h-[36px]">
+                    <button
+                      onClick={() => setAudioMixerOpen(!audioMixerOpen)}
+                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${audioMixerOpen ? 'bg-blue-500/20 text-blue-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    >
+                      <Sliders className="w-3 h-3 shrink-0" />
+                      <span className="font-semibold truncate">Mixer</span>
+                    </button>
+
+                    {currentRoom.id !== 'silent' && (
+                      <>
+                        <div className="w-px h-4 bg-white/10 shrink-0 mx-0.5" />
+                        <button
+                          onClick={() => setChatOpen(o => !o)}
+                          className="flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] text-gray-300 bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all relative border border-white/5"
+                        >
+                          <MessageSquare className="w-3 h-3 opacity-80 shrink-0" />
+                          <span className="font-semibold truncate">Chat</span>
+                          <span className="absolute top-1 right-1 w-[5px] h-[5px] rounded-full bg-emerald-400 border border-black/40 anim-pulse-dot" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
                 </div>
               </div>
             
@@ -2677,7 +2698,16 @@ export default function PuffBreak() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full px-3 dock-safe-bottom relative z-50 pointer-events-auto"
+                className="w-full px-3 relative z-50 pointer-events-auto"
+                style={{
+                  // On mobile with keyboard open: fixed to float above keyboard
+                  // On desktop or keyboard-closed: let the normal doc flow place it
+                  position: isKeyboardOpen ? 'fixed' : 'relative',
+                  bottom: isKeyboardOpen ? keyboardHeight + 8 : undefined,
+                  left: isKeyboardOpen ? 0 : undefined,
+                  right: isKeyboardOpen ? 0 : undefined,
+                  paddingBottom: isKeyboardOpen ? 0 : undefined,
+                }}
                 onClick={e => e.stopPropagation()}
               >
                 <div className="bg-[#0f0f13]/90 backdrop-blur-3xl border border-white/[0.08] rounded-full max-w-lg mx-auto shadow-2xl p-1.5 flex items-center gap-2">
