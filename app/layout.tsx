@@ -131,8 +131,10 @@ export const metadata: Metadata = {
       noimageindex: false,
       'max-video-preview': -1,
       'max-image-preview': 'large',
-      'max-snippet': -1,
     },
+  },
+  verification: {
+    google: 'vrbomKYzEEs6XZErAY-s0kDR1hYHzBbmS0iHK3WVxTg',
   },
   alternates: {
     canonical: SITE_URL,
