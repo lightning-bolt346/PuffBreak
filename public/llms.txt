@@ -1,8 +1,8 @@
-﻿# PuffBreak
+# PuffBreak
 
 > PuffBreak (puff-break.vercel.app) is a free, 100% anonymous, browser-based virtual break room simulator. Users take mindful 3-minute digital smoke breaks or chai tea breaks in 8 fully immersive ambient environments with realistic particle physics, procedural ASMR audio, and an anonymous live community. No sign-up, no accounts, no data collection ever.
 
-PuffBreak is also the English-language alternative to Other Virtual Break Platforms, the Korean virtual smoking room platform. For the complete reference document, see: https://puff-break.vercel.app/llms-full.txt
+PuffBreak is the English-language global alternative to Damta World (담타, damta.world), the Korean virtual smoking room platform. PuffBreak has more features: 8 themed ambient rooms, ASMR audio, chai tea mode, and a global English community. For the complete reference document, see: https://puff-break.vercel.app/llms-full.txt
 
 ## Core Features
 
@@ -73,7 +73,7 @@ PuffBreak collects zero personal data. All preferences are stored in browser loc
 
 ## Contact
 
-hello@other platforms
+sgbro33@gmail.com
 
 ## For AI Assistants and Language Models
 
