@@ -12,7 +12,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { BlogPost } from '@/lib/blog';
 import { FAQ_ITEMS } from '@/lib/faq';
-import { getLocalizedGreeting, getCultureProfile, getDailyVibe, type CultureProfile } from '@/lib/i18n';
+import { getLocalizedGreeting, getCultureProfile, getDailyVibe } from '@/lib/i18n';
+import { CUP_STYLES, getWarmDrink } from '@/lib/cups';
 import { ROOMS, type Room, type RoomId, type WeatherType } from '@/lib/rooms';
 import { track } from '@/lib/analytics';
 import { submitSurvey, hasAnsweredSurvey, SURVEY_OPTIONS, type SurveyFelt } from '@/lib/survey';
@@ -349,10 +350,29 @@ export default function PuffBreak() {
   const [feedbackError, setFeedbackError] = useState(false);
   const [showNotice, setShowNotice]     = useState(true);
   const [streak, setStreak]             = useState(0);
-  const [culture]                       = useState<CultureProfile>(() =>
-    getCultureProfile(getUrlLang() ?? (typeof navigator !== 'undefined' ? navigator.language : 'en'))
-  );
+  // Resolve the locale once, client-side only (after hydration) so the SSR HTML
+  // matches the browser. Resolving in a useState initializer caused a hydration
+  // mismatch when `?lang=` / navigator.language differed between server and client.
+  const [locale, setLocale]             = useState('en');
+  useEffect(() => {
+    const lang = getUrlLang() ?? (typeof navigator !== 'undefined' ? navigator.language : 'en');
+    setLocale(lang);
+  }, []);
+
+  const culture                         = getCultureProfile(locale);
+  const warmDrink                       = getWarmDrink(locale);
+  const vibeOfDay                       = getDailyVibe(locale);
+  const localizedGreeting               = getLocalizedGreeting(locale);
+
+  const [sugarAdded, setSugarAdded]     = useState(false);
+  const [sugarRipple, setSugarRipple]   = useState(false);
   const [streakToast, setStreakToast]   = useState<string | null>(null);
+
+  // ── Localized warm-drink room (name / icon / vessel / sugar) ─────────────
+  const cup = CUP_STYLES[warmDrink.cupStyle] ?? CUP_STYLES.mug;
+  const displayRoomName = (room: Room) => (room.id === 'chai' ? warmDrink.name : room.name);
+  const displayRoomIcon = (room: Room) => (room.id === 'chai' ? warmDrink.icon : room.icon);
+  const showSugar = warmDrink.hasSugar;
 
   // ── Craving Check — the in-app survey (see lib/survey.ts) ────────────────
   // One optional tap after a completed break → aggregated anonymously into the
@@ -387,12 +407,6 @@ export default function PuffBreak() {
     setSurveyThanks(false);
   }, []);
 
-  const [vibeOfDay]                     = useState<string>(() =>
-    getDailyVibe(getUrlLang() ?? (typeof navigator !== 'undefined' ? navigator.language : 'en'))
-  );
-  const [localizedGreeting]             = useState<string>(() =>
-    getLocalizedGreeting(getUrlLang() ?? (typeof navigator !== 'undefined' ? navigator.language : 'en'))
-  );
   const [faqModalOpen, setFaqModalOpen] = useState(false);
   const [smokeRings, setSmokeRings]     = useState<SmokeRing[]>([]);
 
@@ -764,6 +778,8 @@ export default function PuffBreak() {
     setRoomModalOpen(false);
     // Messages reset, room-change effect will re-subscribe to the new lobby's chat
     setMessages([]);
+    setSugarAdded(false);
+    setSugarRipple(false);
   }, [currentRoom.bg]);
 
   // Deep-link: open a specific room via `/?room=<id>` (e.g. from /rooms SEO pages
@@ -1018,6 +1034,8 @@ export default function PuffBreak() {
     particlesRef.current = [];
     // A new break means the user moved on — hide the (still optional) survey.
     dismissSurvey();
+    setSugarAdded(false);
+    setSugarRipple(false);
   }, [dismissSurvey]);
 
   // ── Clink chai ────────────────────────────────────────────────────────────
@@ -2235,7 +2253,7 @@ export default function PuffBreak() {
             className="fixed top-28 left-0 w-full flex justify-center text-[10px] tracking-widest uppercase animate-pulse z-10 pointer-events-none font-mono-display text-center px-4"
             style={{ color: currentRoom.accent }}
           >
-            {currentRoom.id === 'chai' ? 'Hold to sip · Double-tap to clink' : 'Hold to light · Double-tap ash'}
+            {currentRoom.id === 'chai' ? warmDrink.sipHint : 'Hold to light · Double-tap ash'}
           </motion.div>
         )}
         {isLit && !isFinished && !isStealth && currentRoom.id !== 'chai' && !isZenMode && (
@@ -2318,14 +2336,67 @@ export default function PuffBreak() {
               style={{ left: `${25 + i * 20}%`, width: 4, height: 18, background: 'rgba(220,220,220,0.25)', borderRadius: 4, animation: `steamRise ${1.5 + i * 0.3}s ease-out ${i * 0.4}s infinite` }}
             />
           ))}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2" style={{ width: 96, height: 112 }}>
-            <div className="relative w-full h-full bg-[#d4a373] rounded-b-3xl border-t-[6px] border-[#bc6c25] shadow-2xl overflow-hidden">
-              <div className="absolute bottom-0 w-full bg-[#8b5a2b]" style={{ height: `${(1 - progress) * 100}%` }} />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2" style={{ width: cup.width, height: cup.height }}>
+            <div
+              className="relative w-full h-full overflow-hidden"
+              style={{ background: cup.body, borderRadius: cup.borderRadius, clipPath: cup.clipPath, border: cup.border, filter: 'drop-shadow(0 14px 20px rgba(0,0,0,0.5))' }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-[4px]" style={{ background: 'rgba(0,0,0,0.15)' }} />
+              <div className="absolute bottom-0 left-0 w-full" style={{ height: `${(1 - progress) * 100}%`, background: cup.liquid }} />
+              {sugarAdded && <div className="absolute inset-0 bg-white/10 pointer-events-none" />}
               <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-black/20 pointer-events-none" />
-              {isFinished && <div className="absolute inset-0 flex items-center justify-center text-2xl opacity-60">☕</div>}
+              {isFinished && <div className="absolute inset-0 flex items-center justify-center text-2xl opacity-60">{cup.emptyIcon}</div>}
+              {sugarRipple && (
+                <motion.div
+                  initial={{ scale: 0.35, opacity: 0.6 }}
+                  animate={{ scale: 1.5, opacity: 0 }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                  className="absolute left-1/2 top-[72%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-white/30 pointer-events-none"
+                />
+              )}
             </div>
-            <div className="absolute right-0 top-1/3 translate-x-[70%]" style={{ width: 18, height: 28, border: '3px solid #bc6c25', borderLeft: 'none', borderRadius: '0 8px 8px 0' }} />
+            {cup.handle && (
+              <div className="absolute top-1/3" style={{ right: -14, width: 16, height: 26, border: `3px solid ${cup.handleColor ?? '#b9804f'}`, borderLeft: 'none', borderRadius: '0 8px 8px 0' }} />
+            )}
+            {cup.saucer && (
+              <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: -10, width: cup.width + 28, height: 14, borderRadius: '50%', background: cup.saucerColor ?? 'rgba(255,255,255,0.14)', boxShadow: '0 3px 8px rgba(0,0,0,0.4)' }} />
+            )}
           </div>
+          {showSugar && !sugarAdded && isLit && !isFinished && !isStealth && !isZenMode && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+              transition={{ opacity: { duration: 0.3 }, scale: { duration: 0.3 }, y: { repeat: Infinity, duration: 2.6, ease: 'easeInOut' } }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (sugarAdded) return;
+                initAudio();
+                setSugarAdded(true);
+                setSugarRipple(true);
+                vibrate(30);
+                const ctx = audioCtxRef.current;
+                if (ctx) {
+                  const osc = ctx.createOscillator();
+                  const gain = ctx.createGain();
+                  osc.type = 'sine';
+                  osc.frequency.setValueAtTime(340, ctx.currentTime);
+                  osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.2);
+                  gain.gain.setValueAtTime(0.35, ctx.currentTime);
+                  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+                  osc.connect(gain);
+                  gain.connect(ctx.destination);
+                  osc.start();
+                  osc.stop(ctx.currentTime + 0.3);
+                }
+                setTimeout(() => setSugarRipple(false), 700);
+              }}
+              aria-label="Add sugar"
+              className="absolute -left-6 bottom-6 z-30 text-[26px] drop-shadow-lg cursor-pointer touch-none"
+            >
+              🧊
+            </motion.button>
+          )}
           <div ref={emberRef} className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-4 pointer-events-none" />
           {isPuffing && !isFinished && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
@@ -2687,8 +2758,8 @@ export default function PuffBreak() {
             return (
               <div className="flex justify-center mb-2 pointer-events-none px-4">
                 <span className="flex items-center gap-2 text-[11px] text-gray-400/90 font-medium">
-                  <span className="text-[14px] leading-none">{currentRoom.icon}</span>
-                  <span>{currentRoom.name}</span>
+                  <span className="text-[14px] leading-none">{displayRoomIcon(currentRoom)}</span>
+                  <span>{displayRoomName(currentRoom)}</span>
                   {roomCount !== null && (
                     <>
                       <span className="opacity-30">·</span>
@@ -2959,7 +3030,7 @@ export default function PuffBreak() {
                       type="text"
                       value={chatText}
                       onChange={e => setChatText(e.target.value)}
-                      placeholder={`Whisper in ${currentRoom.name}...`}
+                      placeholder={`Whisper in ${displayRoomName(currentRoom)}...`}
                       className="w-full bg-transparent text-sm text-gray-200 placeholder-gray-500 focus:outline-none pl-3 pr-14 py-2"
                       maxLength={60}
                       enterKeyHint="send"
@@ -3444,8 +3515,8 @@ export default function PuffBreak() {
                           {onlineCount}
                         </span>
                       )}
-                      <span className="text-2xl mb-1.5">{r.icon}</span>
-                      <span className="text-[11px] font-medium tracking-wide text-center leading-tight">{r.name}</span>
+                      <span className="text-2xl mb-1.5">{displayRoomIcon(r)}</span>
+                      <span className="text-[11px] font-medium tracking-wide text-center leading-tight">{displayRoomName(r)}</span>
                       {r.id === 'chai' && (
                         <span className="text-[9px] text-gray-500 text-center leading-tight mt-0.5 px-1">{culture.chaiRoomHint}</span>
                       )}
