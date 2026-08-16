@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getBlogPostBySlug, BLOG_POSTS } from '@/lib/blog';
+import { getBlogPostBySlug, getAllBlogPosts } from '@/lib/blog';
+import { marked } from 'marked';
+import ReadingProgress from '@/components/ReadingProgress';
 
 const SITE_URL = 'https://puff-break.vercel.app';
 
@@ -14,7 +16,7 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return BLOG_POSTS.map((post) => ({
+  return getAllBlogPosts().map((post) => ({
     slug: post.slug,
   }));
 }
@@ -24,21 +26,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = getBlogPostBySlug(slug);
 
   if (!post) {
-    return { title: 'Post Not Found | PuffBreak' };
+    return { title: 'Post Not Found' };
   }
 
-  const OG_IMAGE = `\${SITE_URL}/blog/\${post.slug}/opengraph-image`;
+  const OG_IMAGE = `${SITE_URL}/blog/${post.slug}/opengraph-image`;
 
   return {
-    title: `\${post.title} — PuffBreak Journal`,
+    title: `${post.title} — PuffBreak Journal`,
     description: post.excerpt,
     alternates: {
-      canonical: `\${SITE_URL}/blog/\${post.slug}`,
+      canonical: `${SITE_URL}/blog/${post.slug}`,
     },
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      url: `\${SITE_URL}/blog/\${post.slug}`,
+      url: `${SITE_URL}/blog/${post.slug}`,
       siteName: 'PuffBreak',
       type: 'article',
       publishedTime: new Date(post.date).toISOString(),
@@ -72,8 +74,17 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  const OG_IMAGE = `\${SITE_URL}/blog/\${post.slug}/opengraph-image`;
-  const url = `\${SITE_URL}/blog/\${post.slug}`;
+  // Blog posts are authored as rich HTML (the .pb-article design system in globals.css).
+  // Render HTML directly — passing indented HTML through marked.parse() would treat the
+  // 4+ space indentation as a Markdown code block and show the raw markup to readers.
+  // Fall back to Markdown parsing for any future plain-text posts.
+  const trimmedContent = post.content.trim();
+  const contentHtml = trimmedContent.startsWith('<')
+    ? trimmedContent
+    : await marked.parse(trimmedContent);
+
+  const OG_IMAGE = `${SITE_URL}/blog/${post.slug}/opengraph-image`;
+  const url = `${SITE_URL}/blog/${post.slug}`;
 
   // Article schema
   const jsonLdArticle = {
@@ -101,7 +112,7 @@ export default async function BlogPostPage({ params }: Props) {
       url: SITE_URL,
       logo: {
         '@type': 'ImageObject',
-        url: `\${SITE_URL}/favicon.svg`,
+        url: `${SITE_URL}/favicon.svg`,
       },
     },
     mainEntityOfPage: {
@@ -129,7 +140,7 @@ export default async function BlogPostPage({ params }: Props) {
         '@type': 'ListItem',
         position: 2,
         name: 'Blog',
-        item: `\${SITE_URL}/blog`,
+        item: `${SITE_URL}/blog`,
       },
       {
         '@type': 'ListItem',
@@ -141,7 +152,10 @@ export default async function BlogPostPage({ params }: Props) {
   };
 
   return (
-    <div className="w-full bg-[#0a0a0f] text-gray-200 font-display relative selection:bg-amber-400/20">
+    <div className="w-full bg-[#0a0a0f] text-gray-200 font-display relative overflow-x-hidden selection:bg-amber-400/20">
+      {/* Reading progress bar (client component) */}
+      <ReadingProgress />
+
       {/* Structured Data */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdArticle) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }} />
@@ -227,8 +241,19 @@ export default async function BlogPostPage({ params }: Props) {
                        prose-blockquote:border-emerald-500/50 prose-blockquote:bg-emerald-500/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-gray-200
                        prose-li:text-gray-300 prose-ul:mb-8 prose-ul:space-y-2
                        marker:text-emerald-500"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
+        </div>
+
+        {/* Medical / Wellness Disclaimer */}
+        <div className="mt-12 rounded-2xl border border-amber-400/20 bg-amber-400/5 p-6 text-sm text-gray-400 leading-relaxed">
+          <p className="font-semibold text-amber-300/90 mb-2">A note on our wellness content</p>
+          <p>
+            PuffBreak is a stress-relief and entertainment tool, not a medical device. It is not intended to
+            diagnose, treat, cure, or prevent any disease, and it is not a substitute for professional smoking
+            cessation support. If you are trying to quit smoking or manage nicotine dependence, please consult a
+            qualified healthcare provider.
+          </p>
         </div>
 
         {/* Bottom CTA */}

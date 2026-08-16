@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ambient-synth — procedural soundscape demo</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(1200px 800px at 20% -10%, #10201a 0%, #0a0a0f 45%, #0a0a0f 100%);
+      color: #d4d4d8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .card {
+      width: 100%;
+      max-width: 560px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      background: rgba(15,15,20,0.7);
+      backdrop-filter: blur(14px);
+      padding: 32px;
+      box-shadow: 0 24px 60px -20px rgba(0,0,0,0.8);
+    }
+    h1 { font-size: 1.4rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+    h1 span { color: #34d399; }
+    .sub { color: #71717a; font-size: 0.85rem; margin-top: 6px; line-height: 1.5; }
+    .now {
+      display: flex; align-items: center; gap: 8px;
+      margin: 20px 0 16px; font-size: 0.8rem; color: #a1a1aa;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; }
+    .dot.off { background: #3f3f46; }
+    .rooms { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+    .room {
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      padding: 12px 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: #a1a1aa;
+      text-align: center;
+    }
+    .room:hover { background: rgba(255,255,255,0.07); color: #e4e4e7; }
+    .room.active { border-color: #34d39966; background: #34d39914; color: #34d399; }
+    .room .emoji { display: block; font-size: 1.3rem; margin-bottom: 6px; }
+    .room .name { font-size: 0.72rem; font-weight: 600; text-transform: capitalize; }
+    .controls { display: flex; align-items: center; gap: 14px; }
+    button.play {
+      flex-shrink: 0;
+      border: 0; cursor: pointer;
+      background: #fff; color: #0a0a0f;
+      font-weight: 700; font-size: 0.85rem;
+      padding: 12px 22px; border-radius: 999px;
+      transition: all 0.15s ease;
+    }
+    button.play:hover { background: #34d399; transform: translateY(-1px); }
+    button.play:active { transform: translateY(0) scale(0.98); }
+    .vol { flex: 1; display: flex; align-items: center; gap: 10px; }
+    .vol span { font-size: 0.8rem; color: #71717a; min-width: 60px; }
+    input[type="range"] { flex: 1; accent-color: #34d399; }
+    .note { margin-top: 24px; font-size: 0.75rem; color: #52525b; line-height: 1.6; }
+    .note code { color: #a1a1aa; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 5px; font-size: 0.72rem; }
+    a { color: #34d399; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>ambient-<span>synth</span></h1>
+    <p class="sub">Procedural ambient soundscapes with the Web Audio API — zero audio files. Click play, pick a room, and the waves (or rain, or a spaceship) are synthesized live in your browser.</p>
+
+    <div class="now"><span class="dot" id="dot"></span><span id="status">not playing</span></div>
+
+    <div class="rooms" id="rooms"></div>
+
+    <div class="controls">
+      <button class="play" id="play">▶ Play</button>
+      <div class="vol">
+        <span id="volLabel">volume · 50%</span>
+        <input type="range" id="vol" min="0" max="100" value="50" />
+      </div>
+    </div>
+
+    <p class="note">
+      <code>office</code> AC hum · <code>beach</code> ocean waves · <code>space</code> drone ·
+      <code>library</code> rain · <code>park</code> wind · <code>metro</code> chatter ·
+      <code>chai</code> chatter+ · <code>silent</code> nothing.<br />
+      Source: <a href="https://github.com/puffbreak/ambient-synth">github.com/puffbreak/ambient-synth</a> ·
+      Used in production by <a href="https://puff-break.vercel.app">PuffBreak</a>.
+    </p>
+  </div>
+
+  <script type="module">
+    import { AmbientEngine } from '../src/ambient-engine.js';
+
+    const ROOMS = [
+      { id: 'office',  emoji: '🌃', name: 'office' },
+      { id: 'beach',   emoji: '🏖️', name: 'beach' },
+      { id: 'space',   emoji: '🌑', name: 'space' },
+      { id: 'library', emoji: '📚', name: 'library' },
+      { id: 'park',    emoji: '🌳', name: 'park' },
+      { id: 'metro',   emoji: '🚇', name: 'metro' },
+      { id: 'chai',    emoji: '☕', name: 'chai' },
+      { id: 'silent',  emoji: '🔇', name: 'silent' },
+    ];
+
+    const engine = new AmbientEngine();
+    let playing = false;
+
+    const elRooms = document.getElementById('rooms');
+    const elPlay = document.getElementById('play');
+    const elVol = document.getElementById('vol');
+    const elVolLabel = document.getElementById('volLabel');
+    const elStatus = document.getElementById('status');
+    const elDot = document.getElementById('dot');
+
+    const buttons = {};
+    ROOMS.forEach((r) => {
+      const b = document.createElement('div');
+      b.className = 'room';
+      b.innerHTML = `<span class="emoji">${r.emoji}</span><span class="name">${r.name}</span>`;
+      b.addEventListener('click', () => {
+        engine.setRoom(r.id);
+        Object.values(buttons).forEach((x) => x.classList.remove('active'));
+        b.classList.add('active');
+      });
+      elRooms.appendChild(b);
+      buttons[r.id] = b;
+    });
+    buttons.office.classList.add('active');
+
+    elPlay.addEventListener('click', () => {
+      playing = !playing;
+      if (playing) {
+        try {
+          engine.start();
+          engine.setVolume(elVol.value / 100);
+          elPlay.textContent = '⏸ Pause';
+          elStatus.textContent = 'playing';
+          elDot.classList.remove('off');
+        } catch (e) {
+          console.error('ambient-engine failed to start:', e);
+          elStatus.textContent = 'audio not available here';
+        }
+      } else {
+        engine.stop();
+        elPlay.textContent = '▶ Play';
+        elStatus.textContent = 'paused';
+        elDot.classList.add('off');
+      }
+    });
+
+    elVol.addEventListener('input', () => {
+      const v = elVol.value / 100;
+      elVolLabel.textContent = `volume · ${Math.round(v * 100)}%`;
+      if (playing) engine.setVolume(v);
+    });
+  </script>
+</body>
+</html>

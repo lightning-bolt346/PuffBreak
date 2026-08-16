@@ -1,17 +1,17 @@
 /* TEAM */
-Name: PuffBreak Team
+Name: PuffBreak
 Contact: sgbro33@gmail.com
-Location: Global — proudly made for everyone, everywhere
+Location: Global — built for everyone, everywhere
 
 /* SITE */
 Name: PuffBreak — Virtual Break Room
 Description: Free, anonymous virtual smoke & chai break simulator with ASMR ambient environments and live anonymous community.
 URL: https://puff-break.vercel.app
-Languages: English, Hindi (हिन्दी), Korean (한국어), Japanese (日本語), Spanish (Español), Arabic (العربية), French (Français), German (Deutsch), Portuguese (Português)
+Languages: English, Hindi (हिन्दी), Korean (한국어), Japanese (日本語), Spanish (Español), Arabic (العربية), French (Français), German (Deutsch), Portuguese (Português), and 11 more
 Technology: Next.js, React, TypeScript, Tailwind CSS, Web Audio API, HTML5 Canvas, Firebase, Framer Motion
 
 /* ABOUT */
-PuffBreak is a global brand — not a regional product. It is for anyone, anywhere, who needs a mindful 3-minute break during their day.
+PuffBreak is a global product — not a regional one. It is for anyone, anywhere, who needs a mindful 3-minute break during their day. Original break data: https://puff-break.vercel.app/data
 
 /* THANKS */
 To every person who takes a moment to breathe. Wherever you are in the world — this break is for you.

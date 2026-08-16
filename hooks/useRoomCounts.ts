@@ -11,6 +11,9 @@ const ALL_ROOMS: RoomId[] = ['office', 'beach', 'space', 'library', 'park', 'met
  * useRoomCounts — subscribes to live presence counts for all 8 rooms simultaneously.
  * Shows how many users are currently online in each room for the room picker modal.
  *
+ * Data model (single shared lobby per room — see PuffBreakApp joinLobby):
+ *   lobbies/{roomId}/users/{userId} = { joinedAt: number }
+ *
  * Returns Record<RoomId, number> — updates in real time.
  * Falls back to all-zeros if Firebase is unreachable.
  */
@@ -23,27 +26,18 @@ export function useRoomCounts(): Record<RoomId, number> {
     const unsubscribers: (() => void)[] = [];
 
     for (const roomId of ALL_ROOMS) {
-      // We count unique entries in lobbies/{roomId} — each sub-room's users
-      // The existing data model stores: lobbies/{roomId}/{subRoomId}/users/{userId}
-      // So we count total users across all sub-rooms for the given room
-      const roomLobbiesRef = ref(db, `lobbies/${roomId}`);
+      const roomLobbyRef = ref(db, `lobbies/${roomId}/users`);
 
-      const unsub = onValue(roomLobbiesRef, (snapshot) => {
+      const unsub = onValue(roomLobbyRef, (snapshot) => {
         try {
-          const lobbiesData = snapshot.val();
-          if (!lobbiesData) {
+          const users = snapshot.val();
+          if (!users) {
             setCounts(prev => ({ ...prev, [roomId]: 0 }));
             return;
           }
-
-          let total = 0;
-          for (const subRoom of Object.values(lobbiesData)) {
-            const users = (subRoom as { users?: Record<string, unknown> }).users;
-            if (users) {
-              // Count non-null entries — supports both legacy boolean and new { joinedAt } format
-              total += Object.values(users).filter(v => v !== null && v !== undefined).length;
-            }
-          }
+          // Count non-null entries — supports both legacy boolean and new { joinedAt } format
+          const total = Object.values(users as Record<string, unknown>)
+            .filter(v => v !== null && v !== undefined).length;
           setCounts(prev => ({ ...prev, [roomId]: total }));
         } catch {
           // Non-fatal: Firebase unavailable or invalid config

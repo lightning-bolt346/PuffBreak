@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { BLOG_POSTS, BlogPost } from '@/lib/blog';
+import { BlogPost } from '@/lib/blog';
 import AmbientEngine, { type AmbientEngineHandle } from '@/components/engine/AmbientEngine';
 import { db } from '@/lib/firebase';
 import { ref, runTransaction, onChildAdded, push, onDisconnect, remove, off } from 'firebase/database';
@@ -240,6 +240,7 @@ function drawSmokeParticle(
 
 export default function PuffBreak() {
   // Core burn state
+  const [blogPosts, setBlogPosts]       = useState<BlogPost[]>([]);
   const [isLit, setIsLit]               = useState(false);
   const [progress, setProgress]         = useState(0);
   const [elapsedTimeMs, setElapsedTimeMs] = useState(0);
@@ -370,6 +371,14 @@ export default function PuffBreak() {
   
   const musicIntervalRef      = useRef<ReturnType<typeof setInterval> | null>(null);
   const mixerRef              = useRef<HTMLDivElement>(null);
+
+  // Fetch blog posts on mount
+  useEffect(() => {
+    fetch('/api/blogs')
+      .then(res => res.json())
+      .then(data => setBlogPosts(data))
+      .catch(err => console.error("Failed to load blog posts", err));
+  }, []);
 
   // ── Persistence ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1558,7 +1567,7 @@ export default function PuffBreak() {
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
               'name': 'PuffBreak',
-              'alternateName': ['Online Other platforms', '온라인 담타', 'Other Virtual Break Platforms', '담타'],
+              'alternateName': ['PuffBreak App', 'Virtual Break Room', 'Online Damta Alternative', 'Digital Smoke Break'],
               'url': 'https://puff-break.vercel.app',
               'description': 'A mindful, interactive 3-minute digital break room experience. Take a mental pause by lighting a virtual cigarette or sipping a cup of hot chai with ambient audio, realistic particle physics, and a live anonymous community.',
               'applicationCategory': 'RelaxationApplication, HealthApplication',
@@ -1607,7 +1616,7 @@ export default function PuffBreak() {
                   'name': 'Can PuffBreak help me quit smoking?',
                   'acceptedAnswer': {
                     '@type': 'Answer',
-                    'text': 'Yes! Many users utilize PuffBreak as a digital smoking cessation aid, a virtual cigarette substitute, or a habit replacement tool. It offers the same 3-minute psychological pause and breathing rhythm as a real cigarette break, helping you manage cravings without the health risks.'
+                    'text': 'PuffBreak can be used as a behavioral habit-substitution tool during nicotine cravings. The 3-minute session matches the peak duration of a craving, giving you a mindful ritual to redirect the urge. It is not a medical device or a clinically proven cessation program. Consult a healthcare professional for medical advice on quitting smoking.'
                   }
                 },
                 {
@@ -1643,24 +1652,6 @@ export default function PuffBreak() {
         <p>
           Use PuffBreak as an interactive habit-replacement tool to quit smoking, manage nicotine withdrawal cravings, do breathing exercises, or simply step away from your desk. Teleport between the Office Rooftop, Beach Sunset, Space Station, Library Corner, Park Bench, Metro Platform, Chai Stall, or Silent Room. No registration required.
         </p>
-
-        {/* Korean Competitor Targeting (other platforms / 온라인 담타) */}
-        <h2>온라인 담타 (Online Other platforms) 글로벌 영어 버전 - PuffBreak</h2>
-        <p>
-          PuffBreak은 글로벌 이용자를 위한 온라인 담타(Online Other platforms) 및 가상 흡연실 시뮬레이션 서비스입니다.
-          가상 담배를 피우거나 따뜻한 차이 티(Chai)를 마시며 전세계 각지의 사람들과 실시간 익명 채팅으로 소근소근 대화를 나눠보세요.
-          금연 보조제, 스트레스 해소, 심호흡 훈련 및 일상의 소소한 리프레시를 위해 최적화되었습니다.
-          회사 옥상, 노을진 해변, 우주 정거장, 조용한 도서관, 공원 벤치, 지하철 플랫폼, 차이 가판대 등 다양한 테마의 방에서 휴식을 취하세요.
-          로그인이나 회원가입 없이 완전 익명으로 즉시 무료 사용이 가능합니다.
-        </p>
-        <h3>주요 기능 (Key Features)</h3>
-        <ul>
-          <li>🚬 현실적인 가상 담배 시뮬레이션 및 연기 도넛 필터 효과 (Virtual Smoke Break)</li>
-          <li>☕ 따뜻한 차이티 마시기 시뮬레이터 (Chai Cup ASMR)</li>
-          <li>💬 글로벌 실시간 익명 귓속말 채팅 커뮤니티 (Live Chat Room)</li>
-          <li>🌌 감성적인 그래픽 테마 룸 이동 (Teleport Rooms)</li>
-          <li>🤫 업무 중에 유용한 스텔스 모드 및 젠 모드 지원 (Stealth / Zen Mode)</li>
-        </ul>
       </div>
 
       {/* BG Click Layer */}
@@ -2809,7 +2800,7 @@ export default function PuffBreak() {
                   <MenuButton icon={<RestoreIcon className="w-4 h-4" />} text="Restore Nickname" onClick={() => { const n = localStorage.getItem('pb_nickname'); const c = localStorage.getItem('pb_color'); if (n && c) { setNickname(n); setNameColor(c); } }} />
                   <MenuButton icon={<Star className="w-4 h-4 text-emerald-400" />} text="PuffBreak Guide" textColor="text-emerald-400" onClick={() => {
                     setBlogModalOpen(true);
-                    setActiveBlogPost(BLOG_POSTS.find(p => p.slug === 'comprehensive-puffbreak-guide') || null);
+                    setActiveBlogPost(blogPosts.find(p => p.slug === 'comprehensive-puffbreak-guide') || null);
                   }} />
                   <MenuButton icon={<BookOpen className="w-4 h-4" />} text="Read Blogs" onClick={() => {
                     setBlogModalOpen(true);
@@ -2852,7 +2843,7 @@ export default function PuffBreak() {
                       </div>
                       <div>
                         <span className="text-white font-bold text-base block leading-none">PuffBreak Journal</span>
-                        <span className="text-gray-500 text-[11px] tracking-widest uppercase">{BLOG_POSTS.length} Articles</span>
+                        <span className="text-gray-500 text-[11px] tracking-widest uppercase">{blogPosts.length} Articles</span>
                       </div>
                     </div>
                   )}
@@ -2890,7 +2881,7 @@ export default function PuffBreak() {
                   /* ── Article Grid ── */
                   <div className="p-6 sm:p-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto pb-8">
-                      {BLOG_POSTS.map((post, i) => (
+                      {blogPosts.map((post, i) => (
                         <Link
                           key={post.slug}
                           href={`/blog/${post.slug}`}

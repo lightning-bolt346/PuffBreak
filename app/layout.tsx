@@ -1,7 +1,8 @@
-import type {Metadata, Viewport} from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { FAQ_ITEMS } from '@/lib/faq';
 
 const SITE_URL = 'https://puff-break.vercel.app';
 const SITE_NAME = 'PuffBreak';
@@ -48,6 +49,12 @@ export const metadata: Metadata = {
     'remote worker break',
     // Indian / Hindi cultural audience
     'virtual sutta break',
+    'puff break',
+    'take a break',
+    'take puff break',
+    'puffbreak',
+    'puff break online',
+    'puff-break',
     'online sutta corner',
     'chai pe charcha online',
     'tapri vibes online',
@@ -143,6 +150,8 @@ export const metadata: Metadata = {
       'ko-KR': `${SITE_URL}?lang=ko`,
       'hi-IN': `${SITE_URL}?lang=hi`,
       'ja-JP': `${SITE_URL}?lang=ja`,
+      'zh-CN': `${SITE_URL}?lang=zh`,
+      'ru-RU': `${SITE_URL}?lang=ru`,
       'es-ES': `${SITE_URL}?lang=es`,
       'ar-SA': `${SITE_URL}?lang=ar`,
       'pt-BR': `${SITE_URL}?lang=pt`,
@@ -174,7 +183,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: dark)',  color: '#0a0a0a' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
     { media: '(prefers-color-scheme: light)', color: '#111111' },
   ],
   width: 'device-width',
@@ -193,6 +202,7 @@ const jsonLdOrganization = {
     'PuffBreak is a free, anonymous virtual break room simulator for mindful micro-breaks. Light a digital cigarette or enjoy virtual chai in 8 immersive ambient environments.',
   sameAs: [
     'https://twitter.com/puffbreak',
+    'https://www.wikidata.org/wiki/Q141105453',
   ],
   contactPoint: {
     '@type': 'ContactPoint',
@@ -244,64 +254,14 @@ const jsonLdWebApp = {
 const jsonLdFAQ = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'What is PuffBreak?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'PuffBreak is a free, anonymous, browser-based virtual break room simulator. You light a digital cigarette or enjoy a virtual cup of chai tea in 8 immersive ambient environments with procedural ASMR audio and live anonymous chat. No account or sign-up required.',
-      },
+  mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: a,
     },
-    {
-      '@type': 'Question',
-      name: 'Is PuffBreak free?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Yes, PuffBreak is completely free. There are no subscriptions, no premium tiers, and no ads. It is funded by the creators and remains free for everyone.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Does PuffBreak collect my data?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'No. PuffBreak collects zero personal data. All preferences (break streak, volume settings, nickname) are stored in your browser\'s localStorage and never leave your device. There are no cookies and no trackers beyond aggregate Vercel analytics.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Can PuffBreak help me quit smoking?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'PuffBreak can be used as a mindful substitute during nicotine cravings. The 3-minute session length matches the peak duration of a nicotine craving. By replacing the physical ritual with a digital one, many users report reduced cigarette consumption. It is not a medical device.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'What is the difference between PuffBreak and Damta World?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Damta World (온라인 담타) is a Korean-language virtual smoking room. PuffBreak is the English-language alternative with more features: 8 themed ambient rooms, ASMR audio mixing, chai tea mode, Zen/Stealth modes, PWA support, and a global community. Both are free and anonymous.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'How does PuffBreak work on mobile?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'PuffBreak is fully responsive and works on all smartphones and tablets. You can install it as a PWA (Progressive Web App) from your mobile browser for an app-like experience. Shake your phone to tap the ash off your virtual cigarette.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'What ambient rooms are available in PuffBreak?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'PuffBreak features 8 immersive rooms: Office Rooftop, Beach Sunset, Space Station, Library Corner, Park Bench, Metro Platform, Chai Stall, and Silent Room. Each room has a unique ambient audio track, animated background, and themed visual atmosphere.',
-      },
-    },
-  ],
+  })),
 };
 
 const jsonLdWebSite = {
@@ -322,10 +282,22 @@ const jsonLdWebSite = {
 
 import GlobalAppWrapper from '@/components/GlobalAppWrapper';
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebApp) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFAQ) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }} />
+      </head>
       <body className="antialiased selection:bg-white/20 font-display" suppressHydrationWarning>
+        {/* Set <html lang> from the ?lang= hreflang variant (e.g. /?lang=ko) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var l=new URLSearchParams(location.search).get('lang');if(l){document.documentElement.lang=l;}}catch(e){}})();`,
+          }}
+        />
         <GlobalAppWrapper>
           {children}
         </GlobalAppWrapper>

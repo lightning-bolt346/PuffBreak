@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import PuffBreakApp from '@/components/PuffBreakApp';
 
@@ -11,15 +11,43 @@ export default function GlobalAppWrapper({ children }: { children: React.ReactNo
   // All other paths will have a solid background covering the Break Room.
   const isHome = pathname === '/';
 
+  // Sync <html lang> with the ?lang= hreflang variant after hydration (React
+  // otherwise resets it to "en" because the RootLayout hardcodes lang="en").
+  useEffect(() => {
+    const lang = new URLSearchParams(window.location.search).get('lang');
+    if (lang) document.documentElement.lang = lang;
+  }, []);
+
+  // Lock document scroll ONLY on the homepage (immersive full-screen app).
+  // Content routes (blog, about, privacy, support) use native document scrolling.
+  useEffect(() => {
+    if (!isHome) return;
+
+    const htmlEl = document.documentElement;
+    const bodyEl = document.body;
+    const prevHtmlOverflow = htmlEl.style.overflow;
+    const prevBodyOverflow = bodyEl.style.overflow;
+
+    htmlEl.style.overflow = 'hidden';
+    bodyEl.style.overflow = 'hidden';
+
+    return () => {
+      htmlEl.style.overflow = prevHtmlOverflow;
+      bodyEl.style.overflow = prevBodyOverflow;
+    };
+  }, [isHome]);
+
   return (
     <div className="relative w-full h-full min-h-screen">
       {/* 
         The background layer: PuffBreakApp
-        It always stays mounted to persist audio, timers, and WebGL state.
+        We only mount this on the homepage to avoid heavy canvas/audio rendering on other routes.
       */}
-      <div className="fixed inset-0 z-0">
-        <PuffBreakApp />
-      </div>
+      {isHome && (
+        <div className="fixed inset-0 z-0">
+          <PuffBreakApp />
+        </div>
+      )}
 
       {/* 
         The foreground layer: children (Next.js pages)

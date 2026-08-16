@@ -10,16 +10,21 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { BLOG_POSTS, BlogPost } from '@/lib/blog';
+import { BlogPost } from '@/lib/blog';
+import { FAQ_ITEMS } from '@/lib/faq';
+import { getLocalizedGreeting, getCultureProfile, getDailyVibe, type CultureProfile } from '@/lib/i18n';
+import { ROOMS, type Room, type RoomId, type WeatherType } from '@/lib/rooms';
+import { track } from '@/lib/analytics';
+import { submitSurvey, hasAnsweredSurvey, SURVEY_OPTIONS, type SurveyFelt } from '@/lib/survey';
+import { useSessionId } from '@/hooks/useSessionId';
 import AmbientEngine, { type AmbientEngineHandle } from '@/components/engine/AmbientEngine';
 import { db } from '@/lib/firebase';
 import { ref, runTransaction, onChildAdded, push, onDisconnect, remove, off, query, limitToLast, onValue } from 'firebase/database';
 import { useRoomCounts } from '@/hooks/useRoomCounts';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+// Room types & ROOMS now live in lib/rooms.ts (shared with the /rooms SEO pages).
 
-type RoomId = 'office' | 'beach' | 'space' | 'library' | 'park' | 'metro' | 'chai' | 'silent';
-type WeatherType = 'rain' | 'dust' | 'leaves' | 'stars';
 type CigWidth = 'slim' | 'standard' | 'wide';
 
 // DOM-based smoke ring
@@ -30,21 +35,6 @@ interface SmokeRing {
   y: number;   // center y (bottom of filter)
   diameter: number; // initial diameter = filter element width
   density: number; // 0-1 how long it was held
-}
-
-interface Room {
-  id: RoomId;
-  name: string;
-  icon: string;
-  bg: string;
-  accent: string;
-  wind: number;
-  weather?: WeatherType;
-  overlay: string;
-  glowColor: string;
-  audioScale: string;
-  ytIds: string[];
-  ytVol?: number;
 }
 
 interface Particle {
@@ -174,20 +164,48 @@ const filterText = (text: string): string => {
   return text;
 };
 
-const TOTAL_TIME = 180; // seconds
+// Compact number formatting for social-proof stats (e.g. 1,240 → "1.2k")
+const formatCount = (n: number): string => {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, '')}k`;
+  return String(n);
+};
+
+// Read `?lang=` from the URL so the hreflang-localized variants actually
+// localize the UI (greeting, vibe, chai hint) instead of only changing metadata.
+const getUrlLang = (): string | undefined => {
+  if (typeof window === 'undefined') return undefined;
+  return new URLSearchParams(window.location.search).get('lang') ?? undefined;
+};
+
+// Daily affirmations are localized via lib/i18n.ts (getDailyVibe) — every user
+// sees a personalized, deterministic affirmation in their own language.
+
+const TOTAL_TIME = 180; // seconds (default "Classic" break)
+
+// ─── Break types ─────────────────────────────────────────────────────────────
+// Three session lengths so users can pick the ritual that fits their moment.
+// Non-intrusive: the selected length only changes the burn timer, nothing else.
+type BreakType = 'micro' | 'classic' | 'deep';
+const BREAK_TYPES: { id: BreakType; label: string; icon: string; seconds: number; hint: string }[] = [
+  { id: 'micro', label: 'Micro', icon: '⚡', seconds: 60, hint: '1 min' },
+  { id: 'classic', label: 'Classic', icon: '🌬️', seconds: 180, hint: '3 min' },
+  { id: 'deep', label: 'Deep', icon: '🌊', seconds: 300, hint: '5 min' },
+];
+
+// ─── Streak tiers (fun, earned, never nagging) ───────────────────────────────
+const STREAK_TIERS = [
+  { min: 30, name: 'Legend', emoji: '👑' },
+  { min: 14, name: 'Inferno', emoji: '🌋' },
+  { min: 7, name: 'Flame', emoji: '🔥' },
+  { min: 3, name: 'Ember', emoji: '🕯️' },
+  { min: 1, name: 'Spark', emoji: '✨' },
+] as const;
+const getStreakTier = (streak: number) =>
+  STREAK_TIERS.find((t) => streak >= t.min) ?? STREAK_TIERS[STREAK_TIERS.length - 1];
 
 // ─── Rooms ───────────────────────────────────────────────────────────────────
-
-const ROOMS: Room[] = [
-  { id: 'office',  name: 'Office Rooftop', icon: '🌃', bg: '#0a0a12', accent: '#d4a373', wind: 0.5,  weather: 'stars', overlay: 'rgba(10,15,30,0.4)',   glowColor: 'rgba(249,115,22,0.18)',  audioScale: 'office', ytIds: ['D7ZZp8XuUTE', 'PvexeYbDYqg'] },
-  { id: 'beach',   name: 'Beach Sunset',   icon: '🏖️', bg: '#1a0b05', accent: '#f4a261', wind: 1.5,  weather: 'dust',  overlay: 'rgba(255,100,50,0.1)', glowColor: 'rgba(244,162,97,0.2)',   audioScale: 'nature', ytIds: ['d_7c3jDJCCA'] },
-  { id: 'space',   name: 'Space Station',  icon: '🌑', bg: '#000010', accent: '#a8dadc', wind: 0,    weather: 'stars', overlay: 'rgba(0,0,0,0)',         glowColor: 'rgba(168,218,220,0.15)', audioScale: 'cyber',  ytIds: ['cAZpMtl9ZeE'] },
-  { id: 'library', name: 'Library Corner', icon: '📚', bg: '#1e1a18', accent: '#dda15e', wind: 0.1,  weather: 'dust',  overlay: 'rgba(40,30,20,0.3)',    glowColor: 'rgba(221,161,94,0.15)',  audioScale: 'office', ytIds: ['4vIQON2fDWM'] },
-  { id: 'park',    name: 'Park Bench',     icon: '🌳', bg: '#0b120c', accent: '#a3b18a', wind: 0.8,  weather: 'leaves',overlay: 'rgba(20,50,20,0.15)',   glowColor: 'rgba(163,177,138,0.15)', audioScale: 'nature', ytIds: ['4-zPHg5Jj6w'], ytVol: 5.0 },
-  { id: 'metro',   name: 'Metro Platform', icon: '🚇', bg: '#101416', accent: '#9ca3af', wind: 2.0,  weather: 'dust',  overlay: 'rgba(10,30,40,0.2)',    glowColor: 'rgba(100,116,139,0.15)', audioScale: 'cyber',  ytIds: ['GRZ6rrpMoHs'] },
-  { id: 'chai',    name: 'Chai Stall',     icon: '🇮🇳', bg: '#1a120b', accent: '#e07a5f', wind: 0.3,  weather: 'rain',  overlay: 'rgba(50,30,10,0.3)',    glowColor: 'rgba(224,122,95,0.2)',   audioScale: 'chai',   ytIds: ['uiMXGIG_DQo'] },
-  { id: 'silent',  name: 'Silent Room',    icon: '🤫', bg: '#050505', accent: '#6b705c', wind: 0.2,  overlay: 'rgba(0,0,0,0.5)',         glowColor: 'rgba(107,112,92,0.1)',   audioScale: 'silent', ytIds: [] },
-];
+// ROOMS now lives in lib/rooms.ts (shared with the /rooms SEO landing pages).
 
 // ─── Mock messages per room (initial seed) ───────────────────────────────────
 
@@ -273,6 +291,7 @@ function drawSmokeParticle(
 
 export default function PuffBreak() {
   // Core burn state
+  const [blogPosts, setBlogPosts]       = useState<BlogPost[]>([]);
   const [isLit, setIsLit]               = useState(false);
   const [progress, setProgress]         = useState(0);
   const [elapsedTimeMs, setElapsedTimeMs] = useState(0);
@@ -288,13 +307,15 @@ export default function PuffBreak() {
   const [highContrast, setHighContrast] = useState(false);
   const [cigWidth, setCigWidth]         = useState<CigWidth>('standard');
   const [igniterType, setIgniterType]   = useState<'lighter' | 'match'>('lighter');
+  const [breakType, setBreakType]       = useState<BreakType>('classic');
+  const breakSeconds                    = BREAK_TYPES.find((t) => t.id === breakType)?.seconds ?? TOTAL_TIME;
 
-  // Room
+  // Room (deep-linked via ?room=<id> in a mount effect below — see switchRoom)
   const [currentRoom, setCurrentRoom]   = useState<Room>(ROOMS[0]);
   const [prevBg, setPrevBg]             = useState(ROOMS[0].bg);
 
   // ASMR
-  const [asmrOn, setAsmrOn]             = useState(false);
+  const [asmrOn, setAsmrOn]             = useState(true);
   const [musicOn, setMusicOn]           = useState(false);
   const [ytPlaying, setYtPlaying]       = useState(false);
   
@@ -328,6 +349,51 @@ export default function PuffBreak() {
   const [feedbackError, setFeedbackError] = useState(false);
   const [showNotice, setShowNotice]     = useState(true);
   const [streak, setStreak]             = useState(0);
+  const [culture]                       = useState<CultureProfile>(() =>
+    getCultureProfile(getUrlLang() ?? (typeof navigator !== 'undefined' ? navigator.language : 'en'))
+  );
+  const [streakToast, setStreakToast]   = useState<string | null>(null);
+
+  // ── Craving Check — the in-app survey (see lib/survey.ts) ────────────────
+  // One optional tap after a completed break → aggregated anonymously into the
+  // /data page (original data, the honest GEO lever). Never blocking, never nagging.
+  const sessionId = useSessionId();
+  const [surveyOpen, setSurveyOpen] = useState(false);
+  const [surveyThanks, setSurveyThanks] = useState(false);
+  const [surveyChosen, setSurveyChosen] = useState<SurveyFelt | null>(null);
+  const surveyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openSurvey = useCallback(() => {
+    if (hasAnsweredSurvey()) return;
+    setSurveyOpen(true);
+    setSurveyThanks(false);
+  }, []);
+
+  const handleSurveyAnswer = useCallback((felt: SurveyFelt) => {
+    setSurveyChosen(felt);
+    submitSurvey(felt, currentRoom.id, sessionId);
+    setSurveyThanks(true);
+    if (surveyTimerRef.current) clearTimeout(surveyTimerRef.current);
+    surveyTimerRef.current = setTimeout(() => {
+      setSurveyOpen(false);
+      setSurveyThanks(false);
+      setSurveyChosen(null);
+    }, 4200);
+  }, [currentRoom.id, sessionId]);
+
+  const dismissSurvey = useCallback(() => {
+    if (surveyTimerRef.current) clearTimeout(surveyTimerRef.current);
+    setSurveyOpen(false);
+    setSurveyThanks(false);
+  }, []);
+
+  const [vibeOfDay]                     = useState<string>(() =>
+    getDailyVibe(getUrlLang() ?? (typeof navigator !== 'undefined' ? navigator.language : 'en'))
+  );
+  const [localizedGreeting]             = useState<string>(() =>
+    getLocalizedGreeting(getUrlLang() ?? (typeof navigator !== 'undefined' ? navigator.language : 'en'))
+  );
+  const [faqModalOpen, setFaqModalOpen] = useState(false);
   const [smokeRings, setSmokeRings]     = useState<SmokeRing[]>([]);
 
   // Chat
@@ -341,12 +407,24 @@ export default function PuffBreak() {
   const [isOffline, setIsOffline]       = useState(false);
   const [chatOpen, setChatOpen]         = useState(false);
   const [totalBreaksToday, setTotalBreaksToday] = useState(0);
-  // Visual viewport height tracking — for keyboard-aware chat bar on mobile
+  const [totalBreaksAll, setTotalBreaksAll] = useState(0);
+  // Fetch blog posts on mount
+  useEffect(() => {
+    fetch('/api/blogs')
+      .then(res => res.json())
+      .then(data => setBlogPosts(data))
+      .catch(err => console.error("Failed to load blog posts", err));
+  }, []);
+
+  // Keyboard controls & visibility tracking — for keyboard-aware chat bar on mobile
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   
-  // PartyKit Real-time Room
-  const [subRoomId, setSubRoomId]       = useState<string | null>(null);
-  
+  // NOTE (room model): While the platform is small, every user in a room location
+  // shares ONE lobby and ONE chat (no sub-room partitioning). This keeps room counts
+  // truthful (bottom = this location, top = all locations) and nobody feels alone.
+  // To re-enable sub-rooms later, restore the "<6 users per sub-room" matchmaker that
+  // used lobbies/{roomId}/{subRoomId}/users and rooms/{subRoomId}/messages.
+
   // YouTube Ambient
   const ytPlayersRef = useRef<Record<string, YouTubePlayer>>({});
 
@@ -452,13 +530,19 @@ export default function PuffBreak() {
     const streakStr = localStorage.getItem('pb_streak');
     let currentStreak = streakStr ? parseInt(streakStr) : 0;
     const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    let incrementedToday = false;
     if (lastVisit !== today) {
-      const yesterday = new Date(Date.now() - 86400000).toDateString();
       currentStreak = lastVisit === yesterday ? currentStreak + 1 : 1;
+      incrementedToday = lastVisit === yesterday;
       localStorage.setItem('pb_last_visit', today);
       localStorage.setItem('pb_streak', currentStreak.toString());
     }
     setStreak(currentStreak);
+    if (incrementedToday && currentStreak >= 2) {
+      const tier = getStreakTier(currentStreak);
+      setStreakToast(`${tier.emoji} ${tier.name} — ${currentStreak}-day streak`);
+    }
 
     const storedName  = localStorage.getItem('pb_nickname');
     const storedColor = localStorage.getItem('pb_color');
@@ -496,6 +580,13 @@ export default function PuffBreak() {
     };
     preloadAudio();
   }, []);
+
+  // ── Streak celebration toast auto-dismiss ─────────────────────────────────
+  useEffect(() => {
+    if (!streakToast) return;
+    const t = setTimeout(() => setStreakToast(null), 4500);
+    return () => clearTimeout(t);
+  }, [streakToast]);
 
 
   // ── Click outside to close mixer ──────────────────────────────────────────
@@ -558,17 +649,25 @@ export default function PuffBreak() {
     }
   }, [chatOpen]);
 
-  // ── Sync total breaks today ────────────────────────────────────────────────
+  // ── Sync total breaks (today + all-time) ─────────────────────────────────
   useEffect(() => {
     const todayStr = new Date().toISOString().split('T')[0];
-    const breaksRef = ref(db, `stats/breaks/${todayStr}`);
-    const unsub = onValue(breaksRef, (snapshot) => {
-      const val = snapshot.val();
-      setTotalBreaksToday(val || 0);
+    const todayRef = ref(db, `stats/breaks/${todayStr}`);
+    const allRef = ref(db, `stats/breaks/total`);
+
+    const unsubToday = onValue(todayRef, (snapshot) => {
+      setTotalBreaksToday(snapshot.val() || 0);
     }, () => {
       setTotalBreaksToday(0);
     });
-    return () => unsub();
+
+    const unsubAll = onValue(allRef, (snapshot) => {
+      setTotalBreaksAll(snapshot.val() || 0);
+    }, () => {
+      setTotalBreaksAll(0);
+    });
+
+    return () => { unsubToday(); unsubAll(); };
   }, []);
 
   // ── Firebase Real-time Integration ─────────────────────────────────────────
@@ -587,61 +686,42 @@ export default function PuffBreak() {
   });
   const currentRoomRef = useRef<string | null>(null);
 
-  // Fetch a subroom assignment when entering a new room
+  // Join the room location's single shared lobby (no sub-room partitioning yet).
   useEffect(() => {
     if (!currentRoom.id || !userId) return;
     let active = true;
 
-    const assignRoom = async () => {
-      const envRef = ref(db, `lobbies/${currentRoom.id}`);
-      let assignedRoomId: string | null = null;
+    const joinLobby = async () => {
+      const lobbyRef = ref(db, `lobbies/${currentRoom.id}`);
       try {
-        await runTransaction(envRef, (lobbiesData) => {
-          if (!lobbiesData) lobbiesData = {};
-          let found = false;
-          for (const [roomId, roomData] of Object.entries(lobbiesData)) {
-            const users = (roomData as any).users || {};
-            // Evict zombie entries: users who joined > 2 hours ago without cleanup
-            const now = Date.now();
-            for (const [uid, meta] of Object.entries(users)) {
-              const joinedAt = (meta as any)?.joinedAt;
-              if (joinedAt && now - joinedAt > 2 * 60 * 60 * 1000) {
-                delete users[uid];
-              }
-            }
-            if (Object.keys(users).length < 6) {
-              assignedRoomId = roomId;
-              users[userId] = { joinedAt: now }; // Store as object with timestamp
-              (roomData as any).users = users;
-              found = true;
-              break;
-            }
+        await runTransaction(lobbyRef, (lobbyData) => {
+          const users = (lobbyData?.users || {}) as Record<string, { joinedAt?: number }>;
+          const now = Date.now();
+          // Evict zombie entries: users who joined > 2 hours ago without cleanup
+          for (const [uid, meta] of Object.entries(users)) {
+            const joinedAt = meta?.joinedAt;
+            if (joinedAt && now - joinedAt > 2 * 60 * 60 * 1000) delete users[uid];
           }
-          if (!found) {
-            assignedRoomId = `${currentRoom.id}-${Date.now().toString(36)}`;
-            lobbiesData[assignedRoomId] = { users: { [userId]: { joinedAt: Date.now() } } };
-          }
-          return lobbiesData;
+          users[userId] = { joinedAt: now };
+          return { users };
         });
 
-        if (active && assignedRoomId) {
-          currentRoomRef.current = assignedRoomId;
-          setSubRoomId(assignedRoomId);
-
-          // Manage presence
-          const userPresenceRef = ref(db, `lobbies/${currentRoom.id}/${assignedRoomId}/users/${userId}`);
+        if (active) {
+          currentRoomRef.current = currentRoom.id;
+          const userPresenceRef = ref(db, `lobbies/${currentRoom.id}/users/${userId}`);
           onDisconnect(userPresenceRef).remove();
+          track('room_joined', { room: currentRoom.id, lang: getUrlLang() ?? 'auto' });
         }
       } catch (err) {
-        console.error("Matchmaker fetch failed", err);
+        console.error("Lobby join failed", err);
       }
     };
-    assignRoom();
+    joinLobby();
 
     return () => {
       active = false;
       if (currentRoomRef.current) {
-        const userPresenceRef = ref(db, `lobbies/${currentRoom.id}/${currentRoomRef.current}/users/${userId}`);
+        const userPresenceRef = ref(db, `lobbies/${currentRoom.id}/users/${userId}`);
         remove(userPresenceRef);
       }
     };
@@ -649,8 +729,8 @@ export default function PuffBreak() {
 
   // Chat message listener — limitToLast(50) prevents loading entire history on join
   useEffect(() => {
-    if (!subRoomId) return;
-    const messagesRef = ref(db, `rooms/${subRoomId}/messages`);
+    if (!currentRoom.id) return;
+    const messagesRef = ref(db, `rooms/${currentRoom.id}/messages`);
     const messagesQuery = query(messagesRef, limitToLast(50));
 
     const listener = onChildAdded(messagesQuery, (snapshot) => {
@@ -674,7 +754,7 @@ export default function PuffBreak() {
     });
 
     return () => { off(messagesQuery, 'child_added', listener); };
-  }, [subRoomId, nickname]);
+  }, [currentRoom.id, nickname]);
 
   // ── Room change: update mock seed messages ─────────────────────────────────
   const switchRoom = useCallback((room: Room) => {
@@ -682,9 +762,22 @@ export default function PuffBreak() {
     setCurrentRoom(room);
     setYtPlaying(false);
     setRoomModalOpen(false);
-    // Messages reset, PartyKit useEffect will trigger auto-connect
+    // Messages reset, room-change effect will re-subscribe to the new lobby's chat
     setMessages([]);
   }, [currentRoom.bg]);
+
+  // Deep-link: open a specific room via `/?room=<id>` (e.g. from /rooms SEO pages
+  // or share links). Runs client-side on mount so it survives SSR/hydration.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const roomParam = new URLSearchParams(window.location.search).get('room');
+    if (!roomParam) return;
+    const target = ROOMS.find((r) => r.id === roomParam);
+    if (target && target.id !== currentRoom.id) {
+      switchRoom(target);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Audio init ─────────────────────────────────────────────────────────────
   const initAudio = useCallback(() => {
@@ -923,7 +1016,9 @@ export default function PuffBreak() {
     setFilterHoldIntensity(0);
     displayLastTapRef.current = 0;
     particlesRef.current = [];
-  }, []);
+    // A new break means the user moved on — hide the (still optional) survey.
+    dismissSurvey();
+  }, [dismissSurvey]);
 
   // ── Clink chai ────────────────────────────────────────────────────────────
   const clinkChai = useCallback(() => {
@@ -990,14 +1085,14 @@ export default function PuffBreak() {
     if (!isLit || isFinished) return;
     let frame: number;
     let lastTime = Date.now();
-    let vt = progress * TOTAL_TIME * 1000;
+    let vt = progress * breakSeconds * 1000;
     const update = () => {
       const now = Date.now(); const delta = now - lastTime; lastTime = now;
       const isChai = currentRoom.id === 'chai';
       // Puffing (holding filter while lit) burns faster
       const speed = (!isChai && isPuffingRef.current) ? 1.5 : 1;
       vt += delta * speed;
-      const np = Math.min(vt / (TOTAL_TIME * 1000), 1);
+      const np = Math.min(vt / (breakSeconds * 1000), 1);
       setProgress(np);
       setElapsedTimeMs(prev => prev + delta);
       
@@ -1020,17 +1115,35 @@ export default function PuffBreak() {
         displayLastTapRef.current = 1; 
         vibrate([300, 100, 300]); 
 
-        // Safely record completed break in Firebase
+        // Safely record completed break in Firebase (today + all-time)
         const todayStr = new Date().toISOString().split('T')[0];
-        const breaksRef = ref(db, `stats/breaks/${todayStr}`);
-        runTransaction(breaksRef, (count) => (count || 0) + 1).catch(() => {});
+        runTransaction(ref(db, `stats/breaks/${todayStr}`), (count) => (count || 0) + 1).catch(() => {});
+        runTransaction(ref(db, `stats/breaks/total`), (count) => (count || 0) + 1).catch(() => {});
+        track('break_completed', { room: currentRoom.id, is_chai: currentRoom.id === 'chai' ? '1' : '0' });
       }
       else frame = requestAnimationFrame(update);
     };
     frame = requestAnimationFrame(update);
     return () => cancelAnimationFrame(frame);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLit, isFinished, currentRoom.id]);
+  }, [isLit, isFinished, currentRoom.id, breakSeconds]);
+
+  // ── Craving Check trigger — softly ask after a break completes ────────────
+  // Only when the break *finishes*, the user isn't in stealth/zen, and this
+  // session hasn't answered yet. Delayed slightly so it never feels abrupt.
+  const prevFinishedRef = useRef(false);
+  useEffect(() => {
+    if (isFinished && !prevFinishedRef.current) {
+      prevFinishedRef.current = true;
+      if (!isStealth && !isZenMode) {
+        const t = setTimeout(openSurvey, 1500);
+        return () => clearTimeout(t);
+      }
+    } else if (!isFinished) {
+      prevFinishedRef.current = false;
+    }
+  }, [isFinished, isStealth, isZenMode, openSurvey]);
+
 
   // ── Canvas render loop ────────────────────────────────────────────────────
   useEffect(() => {
@@ -1573,12 +1686,12 @@ export default function PuffBreak() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const handleSendMessage = (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
-    if (!chatText.trim() || !subRoomId) return;
+    if (!chatText.trim() || !currentRoom.id) return;
     const now = Date.now();
     if (now - lastMsgTime < 3000) return;
     
     const text = filterText(chatText);
-    const messagesRef = ref(db, `rooms/${subRoomId}/messages`);
+    const messagesRef = ref(db, `rooms/${currentRoom.id}/messages`);
     
     push(messagesRef, {
       type: 'chat',
@@ -1600,8 +1713,8 @@ export default function PuffBreak() {
     // Optimistic local update
     setMessages(p => p.map(m => m.id === msgId ? { ...m, reactions: [...m.reactions, emoji] } : m));
     
-    if (!subRoomId) return;
-    const messagesRef = ref(db, `rooms/${subRoomId}/messages`);
+    if (!currentRoom.id) return;
+    const messagesRef = ref(db, `rooms/${currentRoom.id}/messages`);
     push(messagesRef, {
       type: "reaction",
       id: `react-${Date.now()}`,
@@ -1673,7 +1786,7 @@ export default function PuffBreak() {
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
               'name': 'PuffBreak',
-              'alternateName': ['Online Other platforms', '온라인 담타', 'Other Virtual Break Platforms', '담타'],
+              'alternateName': ['PuffBreak App', 'Virtual Break Room', 'Online Damta Alternative', 'Digital Smoke Break'],
               'url': 'https://puff-break.vercel.app',
               'description': 'A mindful, interactive 3-minute digital break room experience. Take a mental pause by lighting a virtual cigarette or sipping a cup of hot chai with ambient audio, realistic particle physics, and a live anonymous community.',
               'applicationCategory': 'RelaxationApplication, HealthApplication',
@@ -1722,7 +1835,7 @@ export default function PuffBreak() {
                   'name': 'Can PuffBreak help me quit smoking?',
                   'acceptedAnswer': {
                     '@type': 'Answer',
-                    'text': 'Yes! Many users utilize PuffBreak as a digital smoking cessation aid, a virtual cigarette substitute, or a habit replacement tool. It offers the same 3-minute psychological pause and breathing rhythm as a real cigarette break, helping you manage cravings without the health risks.'
+                    'text': 'PuffBreak can be used as a behavioral habit-substitution tool during nicotine cravings. The 3-minute session matches the peak duration of a craving, giving you a mindful ritual to redirect the urge. It is not a medical device or a clinically proven cessation program. Consult a healthcare professional for medical advice on quitting smoking.'
                   }
                 },
                 {
@@ -1758,24 +1871,6 @@ export default function PuffBreak() {
         <p>
           Use PuffBreak as an interactive habit-replacement tool to quit smoking, manage nicotine withdrawal cravings, do breathing exercises, or simply step away from your desk. Teleport between the Office Rooftop, Beach Sunset, Space Station, Library Corner, Park Bench, Metro Platform, Chai Stall, or Silent Room. No registration required.
         </p>
-
-        {/* Korean Competitor Targeting (other platforms / 온라인 담타) */}
-        <h2>온라인 담타 (Online Other platforms) 글로벌 영어 버전 - PuffBreak</h2>
-        <p>
-          PuffBreak은 글로벌 이용자를 위한 온라인 담타(Online Other platforms) 및 가상 흡연실 시뮬레이션 서비스입니다.
-          가상 담배를 피우거나 따뜻한 차이 티(Chai)를 마시며 전세계 각지의 사람들과 실시간 익명 채팅으로 소근소근 대화를 나눠보세요.
-          금연 보조제, 스트레스 해소, 심호흡 훈련 및 일상의 소소한 리프레시를 위해 최적화되었습니다.
-          회사 옥상, 노을진 해변, 우주 정거장, 조용한 도서관, 공원 벤치, 지하철 플랫폼, 차이 가판대 등 다양한 테마의 방에서 휴식을 취하세요.
-          로그인이나 회원가입 없이 완전 익명으로 즉시 무료 사용이 가능합니다.
-        </p>
-        <h3>주요 기능 (Key Features)</h3>
-        <ul>
-          <li>🚬 현실적인 가상 담배 시뮬레이션 및 연기 도넛 필터 효과 (Virtual Smoke Break)</li>
-          <li>☕ 따뜻한 차이티 마시기 시뮬레이터 (Chai Cup ASMR)</li>
-          <li>💬 글로벌 실시간 익명 귓속말 채팅 커뮤니티 (Live Chat Room)</li>
-          <li>🌌 감성적인 그래픽 테마 룸 이동 (Teleport Rooms)</li>
-          <li>🤫 업무 중에 유용한 스텔스 모드 및 젠 모드 지원 (Stealth / Zen Mode)</li>
-        </ul>
       </div>
 
       {/* BG Click Layer */}
@@ -2017,6 +2112,92 @@ export default function PuffBreak() {
         )}
       </AnimatePresence>
 
+      {/* ── Vibe of the day (subtle daily affirmation — fades away once a break starts) ── */}
+      <AnimatePresence>
+        {!isZenMode && !isStealth && !isLit && !isFinished && (
+          <motion.p
+            key="vibe"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -14, filter: 'blur(4px)' }}
+            transition={{ delay: 0.5, duration: 0.7, ease: 'easeOut' }}
+            className="absolute top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center px-6 max-w-[92vw]"
+          >
+            <span className="text-[12px] text-white/45 font-light tracking-wide">{vibeOfDay}</span>
+          </motion.p>
+        )}
+      </AnimatePresence>
+
+      {/* ── Streak celebration toast ── */}
+      <AnimatePresence>
+        {streakToast && !isZenMode && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            className="absolute top-14 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+          >
+            <div className="bg-orange-500/15 backdrop-blur-xl border border-orange-500/30 text-orange-300 text-xs font-medium px-4 py-2 rounded-full shadow-lg whitespace-nowrap">
+              {streakToast}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Craving Check (in-app survey) — one tap, honest data ── */}
+      <AnimatePresence>
+        {surveyOpen && !isZenMode && !isStealth && (
+          <motion.div
+            initial={{ opacity: 0, x: 48 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 48 }}
+            transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute right-3 sm:right-6 bottom-48 sm:bottom-32 z-50 pointer-events-auto w-[min(88vw,20rem)]"
+          >
+            <div className="bg-[#0f0f13]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-4">
+              {surveyThanks ? (
+                <div className="text-center py-1">
+                  <div className="text-3xl mb-2">{SURVEY_OPTIONS.find(o => o.felt === surveyChosen)?.emoji ?? '🙏'}</div>
+                  <p className="text-sm font-semibold text-white mb-1">Thanks — that&apos;s real data now.</p>
+                  <Link href="/data" className="inline-flex items-center gap-1 text-xs text-emerald-300 hover:text-emerald-200 transition-colors">
+                    See what everyone says <span>→</span>
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between mb-2.5">
+                    <div>
+                      <p className="text-sm font-semibold text-white leading-tight">Did that break help?</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">How&apos;s the craving now?</p>
+                    </div>
+                    <button onClick={dismissSurvey} aria-label="Dismiss" className="p-1 -mr-1 text-gray-600 hover:text-gray-300 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {SURVEY_OPTIONS.map(opt => (
+                      <button
+                        key={opt.felt}
+                        onClick={() => handleSurveyAnswer(opt.felt)}
+                        className="flex flex-col items-center gap-1 py-2.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.08] hover:border-emerald-400/30 active:scale-95 transition-all"
+                        aria-label={opt.summary}
+                        title={opt.summary}
+                      >
+                        <span className="text-xl">{opt.emoji}</span>
+                        <span className="text-[10px] text-gray-400 font-medium">{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-gray-600 mt-2.5 text-center">
+                    1 tap · anonymous · feeds <Link href="/data" className="text-emerald-400/80 hover:text-emerald-300">/data</Link>
+                  </p>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Zen Mode Exit ── */}
       <AnimatePresence>
         {isZenMode && (
@@ -2042,27 +2223,58 @@ export default function PuffBreak() {
         </div>
       )}
 
-      {/* ── UI Hint ── — placed at top so it never overlaps the lighter or cigarette */}
-      {!isLit && !isFinished && !isStealth && !isZenMode && (
-        <div className="fixed top-[8vh] left-0 w-full flex justify-center text-[10px] tracking-widest uppercase animate-pulse opacity-70 z-10 pointer-events-none font-mono-display text-center" style={{ color: currentRoom.accent }}>
-          {currentRoom.id === 'chai' ? 'Hold to sip · Double-tap to clink' : 'Hold to light · Double-tap ash'}
-        </div>
-      )}
-      {isLit && !isFinished && !isStealth && currentRoom.id !== 'chai' && !isZenMode && (
-        <div className="fixed top-[8vh] left-0 w-full flex justify-center text-[10px] tracking-wider opacity-60 z-10 pointer-events-none text-gray-400 text-center px-4">
-          Hold to smoke · Release for ring · Double-tap ash
-        </div>
-      )}
-      {isLit && !isFinished && !isStealth && currentRoom.id === 'chai' && !isZenMode && (
-        <div className="fixed top-[8vh] left-0 w-full flex justify-center text-[10px] tracking-wider opacity-35 z-10 pointer-events-none text-gray-400 text-center">
-          Keep holding to sip · Release to pause
-        </div>
-      )}
-      {isFinished && !isStealth && currentRoom.id === 'chai' && !isZenMode && (
-        <div className="fixed top-[8vh] left-0 w-full flex justify-center text-[10px] tracking-widest opacity-50 z-10 pointer-events-none text-gray-400 font-mono-display uppercase text-center">
-          Double-tap to wash the cup
-        </div>
-      )}
+      {/* ── UI Hint ── — stacked below the vibe line so they never overlap, with smooth transitions */}
+      <AnimatePresence mode="wait">
+        {!isLit && !isFinished && !isStealth && !isZenMode && (
+          <motion.div
+            key="hint-pre"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 0.7, y: 0 }}
+            exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className="fixed top-28 left-0 w-full flex justify-center text-[10px] tracking-widest uppercase animate-pulse z-10 pointer-events-none font-mono-display text-center px-4"
+            style={{ color: currentRoom.accent }}
+          >
+            {currentRoom.id === 'chai' ? 'Hold to sip · Double-tap to clink' : 'Hold to light · Double-tap ash'}
+          </motion.div>
+        )}
+        {isLit && !isFinished && !isStealth && currentRoom.id !== 'chai' && !isZenMode && (
+          <motion.div
+            key="hint-smoke"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 0.75, y: 0 }}
+            exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className="fixed top-14 left-0 w-full flex justify-center text-[11px] tracking-wider z-30 pointer-events-none text-gray-300 text-center px-4"
+          >
+            Hold to smoke · Release for ring · Double-tap ash
+          </motion.div>
+        )}
+        {isLit && !isFinished && !isStealth && currentRoom.id === 'chai' && !isZenMode && (
+          <motion.div
+            key="hint-sip"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 0.55, y: 0 }}
+            exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className="fixed top-14 left-0 w-full flex justify-center text-[11px] tracking-wider z-30 pointer-events-none text-gray-300 text-center px-4"
+          >
+            Keep holding to sip · Release to pause
+          </motion.div>
+        )}
+        {isFinished && !isStealth && currentRoom.id === 'chai' && !isZenMode && (
+          <motion.div
+            key="hint-wash"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 0.65, y: 0 }}
+            exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className="fixed top-14 left-0 w-full flex justify-center text-[11px] tracking-widest z-30 pointer-events-none text-gray-300 font-mono-display uppercase text-center px-4"
+          >
+            Double-tap to wash the cup
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Main Interactive Element ── */}
 
@@ -2485,7 +2697,7 @@ export default function PuffBreak() {
                         {roomCount}
                       </span>
                       <span className="opacity-30">·</span>
-                      <span className="text-gray-500">{totalBreaksToday} breaks</span>
+                      <span className="text-gray-500">{totalBreaksToday} breaks today</span>
                     </>
                   )}
                 </span>
@@ -2834,13 +3046,13 @@ export default function PuffBreak() {
                   </button>
                 </div>
                 <div className="text-[11px] text-gray-500">
-                  Taking a break as{' '}
+                  👋 {localizedGreeting},{' '}
                   <strong style={{ color: nameColor }} className="font-semibold">{nickname}</strong>
                 </div>
                 {streak > 0 && (
                   <div className="inline-flex items-center gap-1 text-[11px] text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded-full">
-                    <span>🔥</span>
-                    <span>{streak} day streak</span>
+                    <span>{getStreakTier(streak).emoji}</span>
+                    <span>{getStreakTier(streak).name} · {streak} day streak</span>
                   </div>
                 )}
                 {isOffline && (
@@ -2925,6 +3137,23 @@ export default function PuffBreak() {
                   </div>
                 </div>
 
+                <div className="px-5 py-3 border-b border-white/5 mb-1 space-y-2">
+                  <label className="text-[11px] text-gray-500 uppercase tracking-widest font-mono-display block">Break Length</label>
+                  <div className="flex gap-2">
+                    {BREAK_TYPES.map(t => (
+                      <button
+                        key={t.id}
+                        onClick={() => setBreakType(t.id)}
+                        title={t.label}
+                        aria-label={`${t.label} break (${t.hint})`}
+                        className={`flex-1 py-2 rounded-lg text-[11px] font-medium transition-colors ${breakType === t.id ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/30' : 'bg-white/5 text-gray-400 hover:bg-white/10 border border-transparent'}`}
+                      >
+                        <span className="mr-1">{t.icon}</span>{t.hint}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button
                   onClick={() => setHighContrast(!highContrast)}
                   className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/5 transition-colors text-gray-300"
@@ -2939,15 +3168,25 @@ export default function PuffBreak() {
                 </button>
 
                 <div className="mt-2 border-t border-white/5 pt-2">
-                  <MenuButton icon={<Share2 className="w-4 h-4" />} text="Share PuffBreak" onClick={() => {
+                  <MenuButton icon={<Share2 className="w-4 h-4" />} text="Share Your Break" onClick={() => {
+                    track('share_clicked', { room: currentRoom.id });
+                    const caption = 'I just took a mindful 3-minute break on PuffBreak 🌬️ — free, anonymous, no sign-up';
+                    const url = 'https://puff-break.vercel.app';
                     if (navigator.share) {
-                      navigator.share({ title: 'PuffBreak', url: window.location.href });
+                      navigator.share({ title: 'PuffBreak — Virtual Break Room', text: caption, url }).catch(() => {});
                     } else {
-                      navigator.clipboard.writeText(window.location.href);
+                      navigator.clipboard?.writeText(`${caption} ${url}`).catch(() => {});
                     }
+                  }} />
+                  <MenuButton icon={<FileText className="w-4 h-4" />} text="FAQ" onClick={() => {
+                    setFaqModalOpen(true);
+                    setDrawerOpen(false);
                   }} />
                   <MenuButton icon={<MessageSquare className="w-4 h-4" />} text="Send Feedback" onClick={() => {
                     setFeedbackModalOpen(true);
+                  }} />
+                  <MenuButton icon={<Users className="w-4 h-4" />} text="About PuffBreak" onClick={() => {
+                    window.location.href = '/about';
                   }} />
                   <MenuButton icon={<Linkedin className="w-4 h-4" />} text="About the Creator" onClick={() => {
                     window.open('https://www.linkedin.com/in/devsg/', '_blank');
@@ -2957,7 +3196,7 @@ export default function PuffBreak() {
                   }} />
                   <MenuButton icon={<Star className="w-4 h-4 text-emerald-400" />} text="PuffBreak Guide" textColor="text-emerald-400" onClick={() => {
                     setBlogModalOpen(true);
-                    setActiveBlogPost(BLOG_POSTS.find(p => p.slug === 'comprehensive-puffbreak-guide') || null);
+                    setActiveBlogPost(blogPosts.find(p => p.slug === 'comprehensive-puffbreak-guide') || null);
                   }} />
                   <MenuButton icon={<BookOpen className="w-4 h-4" />} text="Read Blogs" onClick={() => {
                     setBlogModalOpen(true);
@@ -2982,12 +3221,12 @@ export default function PuffBreak() {
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/65 z-50 backdrop-blur-sm pointer-events-auto"
+              className="absolute inset-0 bg-black/75 z-50 pointer-events-auto"
               onClick={() => { setBlogModalOpen(false); setActiveBlogPost(null); }}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: '4%' }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.25 }}
+              initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.22 }}
               className="absolute top-[3%] left-[3%] right-[3%] bottom-[3%] bg-[#09090e] border border-white/[0.08] rounded-3xl z-50 shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
             >
               {/* Header */}
@@ -3004,7 +3243,7 @@ export default function PuffBreak() {
                       </div>
                       <div>
                         <span className="text-white font-bold text-base block leading-none">PuffBreak Journal</span>
-                        <span className="text-gray-500 text-[11px] tracking-widest uppercase">{BLOG_POSTS.length} Articles</span>
+                        <span className="text-gray-500 text-[11px] tracking-widest uppercase">{blogPosts.length} Articles</span>
                       </div>
                     </div>
                   )}
@@ -3014,7 +3253,7 @@ export default function PuffBreak() {
                 </button>
               </div>
               
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto overscroll-contain">
                 {activeBlogPost ? (
                   /* ── Article Reader ── */
                   <div className="max-w-2xl mx-auto px-6 py-10 pb-16">
@@ -3036,13 +3275,21 @@ export default function PuffBreak() {
                         <p className="text-xs text-gray-600">{new Date(activeBlogPost.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                       </div>
                     </div>
-                    <div dangerouslySetInnerHTML={{ __html: activeBlogPost.content }} />
+                    <div
+                      className="prose prose-invert prose-emerald max-w-none
+                                 prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
+                                 prose-p:text-gray-300 prose-p:leading-relaxed
+                                 prose-strong:text-white
+                                 prose-li:text-gray-300 prose-li:leading-relaxed
+                                 prose-a:text-emerald-400 hover:prose-a:text-emerald-300"
+                      dangerouslySetInnerHTML={{ __html: activeBlogPost.content }}
+                    />
                   </div>
                 ) : (
                   /* ── Article Grid ── */
                   <div className="p-6 sm:p-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto pb-8">
-                      {BLOG_POSTS.map((post, i) => (
+                      {blogPosts.map((post, i) => (
                         <Link
                           key={post.slug}
                           href={`/blog/${post.slug}`}
@@ -3103,11 +3350,48 @@ export default function PuffBreak() {
                   <h3 className="text-white font-bold text-xl mb-4">Local Storage</h3>
                   <p className="mb-6">All preferences (like your nickname, color, and streak) are saved entirely locally on your device in your browser's LocalStorage. This data never leaves your device.</p>
                   
-                  <h3 className="text-white font-bold text-xl mb-4">No Tracking</h3>
-                  <p className="mb-6">We use no third-party trackers, no cookies, and no analytics software. Your digital break room is completely isolated and secure.</p>
+                  <h3 className="text-white font-bold text-xl mb-4">Privacy-Respecting Analytics</h3>
+                  <p className="mb-6">We use only aggregate, privacy-respecting analytics (Vercel Analytics and Google Analytics) to measure overall traffic. No personal profiles, no cross-site tracking, and no advertising cookies.</p>
                   
                   <h3 className="text-white font-bold text-xl mb-4">Chat History</h3>
                   <p className="mb-6">When you send a message in a public room, it is broadcast to other active users in that room. It is never logged or stored on a server database. When the message vanishes from the screen, it is gone forever.</p>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── FAQ Modal ── */}
+      <AnimatePresence>
+        {faqModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/65 z-50 backdrop-blur-sm pointer-events-auto"
+              onClick={() => setFaqModalOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: '4%' }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.25 }}
+              className="absolute top-[10%] left-[10%] right-[10%] bottom-[10%] bg-[#0a0a0f]/98 backdrop-blur-3xl border border-white/10 rounded-3xl z-50 shadow-2xl flex flex-col pointer-events-auto"
+            >
+              <div className="flex items-center justify-between p-5 border-b border-white/10">
+                <h2 className="text-white font-bold tracking-tight text-lg flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-emerald-400" /> Frequently Asked Questions
+                </h2>
+                <button onClick={() => setFaqModalOpen(false)} className="p-2 text-gray-500 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+                <div className="max-w-2xl mx-auto space-y-6">
+                  {FAQ_ITEMS.map((item) => (
+                    <div key={item.q} className="border-b border-white/5 pb-6 last:border-0">
+                      <h3 className="text-white font-semibold text-base mb-2">{item.q}</h3>
+                      <p className="text-sm text-gray-400 leading-relaxed">{item.a}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -3162,6 +3446,9 @@ export default function PuffBreak() {
                       )}
                       <span className="text-2xl mb-1.5">{r.icon}</span>
                       <span className="text-[11px] font-medium tracking-wide text-center leading-tight">{r.name}</span>
+                      {r.id === 'chai' && (
+                        <span className="text-[9px] text-gray-500 text-center leading-tight mt-0.5 px-1">{culture.chaiRoomHint}</span>
+                      )}
                       {currentRoom.id === r.id && (
                         <span className="text-[9px] mt-1 text-blue-400/80 uppercase tracking-widest font-mono-display">Active</span>
                       )}

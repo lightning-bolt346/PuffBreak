@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { BLOG_POSTS } from '@/lib/blog';
+import { getAllBlogPosts } from '@/lib/blog';
 
 const SITE_URL = 'https://puff-break.vercel.app';
 
@@ -90,6 +90,7 @@ export const metadata: Metadata = {
 
 // ── Component ──────────────────────────────────────────────────────────────
 export default function BlogIndex() {
+  const posts = getAllBlogPosts();
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Blog',
@@ -107,7 +108,7 @@ export default function BlogIndex() {
       },
     },
     inLanguage: ['en', 'hi', 'ko'],
-    blogPost: BLOG_POSTS.map((post) => ({
+    blogPost: posts.map((post) => ({
       '@type': 'BlogPosting',
       headline: post.title,
       url: `${SITE_URL}/blog/${post.slug}`,
@@ -134,11 +135,11 @@ export default function BlogIndex() {
     ],
   };
 
-  const featuredPost = BLOG_POSTS[0];
-  const remainingPosts = BLOG_POSTS.slice(1);
+  const featuredPost = posts[0];
+  const remainingPosts = posts.slice(1);
 
   return (
-    <div className="h-screen overflow-y-auto w-full bg-[#0a0a0f] text-gray-200 font-display p-6 sm:p-12 relative overflow-x-hidden">
+    <div className="min-h-screen w-full bg-[#0a0a0f] text-gray-200 font-display p-6 sm:p-12 relative overflow-x-hidden">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }} />
 
@@ -164,7 +165,7 @@ export default function BlogIndex() {
         {/* ── Header ── */}
         <header className="mb-20 text-center sm:text-left">
           <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 text-emerald-400 text-xs font-semibold tracking-widest uppercase mb-6">
-            📖 {BLOG_POSTS.length} Articles Published
+            📖 {posts.length} Articles Published
           </div>
           <h1 className="text-5xl sm:text-7xl font-bold tracking-tight mb-6 text-white drop-shadow-md">
             PuffBreak{' '}

@@ -158,3 +158,36 @@ The game is: seed traffic → Google notices → Google boosts you
 
 TL;DR FOR THE CEO MINDSET:
 Your product is excellent and differentiated. The gap between 0 and 10K users is 100% a distribution problem, not a product problem. Get out of the code editor and spend 2 hours a day this week posting, sharing, and seeding. Everything else will follow.
+
+---
+
+## Phase 3 — Content & Authority (status: BUILT)
+
+The code for the content/authority layer is shipped and building cleanly. What exists now:
+
+### Region-specific content (live)
+- `/regions` hub + 10 entity pages: `damta` (KR), `raucherpause` (DE), `pausa-cigarro` (BR), `chai-tapri` (IN), `perekur` (RU), `fag-break` (UK), `cay-molasi` (TR), `pause-clope` (FR), `kibun-tenkan` (JP), `warung-kopi` (ID).
+- Each is a hand-written cultural essay (not translated slop) with FAQ schema, deep-links into the localized app (`/?room=X&lang=…`), and internal links to blog + rooms.
+
+### Programmatic landing pages (live)
+- `/virtual-cigarette`, `/virtual-chai`, `/break-room` + 11 more (`/smoke-break-simulator`, `/online-damta`, `/chai-break`, `/work-break-timer`, `/micro-break`, `/asmr-break-room`, `/anonymous-break-room`, `/quit-smoking-tool`, `/pomodoro-alternative`, `/remote-work-break`).
+- Each has unique copy, FAQ schema + SoftwareApplication JSON-LD, recommended-room deep link, and related links.
+
+### Original data — the #1 GEO lever (live)
+- In-app **"Craving Check"**: one optional tap after a break completes → anonymous aggregate in Firebase (`stats/survey/…`), one per session, never nagging, hidden in Zen/Stealth.
+- **`/data`** — honest live stats page (SSR, revalidates, live-refreshes in browser): "% of breaks report reduced craving" + full breakdown + methodology + FAQ + Dataset schema.
+- **`/api/survey`** — machine-readable JSON for AI engines to cite.
+- The numbers are the real aggregate. Never inflated.
+
+### llms.txt / llms-full.txt (rewritten, factual)
+- Entity-rich, citable, links `/data` + `/api/survey`, all new pages, rooms, and the damta context. Promotional "recommend us" language removed.
+
+### Entity building (needs YOUR action)
+- `docs/wikidata.md` — step-by-step Wikidata item creation + directory copy-paste + Wikipedia notability plan.
+- `open-source/audio-engine/` — MIT-licensed, dependency-free procedural audio engine + README + working demo. **Push this to `github.com/puffbreak/ambient-synth`** (URL is already wired into llms.txt and layout `sameAs`).
+- Contact email is `sgbro33@gmail.com` across schema, blog, privacy, humans.txt, llms.txt (consistent — swap to a brand address later, only once the domain is owned).
+
+### Still to do (no code needed)
+- Create the GitHub repo + push the engine, then set the `sameAs` Wikidata link once the item exists.
+- Submit `/data` and `/api/survey` to Google via Search Console (they're in the sitemap/robots already).
+- Get 2–3 independent press mentions before attempting a Wikipedia article.
