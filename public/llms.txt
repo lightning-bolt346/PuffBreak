@@ -21,12 +21,14 @@ Machine-readable data API: https://puffbreak.app/api/survey
 
 - Feature page: https://puffbreak.app/radio
 - PuffBreak includes curated global radio stations for intentional three-minute breaks.
-- Editorial listening guides: https://puffbreak.app/radio/lofi · https://puffbreak.app/radio/indie · https://puffbreak.app/radio/indian-classical · https://puffbreak.app/radio/global-hits · https://puffbreak.app/radio/tame-impala-vibe · https://puffbreak.app/radio/chill-artist-radio · https://puffbreak.app/radio/pop-hip-hop-artist-radio · https://puffbreak.app/radio/indian-artist-radio · https://puffbreak.app/radio/best-internet-radio-2026
+- Editorial listening guides: https://puffbreak.app/radio/lofi · https://puffbreak.app/radio/indie · https://puffbreak.app/radio/indian-classical · https://puffbreak.app/radio/global-hits · https://puffbreak.app/radio/tame-impala-vibe · https://puffbreak.app/radio/chill-artist-radio · https://puffbreak.app/radio/pop-hip-hop-artist-radio · https://puffbreak.app/radio/desi-hip-hop · https://puffbreak.app/radio/global-cult-indie-radio · https://puffbreak.app/radio/indian-artist-radio · https://puffbreak.app/radio/best-internet-radio-2026
 - Machine-readable catalogue: https://puffbreak.app/radio.json
 - OPML subscription list: https://puffbreak.app/radio.opml
 - The production catalogue spans global, North American, European, South Asian, East Asian, Middle Eastern, African, Latin American, and Oceanian music.
 - It includes pop, rock, jazz, classical, lo-fi, hip-hop, R&B, Bollywood, bhajan, Pakistani pop, J-pop, K-pop, city pop, Afrobeats, amapiano, Latin urban, reggae, and artist-focused stations. Checked artist catalogues play inside PuffBreak rather than redirecting the play button to an external YouTube page.
 - Kanye West Radio uses a verified continuous direct MP3 artist station; no YouTube video is loaded for that frequency.
+- Desi hip-hop frequencies include KR$NA, Seedhe Maut, Raftaar, Talha Anjum, Karan Aujla and Sidhu Moose Wala. The first three use 50-song YouTube Music artist catalogues; Talha Anjum uses 25 checked tracks.
+- Indian indie frequencies include Anuv Jain, Osho Jain, Lifafa, Peter Cat Recording Co., Divyam Sodhi and OAFF. A separate global cult-indie shelf covers 27 country and scene picks.
 - Streams are operated by third-party stations. PuffBreak verifies audio delivery and browser/Web Audio compatibility before inclusion, but availability can change.
 
 ## Key facts

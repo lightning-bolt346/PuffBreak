@@ -2032,8 +2032,9 @@ export default function PuffBreak() {
   const playBlowSfx = useCallback((intensity: number) => {
     const ctx = audioCtxRef.current;
     if (!ctx || ctx.state === 'suspended') return;
-    // Respect an explicit effects mute and prevent rapid stacked whooshes.
-    if (crackleVolume <= 0) return;
+    // Exhale is an interaction cue, not part of the cigarette-crackle bed.
+    // It remains available when ASMR or crackle is muted; only rate-limit it
+    // so repeated releases never stack into an irritating burst.
     const wallNow = Date.now();
     if (wallNow - lastBlowSfxAtRef.current < 650) return;
     lastBlowSfxAtRef.current = wallNow;
@@ -2093,7 +2094,7 @@ export default function PuffBreak() {
         compressor.threshold.value = -30; compressor.knee.value = 18; compressor.ratio.value = 3.2;
         compressor.attack.value = 0.006; compressor.release.value = 0.2;
         const gain = ctx.createGain();
-        const peak = Math.max(0.62, crackleVolume) * (0.78 + strength * 0.18);
+        const peak = 0.52 + strength * 0.14;
         gain.gain.setValueAtTime(0.0001, now);
         gain.gain.exponentialRampToValueAtTime(peak, now + 0.028);
         gain.gain.setTargetAtTime(0.0001, now + Math.min(0.82, Math.max(0.42, buf.duration * 0.58)), 0.18);
@@ -2116,7 +2117,7 @@ export default function PuffBreak() {
       const airGain = ctx.createGain(); airGain.gain.value = 0.075 + strength * 0.035;
       airSource.connect(airBand); airBand.connect(airGain); airGain.connect(ctx.destination); airSource.start(0);
     } catch (e) { /* non-fatal */ }
-  }, [ambientVolume, asmrOn, crackleVolume, currentRoom.ytIds, currentRoom.ytVol, musicVolume]);
+  }, [ambientVolume, asmrOn, currentRoom.ytIds, currentRoom.ytVol, musicVolume]);
 
   // ── Spawn smoke ring (DOM-based) ──────────────────────────────────────────
   const spawnSmokeRing = useCallback((intensity = 0) => {
@@ -2146,6 +2147,9 @@ export default function PuffBreak() {
     }
     // Only allow smoking if it is lit and NOT finished
     if (isLit && !isFinished && currentRoom.id !== 'chai') {
+      // Resume Web Audio on the pointer gesture so the independent exhale cue
+      // still works after mobile browsers suspend an idle/backgrounded tab.
+      initAudio();
       setIsPuffing(true);
       isFilterHeldRef.current = true;
       filterHoldStartRef.current = Date.now();
