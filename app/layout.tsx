@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
-import { FAQ_ITEMS } from '@/lib/faq';
 
 const SITE_URL = 'https://puffbreak.app';
 const SITE_NAME = 'PuffBreak';
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
     template: '%s | PuffBreak',
   },
   description:
-    'Take a mindful 3-minute digital break. Light a virtual cigarette or sip virtual chai in 8 immersive ambient rooms with real-time ASMR audio. 100% free, anonymous, no sign-up. The #1 alternative to Damta World.',
+    'Take a mindful 3-minute digital break with a virtual cigarette or chai, 8 ambient rooms, human-curated global music radio, and an independent sound mixer. Free and no sign-up.',
   keywords: [
     // Core product terms
     'virtual smoke break',
@@ -32,6 +31,13 @@ export const metadata: Metadata = {
     'virtual chai break',
     'ASMR smoke break',
     'ambient break room',
+    'free internet radio',
+    'global music radio',
+    'mood radio',
+    'lofi radio online',
+    'bhajan radio online',
+    'world music radio',
+    'ambient sound mixer',
     'mindful breathing app',
     'quit smoking aid',
     'nicotine craving tool',
@@ -99,7 +105,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'PuffBreak — Virtual Break Room | Digital Smoke & Chai Simulator',
     description:
-      'Step away for 3 minutes. Light a virtual cigarette or enjoy a virtual cup of chai in 8 immersive ambient rooms. Real ASMR audio, live anonymous chat, zero sign-up.',
+      'Step away for 3 minutes with a virtual cigarette or chai, 8 immersive rooms, global music radio, an independent sound mixer, and anonymous company. No sign-up.',
     url: SITE_URL,
     siteName: SITE_NAME,
     images: [
@@ -120,7 +126,7 @@ export const metadata: Metadata = {
     creator: '@puffbreak',
     title: 'PuffBreak — Virtual Break Room | Take a 3-min Digital Break',
     description:
-      'Light a virtual cigarette or sip chai in 8 immersive rooms. ASMR audio, anonymous live chat, zero sign-up. Free forever.',
+      'A 3-minute virtual cigarette or chai break with 8 immersive rooms, curated global music radio, a sound mixer, and anonymous company. Free, no sign-up.',
     images: [
       {
         url: OG_IMAGE,
@@ -226,7 +232,7 @@ const jsonLdWebApp = {
   operatingSystem: 'Web, iOS, Android (PWA)',
   browserRequirements: 'Requires JavaScript. Works on Chrome, Firefox, Safari, Edge.',
   description:
-    'A mindful virtual break room. Light a virtual cigarette or sip chai, listen to procedural ASMR, and relax in 8 immersive ambient rooms. Free, anonymous, no account needed.',
+    'A mindful virtual break room with a virtual cigarette or chai, 8 ambient rooms, curated global music radio, an independent sound mixer, and anonymous live company. Free and no account needed.',
   offers: {
     '@type': 'Offer',
     price: '0',
@@ -236,12 +242,15 @@ const jsonLdWebApp = {
     'Virtual cigarette with realistic smoke physics',
     'Virtual chai tea break with steam particles',
     '8 immersive ambient rooms',
-    'Procedural ASMR audio engine',
+    'Human-curated global music radio by mood, genre, region, language and artist',
+    'Independent volume mixer for radio, room ambience and cigarette crackle',
+    'Procedural room ambience built with the Web Audio API',
+    'Saved radio favourites and live playback status',
     'Anonymous live chat — no accounts',
     'Daily break streak tracking (localStorage only)',
     'Zen Mode and Stealth Mode',
     'PWA installable on mobile',
-    'Zero data collection — privacy-first',
+    'No accounts or personal profiles; preferences stored locally',
   ],
   screenshot: OG_IMAGE,
   image: OG_IMAGE,
@@ -255,30 +264,12 @@ const jsonLdWebApp = {
   isFamilyFriendly: false,
 };
 
-const jsonLdFAQ = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
-    '@type': 'Question',
-    name: q,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: a,
-    },
-  })),
-};
-
 const jsonLdWebSite = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: SITE_NAME,
   url: SITE_URL,
-  description: 'Free virtual break room simulator. Take mindful digital smoke breaks and chai breaks in immersive ambient environments.',
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: `${SITE_URL}/blog?q={search_term_string}`,
-    'query-input': 'required name=search_term_string',
-  },
+  description: 'Free virtual break room with digital smoke and chai rituals, ambient rooms, curated global music radio, and a flexible sound mixer.',
   inLanguage: 'en',
 };
 
@@ -292,7 +283,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebApp) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFAQ) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }} />
       </head>
       <body className="antialiased selection:bg-white/20 font-display" suppressHydrationWarning>

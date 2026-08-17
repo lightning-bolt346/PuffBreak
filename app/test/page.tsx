@@ -7,6 +7,7 @@ import { REGIONS } from '@/lib/regions';
 import { LANDING_PAGES } from '@/lib/landing';
 import { getAllBlogPosts } from '@/lib/blog';
 import { fetchSurveyStats } from '@/lib/stats';
+import RadioAuditionLab from '@/components/test/RadioAuditionLab';
 
 /**
  * /test — internal QA dashboard.
@@ -335,9 +336,11 @@ export default async function TestPage() {
           </div>
         </section>
 
+        <RadioAuditionLab />
+
         {/* Manual QA */}
         <section className="mb-10">
-          <h2 className="text-lg font-bold text-white mb-1">5 · Manual QA checklist</h2>
+          <h2 className="text-lg font-bold text-white mb-1">6 · Manual QA checklist</h2>
           <p className="text-sm text-gray-500 mb-4">Tick each one by hand — especially the Craving Check (the new data feature).</p>
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
@@ -353,7 +356,7 @@ export default async function TestPage() {
 
         {/* Deploy */}
         <section>
-          <h2 className="text-lg font-bold text-white mb-1">6 · Before/after you push</h2>
+          <h2 className="text-lg font-bold text-white mb-1">7 · Before/after you push</h2>
           <p className="text-sm text-gray-500 mb-4">Manual, off-platform steps only you can do.</p>
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <ul className="space-y-2.5">

@@ -35,7 +35,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 export interface AmbientEngineHandle {
   /** Switch ambient profile to a new room with a smooth crossfade */
   setRoom: (roomId: string) => void;
-  /** Set master ambient volume (0–1.5). Smoothly interpolated. */
+  /** Set master ambient volume (0–1). Smoothly interpolated. */
   setVolume: (vol: number) => void;
   /** Resume a suspended AudioContext (required after user gesture on Safari) */
   start: () => void;
@@ -52,7 +52,7 @@ export interface AmbientEngineProps {
   outputGain: GainNode | null;
   /** Current room ID — triggers smooth ambient crossfade */
   roomId: string;
-  /** Master volume (0–1.5). Applied to outputGain. */
+  /** Master volume (0–1). Applied to outputGain. */
   volume: number;
   /** Whether the engine should be producing sound */
   enabled: boolean;

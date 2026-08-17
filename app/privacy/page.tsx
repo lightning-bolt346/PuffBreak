@@ -46,7 +46,7 @@ export default function PrivacyPolicy() {
             Anonymity by design
           </p>
           <p className="text-gray-500 text-sm mt-4">
-            Last updated: June 27, 2026
+            Last updated: August 17, 2026
           </p>
         </header>
 
@@ -71,7 +71,7 @@ export default function PrivacyPolicy() {
           <ul>
             <li><strong>Aggregate Analytics:</strong> We use privacy-respecting, aggregate analytics (Vercel Analytics and Google Analytics) to understand overall traffic, such as page views and broad device/browser categories. These services do not build a personal profile about you, are not used to identify you, and are not used to serve you targeted ads. We do not use intrusive third-party trackers or fingerprinting scripts.</li>
             <li><strong>Local Storage:</strong> Any preferences (such as your chosen nickname, cigarette style, or volume settings) are stored locally on your device using browser LocalStorage. This data never leaves your device and is never sent to our servers.</li>
-            <li><strong>Chat Messages:</strong> When you use the live chat feature in public rooms, your messages are broadcasted to other active users in that room. However, we do not log or store chat history on our servers. Once a message disappears from the screen, it is gone forever.</li>
+            <li><strong>Chat Messages:</strong> Public-room messages are temporarily stored in Firebase Realtime Database so active visitors can receive them. They disappear from the interface quickly and are designed to expire from the database after roughly five minutes; PuffBreak does not keep a permanent chat history.</li>
           </ul>
 
           <h2>3. Cookies</h2>
@@ -90,6 +90,9 @@ export default function PrivacyPolicy() {
             <li>Vercel Analytics: <a href="https://vercel.com/docs/analytics/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300">vercel.com/docs/analytics/privacy</a></li>
             <li>Google Analytics: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300">policies.google.com/privacy</a></li>
           </ul>
+          <p>
+            The optional radio library plays live streams operated by third-party stations. When you start a station, your browser connects directly to that station's streaming server, which may receive standard connection information such as your IP address and browser user agent under its own privacy policy. PuffBreak does not receive the station's listener logs.
+          </p>
           <p>
             PuffBreak may also link to external sites (such as our blog or external resources for smoking cessation). We are not responsible for the privacy practices of those external websites. We encourage you to read their privacy policies.
           </p>

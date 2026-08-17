@@ -62,22 +62,23 @@ export async function fetchSurveyStats(): Promise<SurveyStats> {
     getJson<number | null>(`stats/breaks/${todayStr}`),
   ]);
 
-  const counts = {
-    relief: totals?.relief ?? null,
-    eased: totals?.eased ?? null,
-    same: totals?.same ?? null,
-    worse: totals?.worse ?? null,
-  } as Record<SurveyFelt, number | null>;
-
   const usable = typeof total === 'number' && total > 0;
+
+  // Firebase omits object keys whose numeric value is zero. Once a non-zero
+  // total exists, a missing answer bucket therefore means 0 responses—not
+  // "unknown". Treating it as null made relief + eased impossible to compute
+  // and incorrectly rendered the headline as 0% for valid datasets.
+  const counts = FELT_KEYS.reduce((acc, key) => {
+    acc[key] = usable ? (totals?.[key] ?? 0) : null;
+    return acc;
+  }, {} as Record<SurveyFelt, number | null>);
 
   const pct = FELT_KEYS.reduce((acc, key) => {
     acc[key] = usable && typeof counts[key] === 'number' ? Math.round(((counts[key] as number) / total) * 100) : null;
     return acc;
   }, {} as Record<SurveyFelt, number | null>);
 
-  const improvedCount =
-    typeof counts.relief === 'number' && typeof counts.eased === 'number' ? counts.relief + counts.eased : null;
+  const improvedCount = usable ? (counts.relief ?? 0) + (counts.eased ?? 0) : null;
   const improvedPct = usable && improvedCount !== null ? Math.round((improvedCount / total) * 100) : null;
 
   return {

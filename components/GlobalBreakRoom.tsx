@@ -3103,19 +3103,21 @@ export default function PuffBreak() {
                         if (feedbackText.trim().length < 3) return;
                         setFeedbackSending(true);
                         try {
-                          const WEBHOOK = 'https://discord.com/api/webhooks/1520215527845400727/3_MhpmnRvWEuO5MU-KEoMjRDwQ10qEkY5KwSfo5pXtjXYaIRHHganCnoCzjul0yC-4ju';
+                          let response: Response;
                           if (feedbackImages.length > 0) {
                             const form = new FormData();
-                            form.append('payload_json', JSON.stringify({ content: `**PuffBreak Feedback** 💬\n\n${feedbackText}\n\n*Sent from PuffBreak app*` }));
-                            feedbackImages.forEach((img, i) => form.append(`files[${i}]`, img));
-                            await fetch(WEBHOOK, { method: 'POST', body: form });
+                            form.append('message', feedbackText);
+                            form.append('website', '');
+                            feedbackImages.forEach((img) => form.append('files', img));
+                            response = await fetch('/api/feedback', { method: 'POST', body: form });
                           } else {
-                            await fetch(WEBHOOK, {
+                            response = await fetch('/api/feedback', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ content: `**PuffBreak Feedback** 💬\n\n${feedbackText}\n\n*Sent from PuffBreak app*` }),
+                              body: JSON.stringify({ type: 'feedback', message: feedbackText, website: '' }),
                             });
                           }
+                          if (!response.ok) throw new Error('Feedback request failed');
                           setFeedbackSent(true);
                           setFeedbackSending(false);
                         } catch {

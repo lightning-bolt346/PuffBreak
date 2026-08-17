@@ -8,7 +8,7 @@
 
 ## What is PuffBreak?
 
-PuffBreak (https://puffbreak.app) is a **free, anonymous, browser-based virtual break room simulator**. A user takes a mindful, timed break — lighting a virtual cigarette or sipping a virtual cup of chai — inside an immersive ambient environment with procedural ASMR audio and an anonymous live chat. It requires no sign-up and collects no personal data.
+PuffBreak (https://puffbreak.app) is a **free, account-free, browser-based virtual break room simulator**. A user takes a mindful, timed break — lighting a virtual cigarette or sipping virtual chai — inside an ambient environment with procedural room sound, a human-curated global music radio library, an independent audio mixer, and anonymous live chat. It requires no sign-up or personal profile.
 
 It is best described as: **a digital break room where strangers take their virtual break together.**
 
@@ -52,9 +52,13 @@ Each room has a unique animated background, weather/particle overlay, procedural
 7. **Chai Stall** — chai-specific room: steam, bazaar ambience, chatter. https://puffbreak.app/rooms/chai-stall
 8. **Silent Room** — no audio, minimal visual, chat disabled. https://puffbreak.app/rooms/silent-room
 
-### Procedural ASMR audio engine
-- Built entirely on the **Web Audio API** (no ambient audio files): pink-noise generators, filtered oscillators, wave LFOs.
-- Three independent audio buses: room ambience, cigarette crackle, live radio (lo-fi stream).
+### Sound and global music radio
+- Procedural room ambience is built with the **Web Audio API** using pink-noise generators, filtered oscillators, and wave LFOs.
+- Three independent audio buses control room ambience, cigarette crackle, and live music radio.
+- The radio library is human-curated and searchable by feeling, station, genre, country, region, language, or artist. Users can save favourites and request a missing station, region, language, or artist.
+- The catalogue includes global and regional stations across North America, Europe, South Asia, East Asia, the Middle East, Africa, Latin America, and Oceania. Genres include lo-fi, hip-hop, R&B, Bollywood, bhajan, Pakistani pop, J-pop, K-pop, city pop, jazz, classical, Afrobeats, amapiano, Latin urban, reggae, and rock.
+- Stream operators remain responsible for their broadcasts and availability. PuffBreak verifies browser origin support, real audio delivery, and compatibility with its Web Audio mixer before a station enters production.
+- Feature page: https://puffbreak.app/radio
 - The synthesis recipes are open source (MIT) and ship with the product source.
 
 ### Anonymous live community
@@ -63,10 +67,11 @@ Each room has a unique animated background, weather/particle overlay, procedural
 - Per-room live presence counts (aggregate, anonymous).
 
 ### Privacy
-- No accounts, no sign-up, no personal data.
+- No accounts, sign-up, or personal profiles.
 - Preferences (nickname, volume, streak, igniter, room) live in browser localStorage.
-- Aggregate, privacy-respecting analytics only (Vercel + Google Analytics); no ad network.
+- Aggregate analytics (Vercel + Google Analytics); no ad network or targeted advertising.
 - Firebase stores only ephemeral chat and anonymous aggregate counters.
+- Selecting a live radio station connects the browser directly to that third-party stream provider, which may receive ordinary connection metadata under its own policy.
 
 ### UI / modes
 - **Zen Mode** — hides all UI; click anywhere to toggle.
@@ -130,6 +135,9 @@ Product/entity pages (each with FAQ schema):
 - Quit-smoking tool — https://puffbreak.app/quit-smoking-tool
 - Pomodoro alternative — https://puffbreak.app/pomodoro-alternative
 - Remote work break — https://puffbreak.app/remote-work-break
+- Focus radio online — https://puffbreak.app/focus-radio-online
+- Lo-fi radio for work — https://puffbreak.app/lofi-radio-for-work
+- Bhajan radio online — https://puffbreak.app/bhajan-radio-online
 
 ---
 

@@ -35,11 +35,22 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 }
 
 export default function HomePage() {
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  };
+
   // The actual PuffBreakApp is rendered in the background globally by GlobalAppWrapper.
   // This page contributes crawlable, accessible content for search engines and screen
   // readers without visually covering the immersive break-room experience.
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       {/* Transparent dummy container so the root route keeps the full-screen app layout */}
       <div className="w-full h-full min-h-screen opacity-0 pointer-events-none" aria-hidden="true" />
 

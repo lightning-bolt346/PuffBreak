@@ -64,7 +64,7 @@ export default function AboutPage() {
           <p>
             I built PuffBreak to bring the <em>ritual</em> of the break back into our digital lives. 
             Whether you're using it to cut down on nicotine cravings by replacing the physical habit with a digital one, 
-            or you just need 3 minutes of ASMR rain on a virtual rooftop, this space is for you.
+            or you just need 3 minutes of rain, a quiet room, or a carefully chosen music station, this space is for you.
           </p>
 
           <h2 className="text-3xl mt-16 mb-8">Who is Behind PuffBreak?</h2>
@@ -88,8 +88,8 @@ export default function AboutPage() {
               <div className="text-[11px] text-gray-500 uppercase tracking-widest mt-1">Minute Ritual</div>
             </div>
             <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] text-center">
-              <div className="text-2xl font-bold text-sky-400">0</div>
-              <div className="text-[11px] text-gray-500 uppercase tracking-widest mt-1">Data Collected</div>
+              <div className="text-2xl font-bold text-sky-400">40+</div>
+              <div className="text-[11px] text-gray-500 uppercase tracking-widest mt-1">Music Stations</div>
             </div>
           </div>
 
@@ -97,8 +97,8 @@ export default function AboutPage() {
           <p>
             Because PuffBreak is independent, I don't need to harvest your data to satisfy shareholders. 
             <strong>PuffBreak collects zero personal information.</strong> 
-            There are no logins, no tracking cookies, and no chat logs. 
-            Your preferences (like your break streak) live entirely in your browser's local storage.
+            There are no logins, personal profiles, ad targeting, or permanent chat histories.
+            Preferences such as your break streak, sound levels, and saved stations live in your browser. PuffBreak uses aggregate traffic analytics, temporary room messages, and anonymous counters as described in the <Link href="/privacy">privacy policy</Link>.
           </p>
 
           <h2 className="text-3xl mt-16 mb-8">How to Support</h2>

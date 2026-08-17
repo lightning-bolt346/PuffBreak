@@ -236,6 +236,24 @@ html, body {
 
 .anim-pulse-dot  { animation: pulseDot 2s ease-in-out infinite; }
 
+/* Hide scrollbars on horizontally-scrolling chip rows (radio station picker) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Mini equalizer bars — "now playing" indicator */
+@keyframes eqBounce {
+  0%, 100% { transform: scaleY(0.3); }
+  50%      { transform: scaleY(1); }
+}
+.eq-bar {
+  width: 3px;
+  height: 10px;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: bottom;
+  animation: eqBounce 0.8s ease-in-out infinite;
+}
+
 .charge-ring-path {
   stroke-dasharray: 251;
   stroke-dashoffset: 251;

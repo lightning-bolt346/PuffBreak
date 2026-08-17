@@ -7,6 +7,7 @@ import {
   MessageSquare, FileText, Linkedin, Star, RotateCcw as RestoreIcon,
   Shield, MapPin, X, Send, Smile, Volume2, VolumeX, Wifi, WifiOff,
   Users, Copy, BookOpen, Image, CheckCircle, AlertCircle, QrCode, Sliders, ChevronDown,
+  Play, Pause, Radio,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
@@ -15,10 +16,12 @@ import { FAQ_ITEMS } from '@/lib/faq';
 import { getLocalizedGreeting, getCultureProfile, getDailyVibe } from '@/lib/i18n';
 import { CUP_STYLES, getWarmDrink } from '@/lib/cups';
 import { ROOMS, type Room, type RoomId, type WeatherType } from '@/lib/rooms';
+import { DEFAULT_RADIO_ID, getRadioStation } from '@/lib/radio';
 import { track } from '@/lib/analytics';
 import { submitSurvey, hasAnsweredSurvey, SURVEY_OPTIONS, type SurveyFelt } from '@/lib/survey';
 import { useSessionId } from '@/hooks/useSessionId';
 import AmbientEngine, { type AmbientEngineHandle } from '@/components/engine/AmbientEngine';
+import RadioLibrary from '@/components/radio/RadioLibrary';
 import { db } from '@/lib/firebase';
 import { ref, runTransaction, onChildAdded, push, onDisconnect, remove, off, query, limitToLast, onValue } from 'firebase/database';
 import { useRoomCounts } from '@/hooks/useRoomCounts';
@@ -27,6 +30,7 @@ import { useRoomCounts } from '@/hooks/useRoomCounts';
 // Room types & ROOMS now live in lib/rooms.ts (shared with the /rooms SEO pages).
 
 type CigWidth = 'slim' | 'standard' | 'wide';
+type RadioPlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'blocked' | 'error';
 
 // DOM-based smoke ring
 interface SmokeRing {
@@ -316,15 +320,25 @@ export default function PuffBreak() {
   const [prevBg, setPrevBg]             = useState(ROOMS[0].bg);
 
   // ASMR
-  const [asmrOn, setAsmrOn]             = useState(true);
+  // Playback is intentionally not restored across visits: browsers block
+  // autoplay, and a glowing control that is actually silent breaks trust.
+  const [asmrOn, setAsmrOn]             = useState(false);
   const [musicOn, setMusicOn]           = useState(false);
   const [ytPlaying, setYtPlaying]       = useState(false);
+  const [radioPlaybackState, setRadioPlaybackState] = useState<RadioPlaybackState>('idle');
   
   // Independent Volume Mixer (first-time defaults: cig=60, radio=100, ambiance=30)
   const [crackleVolume, setCrackleVolume] = useState(0.6);
   const [ambientVolume, setAmbientVolume] = useState(0.3);
   const [musicVolume, setMusicVolume]     = useState(1.0);
   const [audioMixerOpen, setAudioMixerOpen] = useState(false);
+  const [radioLibraryOpen, setRadioLibraryOpen] = useState(false);
+  const [radioStationId, setRadioStationId] = useState(DEFAULT_RADIO_ID);
+  const [radioToast, setRadioToast]         = useState<string | null>(null);
+  const [radioCompanionMinimized, setRadioCompanionMinimized] = useState(false);
+  const [mobileRadioHidden, setMobileRadioHidden] = useState(false);
+  const [preferencesReady, setPreferencesReady] = useState(false);
+  const [youtubeRadioMounted, setYoutubeRadioMounted] = useState(false);
   
   // Refs to remember volumes before mute
   const prevCrackleVolumeRef = useRef(0.6);
@@ -445,6 +459,7 @@ export default function PuffBreak() {
   // Filter hold state
   const [filterHoldIntensity, setFilterHoldIntensity] = useState(0); // 0-1
   const [instructionsOpen, setInstructionsOpen] = useState(false);
+  const [guideLauncherVisible, setGuideLauncherVisible] = useState(true);
   const mainScreenRef = useRef<HTMLDivElement>(null);
   const filterHoldStartRef  = useRef<number>(0);
   const filterHoldTimerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -473,7 +488,12 @@ export default function PuffBreak() {
   // Audio Buffers
   const lighterBufferRef      = useRef<AudioBuffer | null>(null);
   const matchstickBufferRef   = useRef<AudioBuffer | null>(null);
+  const smokeBlowBufferRef    = useRef<AudioBuffer | null>(null);
   const currentSfxSourceRef   = useRef<AudioBufferSourceNode | null>(null);
+  const ignitionIntentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ignitionTokenRef       = useRef(0);
+  const ignitionHeldRef        = useRef(false);
+  const ignitionStartedRef     = useRef(false);
   const closingTimerRef        = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retreatTimerRef        = useRef<ReturnType<typeof setTimeout> | null>(null);
   const matchFlameTimerRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -488,6 +508,18 @@ export default function PuffBreak() {
   // Audio
   const audioCtxRef           = useRef<AudioContext | null>(null);
   const radioRef              = useRef<HTMLAudioElement | null>(null);
+  const youtubeRadioPlayerRef = useRef<YouTubePlayer | null>(null);
+  const youtubeRadioReadyRef  = useRef(false);
+  const youtubeNeedsRandomStartRef = useRef(true);
+  const youtubeRadioErrorCountRef = useRef(0);
+  const radioStationIdRef     = useRef<string>(DEFAULT_RADIO_ID);
+  const radioPrevIdRef        = useRef<string | null>(null);
+  const musicOnRef            = useRef<boolean>(musicOn);
+  const playingYtIdsRef       = useRef<Set<string>>(new Set());
+
+  // Keep a live mirror of musicOn so long-lived listeners (like the radio
+  // error handler attached once in initAudio) never read a stale closure.
+  useEffect(() => { musicOnRef.current = musicOn; }, [musicOn]);
   const crackleGainRef        = useRef<GainNode | null>(null);
   const ambientGainRef        = useRef<GainNode | null>(null);
   const ambientMusicGainRef   = useRef<GainNode | null>(null);
@@ -508,30 +540,43 @@ export default function PuffBreak() {
         const prefs = JSON.parse(saved);
         if (prefs.igniterType) setIgniterType(prefs.igniterType);
         if (typeof prefs.crackleVolume === 'number') {
-          setCrackleVolume(prefs.crackleVolume);
-          prevCrackleVolumeRef.current = prefs.crackleVolume;
+          const level = Math.min(1, Math.max(0, prefs.crackleVolume));
+          setCrackleVolume(level);
+          if (level > 0) prevCrackleVolumeRef.current = level;
         }
         if (typeof prefs.ambientVolume === 'number') {
-          setAmbientVolume(prefs.ambientVolume);
-          prevAmbientVolumeRef.current = prefs.ambientVolume;
+          const level = Math.min(1, Math.max(0, prefs.ambientVolume));
+          setAmbientVolume(level);
+          if (level > 0) prevAmbientVolumeRef.current = level;
         }
         if (typeof prefs.musicVolume === 'number') {
-          setMusicVolume(prefs.musicVolume);
-          prevMusicVolumeRef.current = prefs.musicVolume;
+          const level = Math.min(1, Math.max(0, prefs.musicVolume));
+          setMusicVolume(level);
+          if (level > 0) prevMusicVolumeRef.current = level;
         }
-        if (typeof prefs.asmrOn === 'boolean') setAsmrOn(prefs.asmrOn);
-        if (typeof prefs.musicOn === 'boolean') setMusicOn(prefs.musicOn);
+        if (typeof prefs.radioStationId === 'string') {
+          const storedStation = getRadioStation(prefs.radioStationId);
+          setRadioStationId(storedStation.id);
+          radioStationIdRef.current = storedStation.id;
+        }
       }
-    } catch (e) {}
+    } catch {
+      // Invalid local preferences fall back to the product defaults.
+    } finally {
+      setPreferencesReady(true);
+    }
   }, []);
 
   useEffect(() => {
+    if (!preferencesReady) return;
     try {
       localStorage.setItem('puffbreak_prefs', JSON.stringify({
-        igniterType, crackleVolume, ambientVolume, musicVolume, asmrOn, musicOn
+        igniterType, crackleVolume, ambientVolume, musicVolume, radioStationId
       }));
-    } catch (e) {}
-  }, [igniterType, crackleVolume, ambientVolume, musicVolume, asmrOn, musicOn]);
+    } catch {
+      // Storage can be unavailable in hardened/private browser contexts.
+    }
+  }, [preferencesReady, igniterType, crackleVolume, ambientVolume, musicVolume, radioStationId]);
 
   // ── Vibrate helper ─────────────────────────────────────────────────────────
   const vibrate = useCallback((ms: number | number[]) => {
@@ -583,12 +628,14 @@ export default function PuffBreak() {
         const TmpCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (!TmpCtx) return;
         const tmpCtx = new TmpCtx();
-        const [lBuf, mBuf] = await Promise.all([
+        const [lBuf, mBuf, sbBuf] = await Promise.all([
           fetch('/audio/audiomass-lighter.mp3').then(r => r.arrayBuffer()).then(ab => tmpCtx.decodeAudioData(ab)),
           fetch('/audio/audiomass-matchstick.mp3').then(r => r.arrayBuffer()).then(ab => tmpCtx.decodeAudioData(ab)),
+          fetch('/audio/smoke-blow.mp3').then(r => r.arrayBuffer()).then(ab => tmpCtx.decodeAudioData(ab)),
         ]);
         lighterBufferRef.current = lBuf;
         matchstickBufferRef.current = mBuf;
+        smokeBlowBufferRef.current = sbBuf;
         // Keep tmpCtx — initAudio() will create its own ctx; buffers are already decoded.
       } catch (e) { /* non-fatal */ }
     };
@@ -601,6 +648,12 @@ export default function PuffBreak() {
     const t = setTimeout(() => setStreakToast(null), 4500);
     return () => clearTimeout(t);
   }, [streakToast]);
+
+  useEffect(() => {
+    if (!radioToast) return;
+    const t = setTimeout(() => setRadioToast(null), 3600);
+    return () => clearTimeout(t);
+  }, [radioToast]);
 
 
   // ── Click outside to close mixer ──────────────────────────────────────────
@@ -774,6 +827,7 @@ export default function PuffBreak() {
   const switchRoom = useCallback((room: Room) => {
     setPrevBg(currentRoom.bg);
     setCurrentRoom(room);
+    playingYtIdsRef.current.clear();
     setYtPlaying(false);
     setRoomModalOpen(false);
     // Messages reset, room-change effect will re-subscribe to the new lobby's chat
@@ -816,6 +870,13 @@ export default function PuffBreak() {
         .then(buf => matchstickBufferRef.current = buf)
         .catch(console.error);
 
+      // Smoke-blow SFX (released puff / ring whoosh)
+      fetch('/audio/smoke-blow.mp3')
+        .then(res => res.arrayBuffer())
+        .then(ab => ctx.decodeAudioData(ab))
+        .then(buf => smokeBlowBufferRef.current = buf)
+        .catch(console.error);
+
       // Crackle (high-pass filtered noise)
       const crackleBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const cd = crackleBuffer.getChannelData(0);
@@ -842,15 +903,72 @@ export default function PuffBreak() {
 
       // Procedural/Radio music bus
       ambientMusicGainRef.current = ctx.createGain(); ambientMusicGainRef.current.gain.value = 0;
-      ambientLowpassRef.current = ctx.createBiquadFilter(); ambientLowpassRef.current.type = 'lowpass'; ambientLowpassRef.current.frequency.value = 600;
+      // Keep the reusable music graph, but leave the filter acoustically open.
+      // The previous 600 Hz cutoff removed most vocals and detail from radio.
+      ambientLowpassRef.current = ctx.createBiquadFilter(); ambientLowpassRef.current.type = 'lowpass'; ambientLowpassRef.current.frequency.value = 18000;
       ambientMusicGainRef.current.connect(ambientLowpassRef.current); ambientLowpassRef.current.connect(ctx.destination);
       
-      // FreeCodeCamp Live Radio
+      // Live Radio (station pickable — defaults to FreeCodeCamp, verified CORS streams)
       if (!radioRef.current) {
-        const audio = new Audio('https://coderadio-admin-v2.freecodecamp.org/listen/coderadio/radio.mp3');
+        const station = getRadioStation(radioStationIdRef.current);
+        const audio = new Audio();
         audio.crossOrigin = 'anonymous';
-        audio.loop = true;
+        audio.preload = 'none';
+        // YouTube playlists are controlled by the official iframe player, not
+        // decoded as a direct audio stream. Keep the HTMLAudio graph warm on
+        // the default station so switching back to a stream stays instant.
+        audio.src = station.source === 'youtube-playlist'
+          ? getRadioStation(DEFAULT_RADIO_ID).url
+          : station.url;
         radioRef.current = audio;
+        audio.addEventListener('loadstart', () => {
+          if (musicOnRef.current) setRadioPlaybackState('loading');
+        });
+        audio.addEventListener('waiting', () => {
+          if (musicOnRef.current) setRadioPlaybackState('loading');
+        });
+        audio.addEventListener('stalled', () => {
+          if (musicOnRef.current) setRadioPlaybackState('loading');
+        });
+        audio.addEventListener('playing', () => setRadioPlaybackState('playing'));
+        audio.addEventListener('pause', () => {
+          if (!musicOnRef.current) setRadioPlaybackState('paused');
+        });
+        // If a station genuinely fails to load (offline / unreachable), revert to
+        // the previous one. Ignore MEDIA_ERR_ABORTED (code 1) — that fires from
+        // our own load() during a station switch, not from a real failure.
+        audio.addEventListener('error', () => {
+          const code = audio.error?.code ?? 0;
+          if (code === 1) return;
+          setRadioPlaybackState('error');
+          const prevId = radioPrevIdRef.current;
+          if (prevId && radioStationIdRef.current !== prevId) {
+            radioPrevIdRef.current = null; // prevent revert loops
+            const prev = getRadioStation(prevId);
+            const failed = getRadioStation(radioStationIdRef.current);
+            setRadioStationId(prevId);
+            radioStationIdRef.current = prevId;
+            audio.src = prev.url;
+            audio.load();
+            if (musicOnRef.current) {
+              const startPlayback = () => {
+                setRadioPlaybackState('loading');
+                const p = audio.play();
+                if (p !== undefined) p.catch(() => {
+                  setRadioPlaybackState('blocked');
+                  musicOnRef.current = false;
+                  setMusicOn(false);
+                });
+              };
+              if (audio.readyState >= 2) startPlayback();
+              else {
+                audio.addEventListener('canplay', startPlayback, { once: true });
+                window.setTimeout(() => { if (audio.paused) startPlayback(); }, 500);
+              }
+            }
+            setRadioToast(`📻 ${failed.name} unreachable — back on ${prev.name}`);
+          }
+        });
         const radioSource = ctx.createMediaElementSource(audio);
         radioSource.connect(ambientMusicGainRef.current);
       }
@@ -859,37 +977,240 @@ export default function PuffBreak() {
 
   const toggleAsmr = useCallback(() => {
     initAudio();
-    setAsmrOn(prev => {
-      if (prev) {
-        // Turning off: remember current volumes and mute them
-        prevCrackleVolumeRef.current = crackleVolume;
-        prevAmbientVolumeRef.current = ambientVolume;
-        // mute
-        setCrackleVolume(0);
-        setAmbientVolume(0);
-        return false;
+    if (asmrOn) {
+      setAsmrOn(false);
+      Object.values(ytPlayersRef.current).forEach(player => {
+        try { player.pauseVideo(); } catch {}
+      });
+      playingYtIdsRef.current.clear();
+      setYtPlaying(false);
+      return;
+    }
+
+    if (ambientVolume <= 0 && crackleVolume <= 0) {
+      setAmbientVolume(prevAmbientVolumeRef.current || 0.3);
+      setCrackleVolume(prevCrackleVolumeRef.current || 0.6);
+    }
+    setAsmrOn(true);
+    if (ambientVolume > 0) {
+      Object.values(ytPlayersRef.current).forEach(player => {
+        try { player.playVideo(); } catch {}
+      });
+    }
+  }, [asmrOn, initAudio, crackleVolume, ambientVolume]);
+
+  const startYoutubeRadio = useCallback((randomize: boolean) => {
+    const station = getRadioStation(radioStationIdRef.current);
+    const player = youtubeRadioPlayerRef.current;
+    if (station.source !== 'youtube-playlist' || (!station.videoIds?.length && !station.playlistId) || !player || !youtubeRadioReadyRef.current) {
+      setYoutubeRadioMounted(true);
+      setRadioPlaybackState('loading');
+      return false;
+    }
+    try {
+      player.setVolume(Math.round(Math.min(1, Math.max(0, musicVolume)) * 100));
+      player.setLoop(true);
+      if (randomize || youtubeNeedsRandomStartRef.current) {
+        player.setShuffle(true);
+        const playlist = player.getPlaylist?.() ?? [];
+        if (playlist.length > 0) {
+          youtubeNeedsRandomStartRef.current = false;
+          player.playVideoAt(Math.floor(Math.random() * playlist.length));
+        } else {
+          // Cueing is asynchronous. The CUED state handler retries once the
+          // official player exposes the playlist.
+          if (station.videoIds?.length) player.cuePlaylist(station.videoIds, 0, 0);
+          else if (station.playlistId) player.cuePlaylist({ listType: 'playlist', list: station.playlistId, index: 0, startSeconds: 0 });
+          return false;
+        }
       } else {
-        // Turning on: restore remembered volumes
-        setCrackleVolume(prevCrackleVolumeRef.current);
-        setAmbientVolume(prevAmbientVolumeRef.current);
-        return true;
+        player.playVideo();
       }
-    });
-  }, [initAudio, crackleVolume, ambientVolume]);
+      return true;
+    } catch {
+      setRadioPlaybackState('error');
+      return false;
+    }
+  }, [musicVolume]);
   
   const toggleMusic = useCallback(() => {
     initAudio();
-    setMusicOn(prev => {
-      if (prev) {
-        prevMusicVolumeRef.current = musicVolume;
-        setMusicVolume(0);
-        return false;
+    const audio = radioRef.current;
+    const station = getRadioStation(radioStationIdRef.current);
+    if (station.source === 'youtube-external') {
+      window.open(station.url, '_blank', 'noopener,noreferrer');
+      musicOnRef.current = false;
+      setMusicOn(false);
+      setRadioPlaybackState('paused');
+      setRadioToast(`Opening ${station.name} on YouTube Music — use its Shuffle control there.`);
+      return;
+    }
+    if (musicOnRef.current) {
+      musicOnRef.current = false;
+      setMusicOn(false);
+      if (station.source === 'youtube-playlist') {
+        try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
       } else {
-        setMusicVolume(prevMusicVolumeRef.current);
-        return true;
+        audio?.pause();
       }
-    });
-  }, [initAudio, musicVolume]);
+      setRadioPlaybackState('paused');
+      return;
+    }
+
+    if (musicVolume <= 0) setMusicVolume(prevMusicVolumeRef.current || 1);
+    musicOnRef.current = true;
+    setMusicOn(true);
+    setMobileRadioHidden(false);
+    setRadioPlaybackState('loading');
+    if (audioCtxRef.current?.state === 'suspended') void audioCtxRef.current.resume();
+    if (station.source === 'youtube-playlist') {
+      setYoutubeRadioMounted(true);
+      startYoutubeRadio(youtubeNeedsRandomStartRef.current);
+      return;
+    }
+    const playPromise = audio?.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((error: DOMException) => {
+        if (error.name === 'AbortError') return;
+        musicOnRef.current = false;
+        setMusicOn(false);
+        setRadioPlaybackState(error.name === 'NotAllowedError' ? 'blocked' : 'error');
+      });
+    }
+  }, [initAudio, musicVolume, startYoutubeRadio]);
+
+  const updateAmbientVolume = useCallback((rawLevel: number) => {
+    initAudio();
+    const level = Math.min(1, Math.max(0, rawLevel));
+    setAmbientVolume(level);
+    if (level > 0) {
+      prevAmbientVolumeRef.current = level;
+      if (!asmrOn) {
+        setAsmrOn(true);
+        Object.values(ytPlayersRef.current).forEach(player => {
+          try { player.playVideo(); } catch {}
+        });
+      }
+    } else if (crackleVolume <= 0) {
+      setAsmrOn(false);
+    }
+  }, [asmrOn, crackleVolume, initAudio]);
+
+  const updateCrackleVolume = useCallback((rawLevel: number) => {
+    initAudio();
+    const level = Math.min(1, Math.max(0, rawLevel));
+    setCrackleVolume(level);
+    if (level > 0) {
+      prevCrackleVolumeRef.current = level;
+      if (!asmrOn) setAsmrOn(true);
+    } else if (ambientVolume <= 0) {
+      setAsmrOn(false);
+      Object.values(ytPlayersRef.current).forEach(player => {
+        try { player.pauseVideo(); } catch {}
+      });
+    }
+  }, [ambientVolume, asmrOn, initAudio]);
+
+  const updateMusicVolume = useCallback((rawLevel: number) => {
+    initAudio();
+    const level = Math.min(1, Math.max(0, rawLevel));
+    const station = getRadioStation(radioStationIdRef.current);
+    setMusicVolume(level);
+    if (level > 0) {
+      prevMusicVolumeRef.current = level;
+      if (station.source === 'youtube-external') {
+        setRadioToast(`${station.name} plays on YouTube Music because its official playlist blocks embedded playback.`);
+        return;
+      }
+      if (station.source === 'youtube-playlist') {
+        try { youtubeRadioPlayerRef.current?.setVolume(Math.round(level * 100)); } catch {}
+      }
+      if (!musicOnRef.current) {
+        musicOnRef.current = true;
+        setMusicOn(true);
+        setMobileRadioHidden(false);
+        setRadioPlaybackState('loading');
+        if (station.source === 'youtube-playlist') {
+          setYoutubeRadioMounted(true);
+          startYoutubeRadio(youtubeNeedsRandomStartRef.current);
+          return;
+        }
+        const playPromise = radioRef.current?.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error: DOMException) => {
+            if (error.name === 'AbortError') return;
+            musicOnRef.current = false;
+            setMusicOn(false);
+            setRadioPlaybackState(error.name === 'NotAllowedError' ? 'blocked' : 'error');
+          });
+        }
+      }
+    } else {
+      musicOnRef.current = false;
+      setMusicOn(false);
+      if (station.source === 'youtube-playlist') {
+        try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
+      } else {
+        radioRef.current?.pause();
+      }
+      setRadioPlaybackState('paused');
+    }
+  }, [initAudio, startYoutubeRadio]);
+
+  // ── Switch live-radio station ────────────────────────────────────────────
+  const switchRadioStation = useCallback((id: string) => {
+    const station = getRadioStation(id);
+    if (id === radioStationIdRef.current) return; // already tuned in
+    radioPrevIdRef.current = radioStationIdRef.current;
+    radioStationIdRef.current = id;
+    setRadioStationId(id);
+    setMobileRadioHidden(false);
+    const audio = radioRef.current;
+    try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
+    youtubeNeedsRandomStartRef.current = station.source === 'youtube-playlist';
+    if (station.source === 'youtube-external') {
+      audio?.pause();
+      musicOnRef.current = false;
+      setMusicOn(false);
+      setRadioPlaybackState('paused');
+      setRadioToast(`${station.name} is ready — press play to open its official YouTube Music station.`);
+      return;
+    }
+    if (station.source === 'youtube-playlist') {
+      audio?.pause();
+      setYoutubeRadioMounted(true);
+      setRadioPlaybackState(musicOnRef.current ? 'loading' : 'paused');
+      if (musicOnRef.current) startYoutubeRadio(true);
+      setRadioToast(`📻 ${station.name} — shuffled from YouTube Music`);
+      return;
+    }
+    if (audio) {
+      setRadioPlaybackState(musicOnRef.current ? 'loading' : 'paused');
+      audio.src = station.url;
+      audio.load();
+      // Resume playback as soon as the new stream can play (if music was on).
+      if (musicOnRef.current) {
+        const startPlayback = () => {
+          setRadioPlaybackState('loading');
+          const p = audio.play();
+          if (p !== undefined) p.catch((error: DOMException) => {
+            if (error.name === 'AbortError') return;
+            musicOnRef.current = false;
+            setMusicOn(false);
+            setRadioPlaybackState(error.name === 'NotAllowedError' ? 'blocked' : 'error');
+          });
+        };
+        if (audio.readyState >= 2) startPlayback();
+        else {
+          audio.addEventListener('canplay', startPlayback, { once: true });
+          window.setTimeout(() => { if (audio.paused) startPlayback(); }, 500);
+        }
+      }
+    } else {
+      initAudio();
+    }
+    setRadioToast(`📻 ${station.name} — ${station.region} · ${station.tagline}`);
+  }, [initAudio, startYoutubeRadio]);
 
   // ── Procedural note ───────────────────────────────────────────────────────
   const playNote = useCallback(() => {
@@ -944,14 +1265,14 @@ export default function PuffBreak() {
       if (ctx.state === 'suspended') ctx.resume();
     }
 
-    if (asmrOn) {
+    if (asmrOn && ambientVolume > 0) {
       currentRoom.ytIds.forEach(id => {
         const player = ytPlayersRef.current[id];
         if (player) {
           try {
             player.playVideo();
             const volumeMultiplier = (currentRoom.ytIds.length > 1 ? 0.6 : 1) * (currentRoom.ytVol || 1);
-            player.setVolume(ambientVolume * 100 * volumeMultiplier);
+            player.setVolume(Math.min(100, ambientVolume * 100 * volumeMultiplier));
           } catch (e) {
             // Player might be destroyed or loading
           }
@@ -976,25 +1297,39 @@ export default function PuffBreak() {
       crackleGainRef.current?.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
     }
 
-    if (activeMusic) {
-      ambientMusicGainRef.current?.gain.setTargetAtTime(0.5 * musicVolume, ctx.currentTime, 0.5);
+    const selectedRadio = getRadioStation(radioStationIdRef.current);
+    if (activeMusic && selectedRadio.source === 'youtube-playlist') {
+      // YouTube audio is mixed through the official iframe player. Keep the
+      // direct-stream Web Audio bus silent so both sources can never overlap.
+      ambientMusicGainRef.current?.gain.setTargetAtTime(0, ctx.currentTime, 0.15);
+      radioRef.current?.pause();
+      try { youtubeRadioPlayerRef.current?.setVolume(Math.round(musicVolume * 100)); } catch {}
+      startYoutubeRadio(youtubeNeedsRandomStartRef.current);
+    } else if (activeMusic) {
+      try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
+      ambientMusicGainRef.current?.gain.setTargetAtTime(musicVolume, ctx.currentTime, 0.35);
       if (radioRef.current && radioRef.current.paused) {
+        setRadioPlaybackState('loading');
         const playPromise = radioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch(e => {
-            if (e.name !== 'AbortError') console.error('Radio play error:', e);
+            if (e.name === 'AbortError') return;
+            musicOnRef.current = false;
+            setMusicOn(false);
+            setRadioPlaybackState(e.name === 'NotAllowedError' ? 'blocked' : 'error');
           });
         }
       }
     } else {
       ambientMusicGainRef.current?.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
+      try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
       if (radioRef.current && !radioRef.current.paused) {
         radioRef.current.pause();
       }
     }
     
     return () => { if (musicIntervalRef.current) { clearInterval(musicIntervalRef.current); musicIntervalRef.current = null; } };
-  }, [isLit, isFinished, asmrOn, musicOn, currentRoom.id, crackleVolume, ambientVolume, musicVolume, isPuffing, playNote]);
+  }, [isLit, isFinished, asmrOn, musicOn, currentRoom.id, currentRoom.ytIds, currentRoom.ytVol, crackleVolume, ambientVolume, musicVolume, isPuffing, playNote, startYoutubeRadio]);
 
   // ── Global Audio Context Unlock ───────────────────────────────────────────
   useEffect(() => {
@@ -1017,6 +1352,18 @@ export default function PuffBreak() {
   // ── Global Unmount Cleanup ────────────────────────────────────────────────
   useEffect(() => {
     return () => {
+      ignitionHeldRef.current = false;
+      ignitionTokenRef.current += 1;
+      if (ignitionIntentTimerRef.current) clearTimeout(ignitionIntentTimerRef.current);
+      if (lightTimerRef.current) clearTimeout(lightTimerRef.current);
+      if (lightIntervalRef.current) clearInterval(lightIntervalRef.current);
+      if (closingTimerRef.current) clearTimeout(closingTimerRef.current);
+      if (retreatTimerRef.current) clearTimeout(retreatTimerRef.current);
+      if (matchFlameTimerRef.current) clearTimeout(matchFlameTimerRef.current);
+      if (currentSfxSourceRef.current) {
+        try { currentSfxSourceRef.current.stop(); } catch {}
+        currentSfxSourceRef.current = null;
+      }
       if (radioRef.current) {
         radioRef.current.pause();
         radioRef.current.src = '';
@@ -1442,8 +1789,18 @@ export default function PuffBreak() {
         vibrate([150]);
         return;
       }
+      const ignitionToken = ++ignitionTokenRef.current;
+      ignitionHeldRef.current = true;
+      ignitionStartedRef.current = false;
       setIsCharging(true);
-      const useMatch = igniterType === 'match';
+
+      // A short pointer contact can be a scroll, a missed tap, or a hover-device
+      // transition. Do not begin the visual/audio ritual until the user has
+      // intentionally held the cigarette for a beat.
+      ignitionIntentTimerRef.current = setTimeout(() => {
+        if (!ignitionHeldRef.current || ignitionTokenRef.current !== ignitionToken) return;
+        ignitionStartedRef.current = true;
+        const useMatch = igniterType === 'match';
 
       /*
        * LIGHTER AUDIO BREAKDOWN (from waveform analysis):
@@ -1463,15 +1820,18 @@ export default function PuffBreak() {
       // ── Robust async audio player — works even if buffer isn't ready yet ──
       const tryPlaySfx = async (bufferRef: React.MutableRefObject<AudioBuffer | null>, url: string) => {
         const ctx = audioCtxRef.current;
-        if (!ctx) return;
+        if (!ctx || !ignitionHeldRef.current || ignitionTokenRef.current !== ignitionToken) return;
         let buf = bufferRef.current;
         if (!buf) {
           try {
             const ab = await fetch(url).then(r => r.arrayBuffer());
             buf = await ctx.decodeAudioData(ab);
             bufferRef.current = buf;
-          } catch (e) { return; }
+          } catch { return; }
         }
+        // The fetch/decode can finish after a pointer was released. The token
+        // prevents that stale async completion from playing a "random" strike.
+        if (!ignitionHeldRef.current || ignitionTokenRef.current !== ignitionToken) return;
         const source = ctx.createBufferSource();
         source.buffer = buf;
         const gain = ctx.createGain();
@@ -1490,11 +1850,11 @@ export default function PuffBreak() {
         setLightingPhase('approachBox'); // 0ms: Slide in box
         tryPlaySfx(matchstickBufferRef, '/audio/audiomass-matchstick.mp3');
         
-        setTimeout(() => setLightingPhase('openBox'), 300); // 300ms: Drawer opens
+        setTimeout(() => { if (ignitionTokenRef.current === ignitionToken) setLightingPhase('openBox'); }, 300); // 300ms: Drawer opens
         
-        setTimeout(() => setLightingPhase('extractMatch'), 800); // 800ms: Match lifts out
+        setTimeout(() => { if (ignitionTokenRef.current === ignitionToken) setLightingPhase('extractMatch'); }, 800); // 800ms: Match lifts out
         
-        setTimeout(() => setLightingPhase('strike'), 1500); // 1500ms: Match sweeps against striking strip
+        setTimeout(() => { if (ignitionTokenRef.current === ignitionToken) setLightingPhase('strike'); }, 1500); // 1500ms: Match sweeps against striking strip
         
         // Flame appears at exactly 2.251s when the real ignition sound hits
         matchFlameTimerRef.current = setTimeout(() => {
@@ -1541,10 +1901,10 @@ export default function PuffBreak() {
         tryPlaySfx(lighterBufferRef, '/audio/audiomass-lighter.mp3');
 
         // Phase 2: Cap open at 150ms (synced to the cap click at ~0.25s in audio)
-        setTimeout(() => setLightingPhase('open'), 150);
+        setTimeout(() => { if (ignitionTokenRef.current === ignitionToken) setLightingPhase('open'); }, 150);
 
         // Phase 3: Strike + flame at 500ms (synced to flint strike at ~0.5s)
-        setTimeout(() => setLightingPhase('strike'), 500);
+        setTimeout(() => { if (ignitionTokenRef.current === ignitionToken) setLightingPhase('strike'); }, 500);
 
         // Glow fills 0 → 1 across the 1240ms total
         let currentGlow = 0;
@@ -1584,11 +1944,18 @@ export default function PuffBreak() {
           }, 500); // Close animation lasts 500ms
         }, 1240);
       }
+      }, 180);
     }
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isStealth) return;
+    ignitionHeldRef.current = false;
+    ignitionTokenRef.current += 1;
+    if (ignitionIntentTimerRef.current) {
+      clearTimeout(ignitionIntentTimerRef.current);
+      ignitionIntentTimerRef.current = null;
+    }
     chaiHoldingRef.current = false;
     setIsPuffing(false);
     const duration = Date.now() - pointerDownTimeRef.current;
@@ -1607,7 +1974,7 @@ export default function PuffBreak() {
       }
 
       // If lighter, play closing clack even on abort
-      if (igniterType === 'lighter' && audioCtxRef.current && lighterBufferRef.current) {
+      if (ignitionStartedRef.current && duration >= 180 && igniterType === 'lighter' && audioCtxRef.current && lighterBufferRef.current) {
         const closeSource = audioCtxRef.current.createBufferSource();
         closeSource.buffer = lighterBufferRef.current;
         const gain = audioCtxRef.current.createGain();
@@ -1622,6 +1989,7 @@ export default function PuffBreak() {
       setTimeout(() => setLightingPhase('idle'), 300);
       
       setGlow(0); setIsCharging(false);
+      ignitionStartedRef.current = false;
     }
     if (duration < 250) {
       const now = Date.now();
@@ -1635,6 +2003,27 @@ export default function PuffBreak() {
       lastTapRef.current = now;
     }
   };
+
+  // ── Play smoke-blow SFX (released puff / ring whoosh) ─────────────────────
+  const playBlowSfx = useCallback((intensity: number) => {
+    const ctx = audioCtxRef.current;
+    if (!ctx || ctx.state === 'suspended') return;
+    const buf = smokeBlowBufferRef.current;
+    if (!buf) return;
+    try {
+      const source = ctx.createBufferSource();
+      source.buffer = buf;
+      // Slight organic pitch variation so repeated blows never sound identical
+      source.playbackRate.value = 0.95 + Math.random() * 0.1;
+      const gain = ctx.createGain();
+      // Louder for harder holds, floored so short blows stay audible
+      const base = Math.max(crackleVolume, 0.5);
+      gain.gain.value = base * (0.55 + Math.min(1, intensity) * 0.45);
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      source.start(0);
+    } catch (e) { /* non-fatal */ }
+  }, [crackleVolume]);
 
   // ── Spawn smoke ring (DOM-based) ──────────────────────────────────────────
   const spawnSmokeRing = useCallback((intensity = 0) => {
@@ -1691,6 +2080,7 @@ export default function PuffBreak() {
       if (holdDuration > 300) {
         const intensity = Math.min((holdDuration - 300) / 7700, 1);
         spawnSmokeRing(intensity);
+        playBlowSfx(intensity); // whoosh as the ring is pushed out
       }
     }
     isFilterHeldRef.current = false;
@@ -1747,6 +2137,19 @@ export default function PuffBreak() {
   const displayTimeSeconds = Math.floor(elapsedTimeMs / 1000);
   const formatTime = (s: number) => `${Math.floor(s / 60)}m ${Math.floor(s % 60).toString().padStart(2, '0')}s`;
   const cigWidthClass = { slim: 'w-8 sm:w-10', standard: 'w-12 sm:w-16', wide: 'w-16 sm:w-24' }[cigWidth];
+  const currentRadio = getRadioStation(radioStationId);
+  const radioIsPlaying = musicOn && musicVolume > 0 && radioPlaybackState === 'playing';
+  const roomAmbienceIsAudible = asmrOn && ytPlaying && ambientVolume > 0;
+  const crackleIsAudible = asmrOn && isLit && !isFinished && currentRoom.id !== 'chai' && crackleVolume > 0;
+  const ambienceIsAudible = roomAmbienceIsAudible || crackleIsAudible;
+  const radioStatusLabel: Record<RadioPlaybackState, string> = {
+    idle: 'Ready to play',
+    loading: 'Connecting…',
+    playing: 'Live now',
+    paused: 'Paused',
+    blocked: 'Tap play to allow audio',
+    error: 'Stream unavailable',
+  };
 
   // Filter — no red coloring, always stays warm amber/tan
   const filterGlowStyle = isPuffing && isLit && !isFinished ? {
@@ -1759,29 +2162,6 @@ export default function PuffBreak() {
   // ─── RENDER ───────────────────────────────────────────────────────────────
   return (
     <>
-      {/* JSON-LD Structured Data for SEO and LLMs */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'WebApplication',
-        name: 'PuffBreak',
-        url: 'https://puffbreak.app',
-        applicationCategory: 'HealthApplication',
-        applicationSubCategory: 'Stress Relief',
-        description: 'A mindful virtual break room. Light a virtual cigarette or sip chai in 8 immersive ambient rooms. Free, anonymous, no account needed.',
-        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-        isAccessibleForFree: true,
-      })}} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: [
-          { '@type': 'Question', name: 'What is PuffBreak?', acceptedAnswer: { '@type': 'Answer', text: 'PuffBreak is a free, anonymous, browser-based virtual break room. You light a digital cigarette or enjoy a virtual cup of chai tea in 8 immersive ambient environments with ASMR audio and live anonymous chat. No account required.' } },
-          { '@type': 'Question', name: 'Is PuffBreak free?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, 100% free. No subscriptions, no ads, no premium tiers.' } },
-          { '@type': 'Question', name: 'Does PuffBreak collect my data?', acceptedAnswer: { '@type': 'Answer', text: 'No. Zero personal data collected. All preferences live in your browser localStorage and never leave your device.' } },
-          { '@type': 'Question', name: 'Can PuffBreak help me quit smoking?', acceptedAnswer: { '@type': 'Answer', text: 'PuffBreak can serve as a mindful substitute during nicotine cravings. The 3-minute session matches peak craving duration. Not a medical device.' } },
-          { '@type': 'Question', name: 'Does it work on mobile?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Fully responsive. Installable as a PWA. Shake-to-ash gesture supported on mobile.' } },
-        ],
-      })}} />
       <div
       ref={mainScreenRef}
       className={`relative flex flex-col items-center justify-center h-[100dvh] w-full overflow-hidden select-none font-display ${highContrast ? 'grayscale contrast-125' : ''}`}
@@ -1795,95 +2175,16 @@ export default function PuffBreak() {
         setEmojiPicker(null);
       }}
     >
-      {/* JSON-LD Structured Data for Search Engine Rich Snippets */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify([
-            {
-              '@context': 'https://schema.org',
-              '@type': 'WebApplication',
-              'name': 'PuffBreak',
-              'alternateName': ['PuffBreak App', 'Virtual Break Room', 'Online Damta Alternative', 'Digital Smoke Break'],
-              'url': 'https://puffbreak.app',
-              'description': 'A mindful, interactive 3-minute digital break room experience. Take a mental pause by lighting a virtual cigarette or sipping a cup of hot chai with ambient audio, realistic particle physics, and a live anonymous community.',
-              'applicationCategory': 'RelaxationApplication, HealthApplication',
-              'operatingSystem': 'All',
-              'browserRequirements': 'Requires JavaScript and HTML5 Canvas',
-              'offers': {
-                '@type': 'Offer',
-                'price': '0.00',
-                'priceCurrency': 'USD'
-              },
-              'featureList': [
-                'Interactive Virtual Cigarette & Match/Lighter Ignition',
-                'Virtual Hot Chai Tea Holding & Sipping Mechanic',
-                'Dynamic Particle Physics for Smoke, Steam, and Weather',
-                'Immersive Ambient ASMR Audio Synths',
-                'Real-time Anonymous Live Chat Feed',
-                'Multiple Aesthetic Teleport Rooms (Office, Beach, Space, Library, Park, Metro, Silent)',
-                'Stealth and Zen Modes for Office Productivity Friendly Breaks'
-              ]
-            },
-            {
-              '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              'name': 'PuffBreak',
-              'url': 'https://puffbreak.app',
-              'potentialAction': {
-                '@type': 'SearchAction',
-                'target': 'https://puffbreak.app/?q={search_term_string}',
-                'query-input': 'required name=search_term_string'
-              }
-            },
-            {
-              '@context': 'https://schema.org',
-              '@type': 'FAQPage',
-              'mainEntity': [
-                {
-                  '@type': 'Question',
-                  'name': 'What is PuffBreak?',
-                  'acceptedAnswer': {
-                    '@type': 'Answer',
-                    'text': 'PuffBreak is a mindful, interactive 3-minute digital break room experience. It is designed to provide a quick relaxation break, featuring virtual smoke breaks and tea sipping, ambient sounds, and an anonymous community, with no sign-up or accounts required.'
-                  }
-                },
-                {
-                  '@type': 'Question',
-                  'name': 'Can PuffBreak help me quit smoking?',
-                  'acceptedAnswer': {
-                    '@type': 'Answer',
-                    'text': 'PuffBreak can be used as a behavioral habit-substitution tool during nicotine cravings. The 3-minute session matches the peak duration of a craving, giving you a mindful ritual to redirect the urge. It is not a medical device or a clinically proven cessation program. Consult a healthcare professional for medical advice on quitting smoking.'
-                  }
-                },
-                {
-                  '@type': 'Question',
-                  'name': 'Is PuffBreak completely free and anonymous?',
-                  'acceptedAnswer': {
-                    '@type': 'Answer',
-                    'text': 'Yes, PuffBreak is 100% free and requires no registration or user accounts. Nicknames are randomly generated, and privacy is a core brand pillar.'
-                  }
-                },
-                {
-                  '@type': 'Question',
-                  'name': 'What is the Chai Room in PuffBreak?',
-                  'acceptedAnswer': {
-                    '@type': 'Answer',
-                    'text': 'The Chai Room simulates a traditional tea stall experience, allowing you to sip hot tea by holding the screen, listen to ambient tea stall audio, and relax with dynamic steam rising from your cup.'
-                  }
-                }
-              ]
-            }
-          ])
-        }}
-      />
-
       {/* Visually Hidden, Screen Reader and SEO Crawler Friendly Semantics */}
       <div className="sr-only">
         <h1>PuffBreak — Your Digital Break Room | Mindful Virtual Smoke & Tea Breaks</h1>
         <h2>A mindful 3-minute digital break ritual</h2>
         <p>
           Take a short, relaxing mental pause with PuffBreak. Light a virtual cigarette or sip a hot cup of chai tea in immersive ambient environments. Listen to relaxing ASMR audio, watch realistic smoke or steam rise, and exchange whispers anonymously with other breakers.
+        </p>
+        <h2>Global music radio and an independent sound mixer</h2>
+        <p>
+          Browse human-curated music radio by mood, genre, region, language, or artist. Balance live radio, room ambience, and cigarette crackle independently, save favourite stations, or use Silent Room when you want no sound.
         </p>
         <h2>Ideal for Smoking Cessation & Stress Relief</h2>
         <p>
@@ -2130,22 +2431,6 @@ export default function PuffBreak() {
         )}
       </AnimatePresence>
 
-      {/* ── Vibe of the day (subtle daily affirmation — fades away once a break starts) ── */}
-      <AnimatePresence>
-        {!isZenMode && !isStealth && !isLit && !isFinished && (
-          <motion.p
-            key="vibe"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -14, filter: 'blur(4px)' }}
-            transition={{ delay: 0.5, duration: 0.7, ease: 'easeOut' }}
-            className="absolute top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center px-6 max-w-[92vw]"
-          >
-            <span className="text-[12px] text-white/45 font-light tracking-wide">{vibeOfDay}</span>
-          </motion.p>
-        )}
-      </AnimatePresence>
-
       {/* ── Streak celebration toast ── */}
       <AnimatePresence>
         {streakToast && !isZenMode && (
@@ -2157,6 +2442,22 @@ export default function PuffBreak() {
           >
             <div className="bg-orange-500/15 backdrop-blur-xl border border-orange-500/30 text-orange-300 text-xs font-medium px-4 py-2 rounded-full shadow-lg whitespace-nowrap">
               {streakToast}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Radio station toast ── */}
+      <AnimatePresence>
+        {radioToast && !isZenMode && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            className="absolute top-24 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+          >
+            <div className="bg-emerald-500/15 backdrop-blur-xl border border-emerald-500/30 text-emerald-300 text-xs font-medium px-4 py-2 rounded-full shadow-lg whitespace-nowrap max-w-[90vw] truncate">
+              {radioToast}
             </div>
           </motion.div>
         )}
@@ -2241,19 +2542,33 @@ export default function PuffBreak() {
         </div>
       )}
 
-      {/* ── UI Hint ── — stacked below the vibe line so they never overlap, with smooth transitions */}
+      {/* ── Context copy ── — one layout-owned stack, never independent offsets */}
       <AnimatePresence mode="wait">
         {!isLit && !isFinished && !isStealth && !isZenMode && (
           <motion.div
-            key="hint-pre"
+            key="pre-break-copy"
             initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 0.7, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="fixed top-28 left-0 w-full flex justify-center text-[10px] tracking-widest uppercase animate-pulse z-10 pointer-events-none font-mono-display text-center px-4"
-            style={{ color: currentRoom.accent }}
+            transition={{ delay: 0.25, duration: 0.55, ease: 'easeOut' }}
+            className="absolute top-[4.35rem] sm:top-[4.5rem] left-1/2 z-30 w-[min(22rem,calc(100vw-2rem))] -translate-x-1/2 px-2 text-center pointer-events-none"
           >
-            {currentRoom.id === 'chai' ? warmDrink.sipHint : 'Hold to light · Double-tap ash'}
+            {/* Mobile gets one compact command. The reflective line is omitted
+                because narrow viewports cannot give two messages enough calm. */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-black/25 px-3 py-1.5 backdrop-blur-md sm:hidden">
+              <span className="h-1 w-1 shrink-0 rounded-full" style={{ backgroundColor: currentRoom.accent }} />
+              <p className="whitespace-nowrap text-[9px] leading-none tracking-[0.12em] text-white/58 uppercase font-mono-display">
+                {currentRoom.id === 'chai' ? 'Hold to sip · release to pause' : 'Hold to light · double-tap ash'}
+              </p>
+            </div>
+            <div className="hidden flex-col items-center gap-2.5 sm:flex">
+              <p className="text-[12px] leading-5 text-white/45 font-light tracking-wide text-balance">
+                {vibeOfDay}
+              </p>
+              <p className="text-[10px] leading-4 tracking-[0.16em] uppercase font-mono-display animate-pulse" style={{ color: currentRoom.accent }}>
+                {currentRoom.id === 'chai' ? warmDrink.sipHint : 'Hold to light · Double-tap ash'}
+              </p>
+            </div>
           </motion.div>
         )}
         {isLit && !isFinished && !isStealth && currentRoom.id !== 'chai' && !isZenMode && (
@@ -2263,7 +2578,7 @@ export default function PuffBreak() {
             animate={{ opacity: 0.75, y: 0 }}
             exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="fixed top-14 left-0 w-full flex justify-center text-[11px] tracking-wider z-30 pointer-events-none text-gray-300 text-center px-4"
+            className="fixed top-[4.5rem] sm:top-14 left-0 w-full flex justify-center text-[10px] sm:text-[11px] tracking-wider z-30 pointer-events-none text-gray-300 text-center px-4"
           >
             Hold to smoke · Release for ring · Double-tap ash
           </motion.div>
@@ -2275,7 +2590,7 @@ export default function PuffBreak() {
             animate={{ opacity: 0.55, y: 0 }}
             exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="fixed top-14 left-0 w-full flex justify-center text-[11px] tracking-wider z-30 pointer-events-none text-gray-300 text-center px-4"
+            className="fixed top-[4.5rem] sm:top-14 left-0 w-full flex justify-center text-[10px] sm:text-[11px] tracking-wider z-30 pointer-events-none text-gray-300 text-center px-4"
           >
             Keep holding to sip · Release to pause
           </motion.div>
@@ -2287,7 +2602,7 @@ export default function PuffBreak() {
             animate={{ opacity: 0.65, y: 0 }}
             exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="fixed top-14 left-0 w-full flex justify-center text-[11px] tracking-widest z-30 pointer-events-none text-gray-300 font-mono-display uppercase text-center px-4"
+            className="fixed top-[4.5rem] sm:top-14 left-0 w-full flex justify-center text-[10px] sm:text-[11px] tracking-widest z-30 pointer-events-none text-gray-300 font-mono-display uppercase text-center px-4"
           >
             Double-tap to wash the cup
           </motion.div>
@@ -2409,6 +2724,9 @@ export default function PuffBreak() {
       {/* CIGARETTE */}
       {!isStealth && currentRoom.id !== 'chai' && (
         <div
+          data-testid="cigarette-control"
+          data-ignition-phase={lightingPhase}
+          data-lit={isLit ? 'true' : 'false'}
           className={`relative ${cigWidthClass} h-[50vh] sm:h-[65vh] max-h-[400px] sm:max-h-[560px] flex flex-col cursor-pointer mt-12 sm:mt-20 z-20 touch-none`}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
@@ -2746,11 +3064,90 @@ export default function PuffBreak() {
         </div>
       )}
 
+      {/* Desktop/tablet radio companion: useful status, not a second control panel. */}
+      <AnimatePresence>
+        {!isZenMode && !isStealth && !chatOpen && !drawerOpen && (
+          <motion.aside
+            layout
+            initial={{ opacity: 0, x: -12, y: 8 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={{ opacity: 0, x: -12, y: 8 }}
+            transition={{ layout: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } }}
+            className={`group/radio absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 z-[60] hidden overflow-hidden border bg-[#090b0e]/94 backdrop-blur-2xl transition-[border-color,box-shadow,background-color] duration-300 md:block pointer-events-auto ${radioCompanionMinimized ? 'h-12 w-12 rounded-2xl border-white/[0.09] p-0 shadow-[0_14px_42px_rgba(0,0,0,0.5)] hover:border-emerald-300/25 hover:bg-[#0b1512] hover:shadow-[0_16px_50px_rgba(16,185,129,0.14)]' : 'w-[19rem] rounded-[1.15rem] border-white/[0.085] p-2.5 shadow-[0_18px_50px_rgba(0,0,0,0.42)] hover:border-emerald-300/20 hover:bg-[#0a0e0d]/95 hover:shadow-[0_20px_60px_rgba(16,185,129,0.12)]'}`}
+            aria-label="Current radio"
+          >
+            {radioCompanionMinimized ? (
+              <button
+                type="button"
+                onClick={() => setRadioCompanionMinimized(false)}
+                aria-label="Expand current radio"
+                title={`${currentRadio.name} · ${radioStatusLabel[radioPlaybackState]}`}
+                className={`relative grid h-full w-full place-items-center text-[9px] font-black transition-colors ${radioIsPlaying ? 'bg-emerald-400/10 text-emerald-200' : 'text-gray-400 hover:bg-white/[0.06]'}`}
+              >
+                {currentRadio.icon}
+                <span className={`absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full ${radioIsPlaying ? 'bg-emerald-400' : 'bg-white/20'}`} />
+              </button>
+            ) : (
+              <>
+                <div className="flex items-center gap-2.5">
+                  <div className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-[13px] border text-[10px] font-black ${radioIsPlaying ? 'border-emerald-300/25 bg-emerald-400/12 text-emerald-200' : 'border-white/[0.07] bg-white/[0.035] text-gray-400'}`}>
+                    {currentRadio.icon}
+                    {radioIsPlaying && <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-[#0a0a0e] bg-emerald-400" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[12px] font-semibold text-gray-100">{currentRadio.name}</p>
+                    <p className={`mt-0.5 truncate text-[9px] font-medium uppercase tracking-[0.12em] ${radioIsPlaying ? 'text-emerald-400' : radioPlaybackState === 'error' || radioPlaybackState === 'blocked' ? 'text-amber-400' : 'text-gray-600'}`}>
+                      {radioStatusLabel[radioPlaybackState]}
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => setRadioCompanionMinimized(true)} aria-label="Minimize current radio" title="Minimize" className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-gray-600 transition-all hover:scale-105 hover:bg-white/[0.08] hover:text-gray-200">
+                    <Minimize2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleMusic}
+                    aria-label={radioIsPlaying ? 'Pause radio' : 'Play radio'}
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border transition-all hover:scale-105 active:scale-95 ${radioIsPlaying ? 'border-emerald-300/30 bg-emerald-400/18 text-emerald-100 shadow-[0_0_20px_rgba(52,211,153,0.14)]' : 'border-white/10 bg-white/[0.055] text-gray-300 hover:border-emerald-300/20 hover:bg-emerald-300/10 hover:text-emerald-200'}`}
+                  >
+                    {radioIsPlaying ? <Pause className="h-3.5 w-3.5 fill-current" /> : <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRadioLibraryOpen(true)}
+                  className="mt-2 flex w-full items-center justify-between rounded-xl border border-white/[0.055] bg-white/[0.025] px-3 py-2 text-[10px] font-semibold text-gray-500 transition-all hover:border-emerald-300/25 hover:bg-emerald-300/[0.065] hover:text-emerald-200 hover:shadow-[inset_0_0_18px_rgba(52,211,153,0.04)]"
+                >
+                  <span className="flex min-w-0 items-center gap-2"><Radio className="h-3 w-3 shrink-0" /><span className="truncate">{currentRadio.tagline}</span></span>
+                  <span className="ml-2 shrink-0 uppercase tracking-wider">Browse</span>
+                </button>
+              </>
+            )}
+          </motion.aside>
+        )}
+      </AnimatePresence>
+
       {/* ──────────────────────────────────────────────────────────────────────
           BOTTOM PANEL — always visible
           ─────────────────────────────────────────────────────────────────── */}
        {!isZenMode && (
         <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-auto" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }}>
+
+          {/* Mobile keeps the same truth in one compact row. */}
+          {!chatOpen && !mobileRadioHidden && radioPlaybackState !== 'idle' && (
+            <div className="mx-auto mb-1.5 flex w-[min(92vw,24rem)] items-center gap-2 rounded-full border border-white/[0.08] bg-[#0b0b0f]/88 px-2 py-1.5 shadow-xl backdrop-blur-2xl md:hidden">
+              <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[8px] font-black ${radioIsPlaying ? 'bg-emerald-400/15 text-emerald-200' : 'bg-white/[0.055] text-gray-400'}`}>{currentRadio.icon}</span>
+              <button type="button" onClick={() => setRadioLibraryOpen(true)} className="min-w-0 flex-1 text-left">
+                <span className="block truncate text-[10px] font-semibold text-gray-200">{currentRadio.name}</span>
+                <span className={`block truncate text-[8px] uppercase tracking-wider ${radioIsPlaying ? 'text-emerald-400' : 'text-gray-600'}`}>{radioStatusLabel[radioPlaybackState]} · Browse</span>
+              </button>
+              <button type="button" onClick={toggleMusic} aria-label={radioIsPlaying ? 'Pause radio' : 'Play radio'} className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/[0.065] text-gray-200 active:scale-95">
+                {radioIsPlaying ? <Pause className="h-3 w-3 fill-current" /> : <Play className="ml-0.5 h-3 w-3 fill-current" />}
+              </button>
+              <button type="button" onClick={() => setMobileRadioHidden(true)} aria-label="Hide radio card" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-gray-600 transition-colors hover:bg-white/[0.06] hover:text-gray-300">
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
 
           {/* Single unified stats row: icon · room name · live count · breaks */}
           {!chatOpen && (() => {
@@ -2809,9 +3206,9 @@ export default function PuffBreak() {
                   {/* ASMR */}
                   <button
                     onClick={toggleAsmr}
-                    className={`h-full px-4 flex items-center gap-2 rounded-xl text-[13px] transition-all ${asmrOn ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    className={`h-full px-4 flex items-center gap-2 rounded-xl text-[13px] transition-all ${ambienceIsAudible ? 'bg-amber-500/20 text-amber-300 shadow-[0_0_18px_rgba(245,158,11,0.08)]' : asmrOn ? 'bg-amber-500/10 text-amber-400/70' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
                   >
-                    {asmrOn ? <Volume2 className="w-3.5 h-3.5 shrink-0" /> : <VolumeX className="w-3.5 h-3.5 opacity-60 shrink-0" />}
+                    {ambienceIsAudible ? <Volume2 className="w-3.5 h-3.5 shrink-0" /> : <VolumeX className="w-3.5 h-3.5 opacity-60 shrink-0" />}
                     <span className="font-semibold whitespace-nowrap">Ambience</span>
                   </button>
 
@@ -2820,7 +3217,7 @@ export default function PuffBreak() {
                   {/* Radio */}
                   <button
                     onClick={toggleMusic}
-                    className={`h-full px-4 flex items-center gap-2 rounded-xl text-[13px] transition-all ${musicOn ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                    className={`h-full px-4 flex items-center gap-2 rounded-xl text-[13px] transition-all ${radioIsPlaying ? 'bg-emerald-500/20 text-emerald-300 shadow-[0_0_18px_rgba(16,185,129,0.08)]' : musicOn ? 'bg-emerald-500/10 text-emerald-400/70' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
                   >
                     <span className="text-[13px] leading-none shrink-0">♫</span>
                     <span className="font-semibold whitespace-nowrap">Live Radio</span>
@@ -2872,9 +3269,9 @@ export default function PuffBreak() {
 
                     <button
                       onClick={toggleAsmr}
-                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${asmrOn ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${ambienceIsAudible ? 'bg-amber-500/20 text-amber-300' : asmrOn ? 'bg-amber-500/10 text-amber-400/70' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
                     >
-                      {asmrOn ? <Volume2 className="w-3 h-3 shrink-0" /> : <VolumeX className="w-3 h-3 opacity-60 shrink-0" />}
+                      {ambienceIsAudible ? <Volume2 className="w-3 h-3 shrink-0" /> : <VolumeX className="w-3 h-3 opacity-60 shrink-0" />}
                       <span className="font-semibold truncate">Ambience</span>
                     </button>
 
@@ -2882,7 +3279,7 @@ export default function PuffBreak() {
 
                     <button
                       onClick={toggleMusic}
-                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${musicOn ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
+                      className={`flex-1 h-full px-2 flex justify-center items-center gap-1.5 rounded-xl text-[11px] transition-all ${radioIsPlaying ? 'bg-emerald-500/20 text-emerald-300' : musicOn ? 'bg-emerald-500/10 text-emerald-400/70' : 'text-gray-400 hover:bg-white/10 hover:text-gray-200'}`}
                     >
                       <span className="text-[11px] leading-none shrink-0">♫</span>
                       <span className="font-semibold truncate">Radio</span>
@@ -2939,51 +3336,78 @@ export default function PuffBreak() {
                   </div>
 
                   {/* ASMR / Ambience Row */}
-                  <div className={`flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 ${asmrOn ? 'bg-[#181005] border-amber-500/30 shadow-[inset_0_0_20px_rgba(245,158,11,0.03)]' : 'bg-white/[0.02] border-white/[0.04]'}`}>
+                  <div className={`flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 ${roomAmbienceIsAudible ? 'bg-[#181005] border-amber-500/30 shadow-[inset_0_0_20px_rgba(245,158,11,0.03)]' : asmrOn ? 'bg-amber-500/[0.035] border-amber-500/15' : 'bg-white/[0.02] border-white/[0.04]'}`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-[12px] font-bold tracking-wide ${asmrOn ? 'text-amber-400' : 'text-gray-400'}`}>Room Ambience</span>
-                      <button aria-label="Toggle Room Ambience" onClick={toggleAsmr} className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${asmrOn ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-white/10'}`}>
+                      <button aria-label="Toggle Room Ambience" onClick={toggleAsmr} className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${roomAmbienceIsAudible ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : asmrOn ? 'bg-amber-500/55' : 'bg-white/10'}`}>
                         <div className={`absolute top-[2px] w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ease-spring ${asmrOn ? 'translate-x-[18px]' : 'translate-x-[2px]'}`} />
                       </button>
                     </div>
                     <div className="flex items-center gap-2.5 mt-1">
                       <VolumeX className={`w-3.5 h-3.5 shrink-0 ${asmrOn ? 'text-amber-500/50' : 'text-gray-600'}`} />
-                      <input type="range" min="0" max="1.5" step="0.05" value={ambientVolume}
-                        onChange={e => { initAudio(); const v = parseFloat(e.target.value); setAmbientVolume(v); prevAmbientVolumeRef.current = v; if (!asmrOn && v > 0) { setAsmrOn(true); } }}
-                        className="premium-slider" style={{ '--slider-color': '#f59e0b', '--slider-progress': `${(ambientVolume / 1.5) * 100}%` } as React.CSSProperties} />
-                      <span className={`text-[10px] w-7 text-right tabular-nums font-medium ${asmrOn ? 'text-amber-500/70' : 'text-gray-600'}`}>{Math.round((ambientVolume / 1.5) * 100)}%</span>
+                      <input type="range" min="0" max="1" step="0.05" value={ambientVolume}
+                        onChange={e => updateAmbientVolume(parseFloat(e.target.value))}
+                        className="premium-slider" style={{ '--slider-color': '#f59e0b', '--slider-progress': `${ambientVolume * 100}%` } as React.CSSProperties} />
+                      <span className={`text-[10px] w-7 text-right tabular-nums font-medium ${asmrOn ? 'text-amber-500/70' : 'text-gray-600'}`}>{Math.round(ambientVolume * 100)}%</span>
                     </div>
                   </div>
 
                   {/* Crackle Row */}
-                  <div className={`flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 ${asmrOn ? 'bg-[#150a05] border-orange-500/30 shadow-[inset_0_0_20px_rgba(249,115,22,0.03)]' : 'bg-white/[0.02] border-white/[0.04]'}`}>
+                  <div className={`flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 ${crackleIsAudible ? 'bg-[#150a05] border-orange-500/30 shadow-[inset_0_0_20px_rgba(249,115,22,0.03)]' : asmrOn && crackleVolume > 0 ? 'bg-orange-500/[0.03] border-orange-500/15' : 'bg-white/[0.02] border-white/[0.04]'}`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-[12px] font-bold tracking-wide ${asmrOn ? 'text-orange-400' : 'text-gray-400'}`}>Cig Crackle</span>
                     </div>
                     <div className="flex items-center gap-2.5 mt-1">
                       <VolumeX className={`w-3.5 h-3.5 shrink-0 ${asmrOn ? 'text-orange-500/50' : 'text-gray-600'}`} />
-                      <input type="range" min="0" max="1.5" step="0.05" value={crackleVolume}
-                        onChange={e => { initAudio(); const v = parseFloat(e.target.value); setCrackleVolume(v); prevCrackleVolumeRef.current = v; if (!asmrOn && v > 0) { setAsmrOn(true); } }}
-                        className="premium-slider" style={{ '--slider-color': '#f97316', '--slider-progress': `${(crackleVolume / 1.5) * 100}%` } as React.CSSProperties} />
-                      <span className={`text-[10px] w-7 text-right tabular-nums font-medium ${asmrOn ? 'text-orange-500/70' : 'text-gray-600'}`}>{Math.round((crackleVolume / 1.5) * 100)}%</span>
+                      <input type="range" min="0" max="1" step="0.05" value={crackleVolume}
+                        onChange={e => updateCrackleVolume(parseFloat(e.target.value))}
+                        className="premium-slider" style={{ '--slider-color': '#f97316', '--slider-progress': `${crackleVolume * 100}%` } as React.CSSProperties} />
+                      <span className={`text-[10px] w-7 text-right tabular-nums font-medium ${asmrOn ? 'text-orange-500/70' : 'text-gray-600'}`}>{Math.round(crackleVolume * 100)}%</span>
                     </div>
                   </div>
 
                   {/* Radio Row */}
-                  <div className={`flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 ${musicOn ? 'bg-[#05150a] border-emerald-500/30 shadow-[inset_0_0_20px_rgba(16,185,129,0.03)]' : 'bg-white/[0.02] border-white/[0.04]'}`}>
+                  <div className={`flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 ${radioIsPlaying ? 'bg-[#05150a] border-emerald-500/30 shadow-[inset_0_0_20px_rgba(16,185,129,0.03)]' : musicOn ? 'bg-emerald-500/[0.035] border-emerald-500/15' : 'bg-white/[0.02] border-white/[0.04]'}`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-[12px] font-bold tracking-wide ${musicOn ? 'text-emerald-400' : 'text-gray-400'}`}>Live Radio</span>
-                      <button aria-label="Toggle Live Radio" onClick={toggleMusic} className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${musicOn ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-white/10'}`}>
+                      <button aria-label="Toggle Live Radio" onClick={toggleMusic} className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${radioIsPlaying ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : musicOn ? 'bg-emerald-500/55' : 'bg-white/10'}`}>
                         <div className={`absolute top-[2px] w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ease-spring ${musicOn ? 'translate-x-[18px]' : 'translate-x-[2px]'}`} />
                       </button>
                     </div>
                     <div className="flex items-center gap-2.5 mt-1">
                       <VolumeX className={`w-3.5 h-3.5 shrink-0 ${musicOn ? 'text-emerald-500/50' : 'text-gray-600'}`} />
-                      <input type="range" min="0" max="1.5" step="0.05" value={musicVolume}
-                        onChange={e => { initAudio(); const v = parseFloat(e.target.value); setMusicVolume(v); prevMusicVolumeRef.current = v; if (!musicOn && v > 0) { setMusicOn(true); } }}
-                        className="premium-slider" style={{ '--slider-color': '#10b981', '--slider-progress': `${(musicVolume / 1.5) * 100}%` } as React.CSSProperties} />
-                      <span className={`text-[10px] w-7 text-right tabular-nums font-medium ${musicOn ? 'text-emerald-500/70' : 'text-gray-600'}`}>{Math.round((musicVolume / 1.5) * 100)}%</span>
+                      <input type="range" min="0" max="1" step="0.05" value={musicVolume}
+                        onChange={e => updateMusicVolume(parseFloat(e.target.value))}
+                        className="premium-slider" style={{ '--slider-color': '#10b981', '--slider-progress': `${musicVolume * 100}%` } as React.CSSProperties} />
+                      <span className={`text-[10px] w-7 text-right tabular-nums font-medium ${musicOn ? 'text-emerald-500/70' : 'text-gray-600'}`}>{Math.round(musicVolume * 100)}%</span>
                     </div>
+
+                    {/* One calm now-playing surface; discovery lives in the library. */}
+                    <button
+                      type="button"
+                      onClick={() => { setAudioMixerOpen(false); setRadioLibraryOpen(true); }}
+                      className="group mt-0.5 flex w-full items-center gap-2.5 rounded-xl border border-white/[0.065] bg-black/20 p-2.5 text-left transition-all hover:border-emerald-400/20 hover:bg-emerald-400/[0.035]"
+                      aria-label="Browse live radio stations"
+                    >
+                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border text-[10px] font-black ${radioIsPlaying ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-300' : 'border-white/[0.07] bg-white/[0.035] text-gray-500'}`}>
+                        {getRadioStation(radioStationId).icon}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className={`flex items-center gap-1.5 truncate text-[11px] font-semibold ${radioIsPlaying ? 'text-emerald-200' : 'text-gray-300'}`}>
+                          {radioIsPlaying && (
+                            <span className="flex h-[10px] shrink-0 items-end gap-[2px] text-emerald-400" aria-hidden="true">
+                              <span className="eq-bar" style={{ animationDelay: '0ms' }} />
+                              <span className="eq-bar" style={{ animationDelay: '160ms' }} />
+                              <span className="eq-bar" style={{ animationDelay: '320ms' }} />
+                            </span>
+                          )}
+                          <span className="truncate">{getRadioStation(radioStationId).name}</span>
+                        </span>
+                        <span className="mt-0.5 block truncate text-[9px] text-gray-600">{getRadioStation(radioStationId).tagline}</span>
+                      </span>
+                      <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-gray-600 transition-colors group-hover:text-emerald-400">Browse</span>
+                      <ChevronDown className="h-3 w-3 shrink-0 -rotate-90 text-gray-700 transition-colors group-hover:text-emerald-400" />
+                    </button>
                   </div>
                 </motion.div>
               )}
@@ -3150,28 +3574,28 @@ export default function PuffBreak() {
                         className="flex flex-col gap-5 overflow-hidden"
                       >
                         <div className="flex flex-col gap-1.5">
-                          <div className="flex justify-between text-[10px] font-medium text-amber-500/80 uppercase tracking-wider"><span>Ambience</span><span className="tabular-nums">{Math.round((ambientVolume / 1.5) * 100)}%</span></div>
+                          <div className="flex justify-between text-[10px] font-medium text-amber-500/80 uppercase tracking-wider"><span>Ambience</span><span className="tabular-nums">{Math.round(ambientVolume * 100)}%</span></div>
                           <div className="flex items-center gap-2">
                             <VolumeX className="w-3.5 h-3.5 text-gray-600 shrink-0" />
-                            <input type="range" min="0" max="1.5" step="0.05" value={ambientVolume} onChange={e => setAmbientVolume(parseFloat(e.target.value))} className="premium-slider" style={{ '--slider-color': '#f59e0b', '--slider-progress': `${(ambientVolume / 1.5) * 100}%` } as React.CSSProperties} />
+                            <input type="range" min="0" max="1" step="0.05" value={ambientVolume} onChange={e => updateAmbientVolume(parseFloat(e.target.value))} className="premium-slider" style={{ '--slider-color': '#f59e0b', '--slider-progress': `${ambientVolume * 100}%` } as React.CSSProperties} />
                             <Volume2 className="w-3.5 h-3.5 text-amber-500/50 shrink-0" />
                           </div>
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <div className="flex justify-between text-[10px] font-medium text-orange-500/80 uppercase tracking-wider"><span>Crackle</span><span className="tabular-nums">{Math.round((crackleVolume / 1.5) * 100)}%</span></div>
+                          <div className="flex justify-between text-[10px] font-medium text-orange-500/80 uppercase tracking-wider"><span>Crackle</span><span className="tabular-nums">{Math.round(crackleVolume * 100)}%</span></div>
                           <div className="flex items-center gap-2">
                             <VolumeX className="w-3.5 h-3.5 text-gray-600 shrink-0" />
-                            <input type="range" min="0" max="1.5" step="0.05" value={crackleVolume} onChange={e => setCrackleVolume(parseFloat(e.target.value))} className="premium-slider" style={{ '--slider-color': '#f97316', '--slider-progress': `${(crackleVolume / 1.5) * 100}%` } as React.CSSProperties} />
+                            <input type="range" min="0" max="1" step="0.05" value={crackleVolume} onChange={e => updateCrackleVolume(parseFloat(e.target.value))} className="premium-slider" style={{ '--slider-color': '#f97316', '--slider-progress': `${crackleVolume * 100}%` } as React.CSSProperties} />
                             <Volume2 className="w-3.5 h-3.5 text-orange-500/50 shrink-0" />
                           </div>
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <div className="flex justify-between text-[10px] font-medium text-emerald-500/80 uppercase tracking-wider"><span>Radio</span><span className="tabular-nums">{Math.round((musicVolume / 1.5) * 100)}%</span></div>
+                          <div className="flex justify-between text-[10px] font-medium text-emerald-500/80 uppercase tracking-wider"><span>Radio</span><span className="tabular-nums">{Math.round(musicVolume * 100)}%</span></div>
                           <div className="flex items-center gap-2">
                             <VolumeX className="w-3.5 h-3.5 text-gray-600 shrink-0" />
-                            <input type="range" min="0" max="1.5" step="0.05" value={musicVolume} onChange={e => setMusicVolume(parseFloat(e.target.value))} className="premium-slider" style={{ '--slider-color': '#10b981', '--slider-progress': `${(musicVolume / 1.5) * 100}%` } as React.CSSProperties} />
+                            <input type="range" min="0" max="1" step="0.05" value={musicVolume} onChange={e => updateMusicVolume(parseFloat(e.target.value))} className="premium-slider" style={{ '--slider-color': '#10b981', '--slider-progress': `${musicVolume * 100}%` } as React.CSSProperties} />
                             <Volume2 className="w-3.5 h-3.5 text-emerald-500/50 shrink-0" />
                           </div>
                         </div>
@@ -3531,7 +3955,21 @@ export default function PuffBreak() {
           </>
         )}
       </AnimatePresence>
-      {/* ── Feedback Modal (Discord Webhook) ── */}
+      <RadioLibrary
+        open={radioLibraryOpen}
+        activeStationId={radioStationId}
+        isPlaying={radioIsPlaying}
+        roomId={currentRoom.id}
+        roomName={displayRoomName(currentRoom)}
+        onClose={() => setRadioLibraryOpen(false)}
+        onSelect={(stationId) => {
+          switchRadioStation(stationId);
+          if (!musicOn) toggleMusic();
+        }}
+        onTogglePlayback={toggleMusic}
+      />
+
+      {/* ── Feedback Modal ── */}
       <AnimatePresence>
         {feedbackModalOpen && (
           <>
@@ -3632,19 +4070,21 @@ export default function PuffBreak() {
                         if (feedbackText.trim().length < 3) return;
                         setFeedbackSending(true);
                         try {
-                          const WEBHOOK = 'https://discord.com/api/webhooks/1520215527845400727/3_MhpmnRvWEuO5MU-KEoMjRDwQ10qEkY5KwSfo5pXtjXYaIRHHganCnoCzjul0yC-4ju';
+                          let response: Response;
                           if (feedbackImages.length > 0) {
                             const form = new FormData();
-                            form.append('payload_json', JSON.stringify({ content: `**PuffBreak Feedback** 💬\n\n${feedbackText}\n\n*Sent from PuffBreak app*` }));
-                            feedbackImages.forEach((img, i) => form.append(`files[${i}]`, img));
-                            await fetch(WEBHOOK, { method: 'POST', body: form });
+                            form.append('message', feedbackText);
+                            form.append('website', '');
+                            feedbackImages.forEach((img) => form.append('files', img));
+                            response = await fetch('/api/feedback', { method: 'POST', body: form });
                           } else {
-                            await fetch(WEBHOOK, {
+                            response = await fetch('/api/feedback', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ content: `**PuffBreak Feedback** 💬\n\n${feedbackText}\n\n*Sent from PuffBreak app*` }),
+                              body: JSON.stringify({ type: 'feedback', message: feedbackText, website: '' }),
                             });
                           }
+                          if (!response.ok) throw new Error('Feedback request failed');
                           setFeedbackSent(true);
                           setFeedbackSending(false);
                         } catch {
@@ -3866,7 +4306,9 @@ export default function PuffBreak() {
               height: '10',
               width: '10',
               playerVars: {
-                autoplay: asmrOn ? 1 : 0,
+                // Always begin paused. Restoring a visual "on" state cannot
+                // bypass browser autoplay policy and would make the UI lie.
+                autoplay: 0,
                 loop: 1,
                 playlist: id, // loop requires playlist to be set to the same video ID
                 controls: 0,
@@ -3876,43 +4318,115 @@ export default function PuffBreak() {
             }}
             onReady={(e) => {
               ytPlayersRef.current[id] = e.target;
-              if (asmrOn) {
+              if (asmrOn && ambientVolume > 0) {
                 const volumeMultiplier = (currentRoom.ytIds.length > 1 ? 0.6 : 1) * (currentRoom.ytVol || 1);
-                e.target.setVolume(ambientVolume * 100 * volumeMultiplier);
+                e.target.setVolume(Math.min(100, ambientVolume * 100 * volumeMultiplier));
                 e.target.playVideo();
               }
             }}
             onStateChange={(e) => {
               // YouTube player states: -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (video cued)
               if (e.data === 1) {
-                setYtPlaying(true);
+                playingYtIdsRef.current.add(id);
+                setYtPlaying(playingYtIdsRef.current.size > 0);
               }
               if (e.data === 2 || e.data === 0) {
-                setYtPlaying(false);
+                playingYtIdsRef.current.delete(id);
+                setYtPlaying(playingYtIdsRef.current.size > 0);
               }
-              if (e.data === 0 && asmrOn) {
+              if (e.data === 0 && asmrOn && ambientVolume > 0) {
                 e.target.playVideo(); // Force loop just in case
               }
             }}
             onError={() => {
-              setYtPlaying(false);
+              playingYtIdsRef.current.delete(id);
+              setYtPlaying(playingYtIdsRef.current.size > 0);
             }}
           />
         ))}
+        {youtubeRadioMounted && currentRadio.source === 'youtube-playlist' && (currentRadio.videoIds?.length || currentRadio.playlistId) && (
+          <YouTube
+            key={`youtube-radio-${currentRadio.id}`}
+            videoId={currentRadio.videoIds?.[0]}
+            opts={{
+              height: '10',
+              width: '10',
+              playerVars: {
+                autoplay: 0,
+                controls: 0,
+                disablekb: 1,
+                loop: 1,
+                vq: 'tiny',
+                ...(!currentRadio.videoIds?.length && currentRadio.playlistId ? { listType: 'playlist' as const, list: currentRadio.playlistId } : {}),
+              },
+            }}
+            onReady={(event) => {
+              youtubeRadioPlayerRef.current = event.target;
+              youtubeRadioReadyRef.current = true;
+              event.target.setVolume(Math.round(musicVolume * 100));
+              if (currentRadio.videoIds?.length) event.target.cuePlaylist(currentRadio.videoIds, 0, 0);
+              else if (currentRadio.playlistId) event.target.cuePlaylist({ listType: 'playlist', list: currentRadio.playlistId, index: 0, startSeconds: 0 });
+            }}
+            onStateChange={(event) => {
+              if (radioStationIdRef.current !== currentRadio.id) return;
+              // -1 unstarted · 0 ended · 1 playing · 2 paused · 3 buffering · 5 cued
+              if (event.data === 1) {
+                youtubeRadioErrorCountRef.current = 0;
+                setRadioPlaybackState('playing');
+              }
+              if (event.data === 2 && !musicOnRef.current) setRadioPlaybackState('paused');
+              if (event.data === 3) setRadioPlaybackState('loading');
+              if (event.data === 5 && musicOnRef.current) {
+                startYoutubeRadio(youtubeNeedsRandomStartRef.current);
+              }
+              if (event.data === 0 && musicOnRef.current) event.target.playVideo();
+            }}
+            onError={(event) => {
+              if (radioStationIdRef.current === currentRadio.id) {
+                const playlist = event.target.getPlaylist?.() ?? [];
+                if (playlist.length > 1 && youtubeRadioErrorCountRef.current < playlist.length - 1) {
+                  youtubeRadioErrorCountRef.current += 1;
+                  const currentIndex = Math.max(0, event.target.getPlaylistIndex?.() ?? 0);
+                  event.target.playVideoAt((currentIndex + 1) % playlist.length);
+                  setRadioToast('One video is unavailable here — skipping to the next song.');
+                  return;
+                }
+                musicOnRef.current = false;
+                setMusicOn(false);
+                setRadioPlaybackState('error');
+              }
+            }}
+          />
+        )}
       </div>
 
-      {/* Draggable Instructions Button */}
-      <motion.div
-        drag
-        dragConstraints={mainScreenRef}
-        dragElastic={0.1}
-        dragMomentum={false}
-        whileDrag={{ scale: 1.1, cursor: "grabbing" }}
-        className="fixed z-50 bottom-24 right-4 sm:right-10 flex items-center justify-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-gray-300 shadow-xl cursor-grab transition-colors"
-        onClick={() => setInstructionsOpen(true)}
-      >
-        <span className="font-serif italic font-bold text-xl">i</span>
-      </motion.div>
+      {/* Anchored guide launcher. A stable corner is easier to find than a
+          draggable control; mobile users may dismiss it for the session. */}
+      <AnimatePresence>
+        {guideLauncherVisible && !isZenMode && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+            className={`fixed z-50 right-4 sm:bottom-24 sm:right-10 ${radioPlaybackState !== 'idle' && !mobileRadioHidden ? 'bottom-44' : 'bottom-32'}`}
+          >
+            <button
+              type="button"
+              onClick={() => setInstructionsOpen(true)}
+              aria-label="Open quick guide"
+              className="grid h-11 w-11 place-items-center rounded-2xl border border-white/15 bg-[#111116]/85 text-gray-400 shadow-xl backdrop-blur-xl transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <span className="font-serif text-lg font-bold italic">i</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setGuideLauncherVisible(false)}
+              aria-label="Hide quick guide button"
+              className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full border border-white/10 bg-[#16161c] text-gray-500 shadow-md sm:hidden"
+            >
+              <X className="h-2.5 w-2.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Instructions Modal */}
       <AnimatePresence>
@@ -3929,58 +4443,58 @@ export default function PuffBreak() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#121214] border border-white/10 p-6 sm:p-8 rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden"
+              className="bg-[#121214] border border-white/10 p-5 sm:p-7 rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-amber-500" />
-              <h2 className="text-xl font-bold text-white mb-6 font-display tracking-wide">How to use PuffBreak</h2>
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30">60-second guide</p>
+                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-white">Make the break yours.</h2>
+                </div>
+                <button type="button" onClick={() => setInstructionsOpen(false)} aria-label="Close quick guide" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/[0.05] text-white/35 hover:text-white">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
               
-              <div className="space-y-5 text-sm text-gray-300">
+              <div className="space-y-3 text-sm text-gray-300">
                 <div className="flex gap-4 items-start">
                   <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20 text-blue-400 font-mono font-bold">1</div>
                   <div>
-                    <strong className="text-gray-100 block mb-1">Light it up</strong>
-                    Tap the glowing tip to start — watch the Lighter or Matchbox animate. Swap igniter style in ≡ Menu → Igniter Style.
+                    <strong className="text-gray-100 block">Start the ritual</strong>
+                    <span className="text-[12px] leading-relaxed text-white/40">Hold the tip to light. In Chai Stall, hold the cup to sip.</span>
                   </div>
                 </div>
 
                 <div className="flex gap-4 items-start">
                   <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0 border border-orange-500/20 text-orange-400 font-mono font-bold">2</div>
                   <div>
-                    <strong className="text-gray-100 block mb-1">Hold to puff — release for a ring</strong>
-                    Hold the filter (up to 8 sec). The longer you hold, the bigger the smoke ring when you let go. The cherry glows brighter while you drag.
+                    <strong className="text-gray-100 block">Puff, release, ash</strong>
+                    <span className="text-[12px] leading-relaxed text-white/40">Hold the filter, release for a smoke ring, double-tap the ash.</span>
                   </div>
                 </div>
 
                 <div className="flex gap-4 items-start">
-                  <div className="w-8 h-8 rounded-full bg-gray-500/10 flex items-center justify-center shrink-0 border border-gray-500/20 text-gray-400 font-mono font-bold">3</div>
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 text-emerald-400 font-mono font-bold">3</div>
                   <div>
-                    <strong className="text-gray-100 block mb-1">Double-tap the ash</strong>
-                    When the ash tip grows too long, double-tap it to knock it off. On mobile — shake the phone!
+                    <strong className="text-gray-100 block">Choose the sound</strong>
+                    <span className="text-[12px] leading-relaxed text-white/40">Browse radio by mood, or balance ambience, crackle and radio in Mixer.</span>
                   </div>
                 </div>
 
                 <div className="flex gap-4 items-start">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 text-emerald-400 font-mono font-bold">4</div>
+                  <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/20 text-purple-400 font-mono font-bold">4</div>
                   <div>
-                    <strong className="text-gray-100 block mb-1">Set the mood</strong>
-                    Teleport across 8 rooms. Enable ASMR &amp; Live Radio in the dock. Mix Ambience, Crackle &amp; Radio independently in the Mixer. Use headphones for best ASMR.
-                  </div>
-                </div>
-
-                <div className="flex gap-4 items-start">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/20 text-purple-400 font-mono font-bold">5</div>
-                  <div>
-                    <strong className="text-gray-100 block mb-1">Stealth &amp; Zen modes</strong>
-                    👁 hides the cigarette for discreet office use. ⊡ enters full-immersion Zen mode. Both toggled from the top bar.
+                    <strong className="text-gray-100 block">Clear the screen</strong>
+                    <span className="text-[12px] leading-relaxed text-white/40">Stealth hides the ritual. Zen removes every control until you exit.</span>
                   </div>
                 </div>
               </div>
 
               <button
                 onClick={() => setInstructionsOpen(false)}
-                className="mt-8 w-full py-3.5 bg-white/10 hover:bg-white/15 active:scale-[0.98] text-white rounded-xl font-medium transition-all border border-white/5 uppercase tracking-widest text-xs"
+                className="mt-6 w-full py-3 bg-white/10 hover:bg-white/15 active:scale-[0.98] text-white rounded-xl font-medium transition-all border border-white/5 text-xs"
               >
-                Got it — let&apos;s break
+                Start my break
               </button>
             </motion.div>
           </motion.div>

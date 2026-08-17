@@ -741,6 +741,123 @@ export const LANDING_PAGES: LandingPage[] = [
       { kind: 'concept', slug: 'work-break-timer', label: 'Work break timer' },
     ],
   },
+
+  // ─────────────────────────── FOCUS RADIO ─────────────────────────────────
+  {
+    slug: 'focus-radio-online',
+    title: 'Focus Radio Online — Free Music for Work and Study Breaks',
+    description: 'Listen to free focus radio inside a calm three-minute break room. Choose instrumental, classical, jazz or low-distraction electronic music and mix it with ambience.',
+    hook: 'Music that supports the task, then gets out of the way.',
+    intro: [
+      'Focus music should reduce choices, not create another feed to manage. PuffBreak keeps a small, human-curated radio shelf for work and study: instrumental electronic, classical, jazz, lo-fi and mellow eclectic stations that can sit behind the next task.',
+      'The radio lives inside a bounded break rather than an endless recommendation screen. Choose how you want to feel, tune one station, balance it against the room ambience, and return to work without spending the break searching.',
+    ],
+    sections: [
+      {
+        heading: 'What makes a station useful for focus?',
+        body: 'Consistency matters more than a fashionable genre. A useful focus station keeps abrupt changes and interruptions low, has enough movement to prevent restlessness, and stays quiet enough that language does not compete with the task.',
+        bullets: ['Instrumental and low-lyric choices', 'Focus and calm mood filters', 'Saved stations for zero-decision returns', 'Independent radio and ambience volume'],
+      },
+      {
+        heading: 'Start with a feeling, not a catalogue',
+        body: 'Choose “Want focus” when you need steady attention or “Need calm” when stress is the larger problem. PuffBreak then narrows the library before region, language and genre filters add detail.',
+      },
+      {
+        heading: 'A mixer built for restraint',
+        body: 'Radio, room ambience and cigarette crackle each have their own control. That means rain can sit just under the music, crackle can disappear completely, or the room can become silent without changing your saved station.',
+      },
+    ],
+    roomId: 'library',
+    keywords: ['focus radio online', 'music for work radio', 'study radio free', 'instrumental focus radio', 'online focus music', 'work break music'],
+    faqs: [
+      { q: 'What radio is best for focus?', a: 'Start with instrumental electronic, classical, mellow jazz or lo-fi at a moderate volume. The best choice is the one that does not pull your attention away from the task.' },
+      { q: 'Is PuffBreak focus radio free?', a: 'Yes. The radio library and mixer are free and require no account. Streams are operated by their respective stations, so availability can change.' },
+      { q: 'Can I save a focus station?', a: 'Yes. Save favourites in the radio library; PuffBreak also remembers the last station you selected in that browser.' },
+    ],
+    related: [
+      { kind: 'concept', slug: 'radio', label: 'Explore PuffBreak Radio' },
+      { kind: 'concept', slug: 'lofi-radio-for-work', label: 'Lo-fi radio for work' },
+      { kind: 'concept', slug: 'pomodoro-alternative', label: 'A better Pomodoro break' },
+    ],
+  },
+
+  // ─────────────────────────── LO-FI RADIO ─────────────────────────────────
+  {
+    slug: 'lofi-radio-for-work',
+    title: 'Lo-Fi Radio for Work — a Calm, Free Browser Station',
+    description: 'Play free lo-fi radio for work, coding or study inside PuffBreak. No account and no infinite feed—just one verified station, a mood filter and a precise sound mixer.',
+    hook: 'One dependable lo-fi frequency is better than fifty identical playlists.',
+    intro: [
+      'Lo-fi works best when it is almost architectural: a soft pulse in the room, not the centre of it. PuffBreak includes one deliberate lo-fi station rather than a crowded wall of interchangeable streams, so choosing takes seconds.',
+      'Pair it with rain in Library Corner, a quiet rooftop, or no ambience at all. The station stays saved for your next visit, while playback waits for your interaction instead of surprising you with sound when the page opens.',
+    ],
+    sections: [
+      {
+        heading: 'Why PuffBreak keeps the lo-fi choice small',
+        body: 'A larger catalogue is not automatically a better experience. The chosen stream passed browser-origin and real-audio checks, has a steady instrumental profile, and fits both focus and unwind moods.',
+        bullets: ['Verified browser playback', 'Instrumental, low-distraction programming', 'Remembered as your last station', 'No automatic audio on page load'],
+      },
+      {
+        heading: 'Lo-fi for focus versus lo-fi for rest',
+        body: 'For focus, keep the radio clear and the ambience low. For a short decompression break, reduce the radio and let more of the room through. The same station can serve both jobs because the mixer changes its role.',
+      },
+      {
+        heading: 'Leave when the break ends',
+        body: 'PuffBreak does not turn lo-fi into a recommendation feed. Minimize the radio companion, finish the ritual, and return to the task. The last frequency will be waiting next time.',
+      },
+    ],
+    roomId: 'library',
+    keywords: ['lofi radio for work', 'lofi radio online free', 'lofi music for coding', 'lofi study radio', 'chillhop radio online', 'focus beats radio'],
+    faqs: [
+      { q: 'Does PuffBreak have free lo-fi radio?', a: 'Yes. Hotmix Lo-Fi is available in the global radio library and can be found through the Focus or Calm mood filters.' },
+      { q: 'Will lo-fi start automatically when I open the site?', a: 'No. Browsers restrict autoplay, and surprise audio is poor UX. PuffBreak remembers your station but waits for a user interaction before playing it.' },
+      { q: 'Can I mix lo-fi with rain sounds?', a: 'Yes. Radio and room ambience have separate volume controls, so Library Corner rain can sit beneath the station at the level you prefer.' },
+    ],
+    related: [
+      { kind: 'concept', slug: 'radio', label: 'Explore PuffBreak Radio' },
+      { kind: 'concept', slug: 'focus-radio-online', label: 'Focus radio online' },
+      { kind: 'blog', slug: 'lofi-vs-ambient-sound-for-focus', label: 'Lo-fi or ambience?' },
+    ],
+  },
+
+  // ─────────────────────────── BHAJAN RADIO ────────────────────────────────
+  {
+    slug: 'bhajan-radio-online',
+    title: 'Bhajan Radio Online — a Quiet Hindi Devotional Break',
+    description: 'Listen to free Hindi and Sanskrit bhajan radio in a calm virtual break room. Mix devotional music with soft ambience, save the station and return without signing in.',
+    hook: 'A devotional pause should feel spacious, not crowded by controls.',
+    intro: [
+      'For many Hindi listeners, a quiet bhajan is not background entertainment; it is a familiar way to slow the room down. PuffBreak adds that devotional lane to a global music library without turning it into a noisy genre directory.',
+      'Bhaktisudha appears under South Asia, Hindi, Sanskrit, Calm and Focus. Save it once and the browser remembers the station. Playback always remains intentional, and the independent mixer lets the music stay clear of unnecessary sound layers.',
+    ],
+    sections: [
+      {
+        heading: 'A respectful devotional listening mode',
+        body: 'The interface treats bhajan radio like a reflective frequency, not a novelty. The station card uses the same calm status language, reliable controls and minimal companion shown for every other region.',
+        bullets: ['Hindi and Sanskrit discovery filters', 'Calm and Focus mood placement', 'Saved station and last-listened persistence', 'Optional room ambience or complete quiet'],
+      },
+      {
+        heading: 'Which room fits bhajan radio?',
+        body: 'Library Corner offers gentle rain; Park Bench adds a little outdoor air; Silent Room removes the other layers entirely. Keep radio at the centre and use ambience only when it improves the pause.',
+      },
+      {
+        heading: 'Part of a genuinely global shelf',
+        body: 'Bhajan sits alongside Bollywood, Pakistani contemporary music, Japanese city pop, K-pop, Afrobeats, Arabic pop, bossa nova and more. Region and language filters make those differences useful rather than decorative.',
+      },
+    ],
+    roomId: 'park',
+    keywords: ['bhajan radio online', 'hindi devotional radio', 'bhakti radio online free', 'sanskrit bhajan radio', 'online bhajan music', 'devotional music radio'],
+    faqs: [
+      { q: 'Which bhajan station is available in PuffBreak?', a: 'Bhaktisudha is the current devotional station, categorized under bhajan, Indian classical, Hindi and Sanskrit.' },
+      { q: 'Is the bhajan radio free?', a: 'Yes. PuffBreak is free and needs no account. The live station is operated by its broadcaster, so availability may occasionally change.' },
+      { q: 'Can I listen without cigarette sounds?', a: 'Yes. Set crackle to zero in the Mixer, choose Silent Room, or use the chai ritual instead of the virtual cigarette.' },
+    ],
+    related: [
+      { kind: 'concept', slug: 'radio', label: 'Explore PuffBreak Radio' },
+      { kind: 'concept', slug: 'virtual-chai', label: 'Take a virtual chai break' },
+      { kind: 'region', slug: 'chai-tapri', label: 'India’s chai-tapri ritual' },
+    ],
+  },
 ];
 
 export const getLandingPageBySlug = (slug: string): LandingPage | undefined =>

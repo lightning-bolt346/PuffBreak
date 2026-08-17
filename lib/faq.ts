@@ -10,7 +10,7 @@ export interface FaqItem {
 export const FAQ_ITEMS: FaqItem[] = [
   {
     q: 'What is PuffBreak?',
-    a: 'PuffBreak is a free, anonymous, browser-based virtual break room simulator. You light a digital cigarette or enjoy a virtual cup of chai tea in 8 immersive ambient environments with procedural ASMR audio and live anonymous chat. No account or sign-up required.',
+    a: 'PuffBreak is a free, browser-based virtual break room. Light a digital cigarette or sip virtual chai in 8 ambient rooms, mix room sound with live music radio, and share the break through anonymous room chat. No account or sign-up is required.',
   },
   {
     q: 'Is PuffBreak free?',
@@ -31,6 +31,10 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     q: 'How does PuffBreak work on mobile?',
     a: 'PuffBreak is fully responsive and works on all smartphones and tablets. You can install it as a PWA (Progressive Web App) from your mobile browser for an app-like experience. Shake your phone to tap the ash off your virtual cigarette.',
+  },
+  {
+    q: 'What music and radio can I listen to?',
+    a: 'PuffBreak includes a human-curated library of live music stations from around the world. Browse by mood, region, language, genre, or artist; save favourites; then balance radio, room ambience, and cigarette crackle independently in the Mixer. Stream availability can change because stations are operated by third parties.',
   },
   {
     q: 'What ambient rooms are available in PuffBreak?',
