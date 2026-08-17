@@ -2,12 +2,13 @@ import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { ArrowLeft, Coffee, Heart } from 'lucide-react';
+import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'About',
   description: 'Learn about the story behind PuffBreak, the solo developer building it, and why we believe in the power of the 3-minute digital break.',
   alternates: {
-    canonical: 'https://puffbreak.app/about',
+    canonical: `${SITE_URL}/about`,
   },
 };
 

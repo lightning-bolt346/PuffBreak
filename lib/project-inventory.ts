@@ -90,6 +90,7 @@ const FEATURE_GROUPS: ProjectInventoryFeatureGroup[] = [
       'Region/culture entity pages for international break rituals.',
       'Blog system for evergreen explainers and discovery content.',
       'Structured FAQ-rich pages across home, concept, room, region and radio surfaces.',
+      'Host-level redirect strategy for market-entry domains so they reinforce one canonical site instead of creating duplicate public copies.',
     ],
   },
 ];

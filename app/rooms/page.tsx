@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { ROOMS } from '@/lib/rooms';
-
-const SITE_URL = 'https://puffbreak.app';
+import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Break Rooms — 8 Immersive Ambient Spaces',

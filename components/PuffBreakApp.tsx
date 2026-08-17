@@ -3763,7 +3763,7 @@ export default function PuffBreak() {
                   <MenuButton icon={<Share2 className="w-4 h-4" />} text="Share Your Break" onClick={() => {
                     track('share_clicked', { room: currentRoom.id });
                     const caption = 'I just took a mindful 3-minute break on PuffBreak 🌬️ — free, anonymous, no sign-up';
-                    const url = 'https://puffbreak.app';
+                    const url = 'https://www.puffbreak.app';
                     if (navigator.share) {
                       navigator.share({ title: 'PuffBreak — Virtual Break Room', text: caption, url }).catch(() => {});
                     } else {

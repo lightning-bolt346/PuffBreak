@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 const OWNER_COOKIE = 'pb_owner_access';
+const INDIA_ENTRY_HOSTS = new Set(['sutta-break.vercel.app', 'www.sutta-break.vercel.app']);
 
 async function digestSecret(value: string) {
   const bytes = new TextEncoder().encode(value);
@@ -13,6 +14,18 @@ async function digestSecret(value: string) {
 
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+  const hostname = request.nextUrl.hostname.toLowerCase();
+
+  if (INDIA_ENTRY_HOSTS.has(hostname)) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.protocol = 'https:';
+    redirectUrl.host = 'www.puffbreak.app';
+    redirectUrl.pathname = pathname === '/' ? '/virtual-sutta-break' : pathname;
+    if (!redirectUrl.searchParams.has('lang')) {
+      redirectUrl.searchParams.set('lang', 'hi');
+    }
+    return NextResponse.redirect(redirectUrl, 308);
+  }
 
   if (!pathname.startsWith('/owner/')) {
     return NextResponse.next();
@@ -59,5 +72,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/owner/:path*'],
+  matcher: ['/owner/:path*', '/((?!_next|api|favicon.ico|robots.txt|sitemap.xml).*)'],
 };

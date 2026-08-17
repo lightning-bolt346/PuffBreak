@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { getBlogPostBySlug, getAllBlogPosts } from '@/lib/blog';
 import { marked } from 'marked';
 import ReadingProgress from '@/components/ReadingProgress';
-
-const SITE_URL = 'https://puffbreak.app';
+import { SITE_URL } from '@/lib/site';
 
 // Force dynamic generation for blog posts so we don't hit edge case static generation bugs in dev
 export const dynamicParams = true;

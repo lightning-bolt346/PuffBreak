@@ -41,6 +41,54 @@ export interface LandingPage {
 export const LANDING_PAGES: LandingPage[] = [
   // ─────────────────────────── VIRTUAL CIGARETTE ────────────────────────────
   {
+    slug: 'virtual-sutta-break',
+    title: 'Virtual Sutta Break — India’s 3-Minute Online Break Room',
+    description:
+      'Take a virtual sutta break online with chai, ambient rooms, live radio and anonymous company. Built for Indian work culture, free in the browser, and no sign-up.',
+    hook: 'The ritual of a sutta break, minus the smoke, plus the room you actually miss.',
+    intro: [
+      'A sutta break in India is rarely just about the cigarette. It is the pause after a noisy meeting, the five minutes outside the office, the chai stall detour, the line of conversation that only happens when everyone steps away from the desk together. PuffBreak is built to capture that ritual without needing nicotine, a lighter, or an actual office staircase.',
+      'The point is not to glamorize smoking. The point is to preserve the social and psychological shape of the break: step away, breathe, listen to something good, maybe sip chai, maybe say one thing in chat, then go back clearer than you left.',
+    ],
+    sections: [
+      {
+        heading: 'What makes this feel like a real sutta break?',
+        body: 'PuffBreak combines a virtual cigarette ritual, a virtual chai option, ambient rooms, and a live radio shelf that already includes Indian indie, DHH, film music and devotional stations. It feels more like stepping out than opening another app.',
+        bullets: ['Virtual cigarette or chai ritual', 'Office rooftop, park, metro and chai-stall moods', 'Artist radio for Indian and global listeners', 'Anonymous, account-free break-room flow'],
+      },
+      {
+        heading: 'Built for Indian break culture',
+        body: 'The app already carries Hindi-friendly metadata, chai-focused rooms, desi hip-hop and Indian artist radio, and region pages like the chai tapri story. This page gives India-targeted searches a clean landing point without splitting the product into a duplicate site.',
+      },
+      {
+        heading: 'Why not a separate India copy of the whole site?',
+        body: 'Running the same product on multiple public hostnames creates duplicate-content and canonical confusion. A single canonical PuffBreak domain with a strong India entry page is the cleaner way to rank and grow.',
+      },
+    ],
+    roomId: 'chai',
+    keywords: ['virtual sutta break', 'sutta break online', 'online sutta corner', 'chai sutta break', 'indian break room online', 'virtual smoke break india'],
+    faqs: [
+      {
+        q: 'What is a virtual sutta break?',
+        a: 'It is a browser-based version of the short Indian cigarette-break ritual: step away, breathe, listen, maybe sip chai, and return after a few minutes. PuffBreak makes that break available without needing a real cigarette.',
+      },
+      {
+        q: 'Is PuffBreak only for smokers?',
+        a: 'No. Many people use it for chai, music, ambience, or a general work reset. The ritual is the point, not the nicotine.',
+      },
+      {
+        q: 'Why does sutta-break redirect to PuffBreak?',
+        a: 'To avoid duplicate-site SEO problems. The India entry hostname should funnel visitors into one canonical PuffBreak site, not compete with it.',
+      },
+    ],
+    related: [
+      { kind: 'concept', slug: 'virtual-smoke-break', label: 'Virtual smoke break' },
+      { kind: 'concept', slug: 'virtual-chai', label: 'Virtual chai' },
+      { kind: 'region', slug: 'chai-tapri', label: 'The chai tapri' },
+      { kind: 'concept', slug: 'break-room', label: 'Virtual break room' },
+    ],
+  },
+  {
     slug: 'virtual-cigarette',
     title: 'Virtual Cigarette — Free Online Smoking Simulator, No Download',
     description:

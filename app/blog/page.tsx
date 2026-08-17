@@ -2,8 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getAllBlogPosts } from '@/lib/blog';
-
-const SITE_URL = 'https://puffbreak.app';
+import { SITE_URL } from '@/lib/site';
 
 // ── God-level SEO metadata ──────────────────────────────────────────────────
 export const metadata: Metadata = {

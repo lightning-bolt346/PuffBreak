@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { SITE_URL } from '@/lib/site';
 
-const SITE_URL = 'https://puffbreak.app';
 const SITE_NAME = 'PuffBreak';
 const OG_IMAGE = `${SITE_URL}/og-image-v2.png`;
 
@@ -147,12 +147,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // puffbreak.app — Google Search Console URL-prefix verification token.
-    // NOTE: domain-property verification also needs the TXT record
-    // google-site-verification=2X6Ba5HEpnBAZ0LLSvyF-2mmRA1C3W-NvHZY-ZIffWU
-    // added at the DNS provider (Vercel DNS or registrar) — a DNS TXT record
-    // cannot be deployed from this repo.
-    google: '2X6Ba5HEpnBAZ0LLSvyF-2mmRA1C3W-NvHZY-ZIffWU',
+    google: 'vrbomKYzEEs6XZErAY-s0kDR1hYHzBbmS0iHK3WVxTg',
   },
   alternates: {
     canonical: SITE_URL,

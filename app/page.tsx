@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { FAQ_ITEMS } from '@/lib/faq';
 import { getHomeMeta } from '@/lib/i18n';
-
-const SITE_URL = 'https://puffbreak.app';
+import { SITE_URL } from '@/lib/site';
 
 type PageProps = {
   searchParams: Promise<{ lang?: string }>;

@@ -1,12 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { Shield, ArrowLeft } from 'lucide-react';
+import { SITE_URL } from '@/lib/site';
 
 export const metadata = {
   title: 'Privacy Policy',
   description: 'Read the PuffBreak privacy policy. No accounts or personal profiles, local preferences, temporary room data, and clear third-party service disclosures.',
   alternates: {
-    canonical: 'https://puffbreak.app/privacy',
+    canonical: `${SITE_URL}/privacy`,
   },
 };
 

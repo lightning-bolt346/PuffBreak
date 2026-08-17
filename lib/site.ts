@@ -1,7 +1,7 @@
 // Shared site-wide constants. Single source of truth so new pages don't
 // hardcode the canonical origin (now the owned custom domain).
 
-export const SITE_URL = 'https://puffbreak.app';
+export const SITE_URL = 'https://www.puffbreak.app';
 export const SITE_NAME = 'PuffBreak';
 
 /** The live stats / original-data page (survey aggregates). */
