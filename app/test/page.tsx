@@ -276,7 +276,7 @@ export default async function TestPage() {
               <h3 className="text-xs font-mono uppercase tracking-widest text-gray-500 mb-3">Now</h3>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center justify-between gap-3">
-                  <span className="font-mono text-gray-300">puff-break.vercel.app</span>
+                  <span className="font-mono text-gray-300">puffbreak.app</span>
                   <span className="text-xs text-emerald-400">production origin</span>
                 </li>
                 <li className="flex items-center justify-between gap-3">
@@ -286,11 +286,12 @@ export default async function TestPage() {
               </ul>
             </div>
             <div>
-              <h3 className="text-xs font-mono uppercase tracking-widest text-gray-500 mb-3">When you own a custom domain</h3>
+              <h3 className="text-xs font-mono uppercase tracking-widest text-gray-500 mb-3">Done</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Add the apex domain (e.g. <code className="text-emerald-300">puffbreak.app</code>) in Vercel → then swap <code className="text-gray-300">SITE_URL</code> in <code className="text-gray-300">lib/site.ts</code>.</li>
-                <li>Then (and only then) switch the contact email to a brand address.</li>
-                <li>Update canonical + llms.txt + sitemap URLs all at once.</li>
+                <li>✅ <code className="text-emerald-300">puffbreak.app</code> owned &amp; added — <code className="text-gray-300">SITE_URL</code> in <code className="text-gray-300">lib/site.ts</code> already swapped to apex.</li>
+                <li>✅ Contact email switched to <code className="text-emerald-300">hello@puffbreak.app</code> everywhere.</li>
+                <li>✅ Canonical + llms.txt + sitemap URLs all on <code className="text-emerald-300">puffbreak.app</code>.</li>
+                <li>⚠️ Remaining (external): set DNS + 301 redirect from <code className="text-gray-300">*.vercel.app</code> → <code className="text-gray-300">puffbreak.app</code> in Vercel/registrar, re-verify in Search Console.</li>
               </ul>
             </div>
           </div>

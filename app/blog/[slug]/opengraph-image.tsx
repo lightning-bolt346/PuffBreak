@@ -164,7 +164,7 @@ export default async function BlogOGImage({ params }: { params: Promise<{ slug: 
             >
               PB
             </div>
-            <span style={{ color: '#9ca3af', fontSize: '16px' }}>puff-break.vercel.app</span>
+            <span style={{ color: '#9ca3af', fontSize: '16px' }}>puffbreak.app</span>
           </div>
           <span style={{ color: '#4b5563', fontSize: '15px' }}>{readTime}</span>
         </div>

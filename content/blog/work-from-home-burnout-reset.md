@@ -35,7 +35,7 @@ tags:
         <p>This is not a meditation routine that requires effort and discipline. This is the laziest possible effective break:</p>
         <ol>
           <li>Set a recurring timer on your phone for every 90 minutes.</li>
-          <li>When it fires: open puff-break.vercel.app (or tap the PWA icon if installed).</li>
+          <li>When it fires: open puffbreak.app (or tap the PWA icon if installed).</li>
           <li>Select your room — we recommend <strong>Beach Sunset</strong> or <strong>Library Corner</strong> for WFH days.</li>
           <li>Enable ASMR. Put on headphones.</li>
           <li>Hold to light. Watch the smoke. Do. Not. Check. Slack.</li>
@@ -51,6 +51,6 @@ tags:
         <h2>Building a New WFH Ritual</h2>
         <p>The power of PuffBreak is that it is a <em>ritual</em>, not just a tool. The act of opening the tab, choosing your room, and lighting the cigarette is itself a psychological signal to your brain: "This is break time. The work can wait." Over days and weeks of using it consistently, that signal becomes automatic.</p>
         <p>WFH burnout thrives on the absence of boundaries. Rituals create boundaries. PuffBreak is a 3-minute boundary creator that fits between any two meetings, requires no discipline, and costs absolutely nothing.</p>
-        <p>Start your reset at <a href="https://puff-break.vercel.app">puff-break.vercel.app</a>.</p>
+        <p>Start your reset at <a href="https://puffbreak.app">puffbreak.app</a>.</p>
       </div>
     

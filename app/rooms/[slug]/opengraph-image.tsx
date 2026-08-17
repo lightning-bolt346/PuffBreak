@@ -74,7 +74,7 @@ export default async function RoomOGImage({ params }: { params: Promise<{ slug: 
           {desc}
         </div>
         <div style={{ color: accent, fontSize: '22px', fontWeight: 600, marginTop: '40px' }}>
-          puff-break.vercel.app
+          puffbreak.app
         </div>
       </div>
     ),

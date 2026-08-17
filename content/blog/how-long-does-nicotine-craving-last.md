@@ -47,7 +47,7 @@ tags:
           <li><strong>Cold water:</strong> Drinking cold water during a craving physically distracts the vagus nerve and reduces intensity.</li>
         </ul>
 
-        <div class="pb-callout">🚬 <strong>PuffBreak was designed for exactly this 3-minute window.</strong> Each session is timed to the peak craving duration. Light a virtual cigarette, breathe through it, and walk away clean. <a href="https://puff-break.vercel.app">Try it free.</a></div>
+        <div class="pb-callout">🚬 <strong>PuffBreak was designed for exactly this 3-minute window.</strong> Each session is timed to the peak craving duration. Light a virtual cigarette, breathe through it, and walk away clean. <a href="https://puffbreak.app">Try it free.</a></div>
 
         <h2>The Timeline of Quitting: What to Expect</h2>
         <ul>

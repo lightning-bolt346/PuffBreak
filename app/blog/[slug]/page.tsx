@@ -5,7 +5,7 @@ import { getBlogPostBySlug, getAllBlogPosts } from '@/lib/blog';
 import { marked } from 'marked';
 import ReadingProgress from '@/components/ReadingProgress';
 
-const SITE_URL = 'https://puff-break.vercel.app';
+const SITE_URL = 'https://puffbreak.app';
 
 // Force dynamic generation for blog posts so we don't hit edge case static generation bugs in dev
 export const dynamicParams = true;

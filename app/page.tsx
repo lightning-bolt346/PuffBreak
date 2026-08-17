@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { FAQ_ITEMS } from '@/lib/faq';
 import { getHomeMeta } from '@/lib/i18n';
 
-const SITE_URL = 'https://puff-break.vercel.app';
+const SITE_URL = 'https://puffbreak.app';
 
 type PageProps = {
   searchParams: Promise<{ lang?: string }>;

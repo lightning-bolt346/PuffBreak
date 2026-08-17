@@ -26,7 +26,7 @@ tags:
         <p><strong>Platform:</strong> Web (PWA, works on all devices)</p>
         <p><strong>Price:</strong> 100% Free</p>
         <p>PuffBreak is the most complete virtual break experience available. You get a realistic cigarette or chai tea simulation with particle physics, ASMR audio, 8 ambient rooms, and live anonymous chat with other people on break. It's the closest thing to the full smoke break ritual — just without nicotine.</p>
-        <div class="pb-callout">✅ <strong>Best for:</strong> Anyone who misses the ritual of a smoke break. Available at <a href="https://puff-break.vercel.app">puff-break.vercel.app</a> — no install required.</div>
+        <div class="pb-callout">✅ <strong>Best for:</strong> Anyone who misses the ritual of a smoke break. Available at <a href="https://puffbreak.app">puffbreak.app</a> — no install required.</div>
 
         <h3>2. Smoke Free — Best Quit-Smoking Tracker (Free/Premium)</h3>
         <p><strong>Platform:</strong> iOS, Android</p>
@@ -56,6 +56,6 @@ tags:
 
         <h2>Our Recommendation</h2>
         <p>The most effective strategy: combine a <strong>ritual replacement</strong> (PuffBreak) with a <strong>tracker</strong> (Smoke Free or Quit Now). The first replaces the behavior, the second motivates you with data.</p>
-        <p>Start your ritual-free break now: <a href="https://puff-break.vercel.app">puff-break.vercel.app</a></p>
+        <p>Start your ritual-free break now: <a href="https://puffbreak.app">puffbreak.app</a></p>
       </div>
     

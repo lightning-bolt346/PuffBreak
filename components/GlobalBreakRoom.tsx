@@ -1527,7 +1527,7 @@ export default function PuffBreak() {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'PuffBreak',
-        url: 'https://puff-break.vercel.app',
+        url: 'https://puffbreak.app',
         applicationCategory: 'HealthApplication',
         applicationSubCategory: 'Stress Relief',
         description: 'A mindful virtual break room. Light a virtual cigarette or sip chai in 8 immersive ambient rooms. Free, anonymous, no account needed.',
@@ -1568,7 +1568,7 @@ export default function PuffBreak() {
               '@type': 'WebApplication',
               'name': 'PuffBreak',
               'alternateName': ['PuffBreak App', 'Virtual Break Room', 'Online Damta Alternative', 'Digital Smoke Break'],
-              'url': 'https://puff-break.vercel.app',
+              'url': 'https://puffbreak.app',
               'description': 'A mindful, interactive 3-minute digital break room experience. Take a mental pause by lighting a virtual cigarette or sipping a cup of hot chai with ambient audio, realistic particle physics, and a live anonymous community.',
               'applicationCategory': 'RelaxationApplication, HealthApplication',
               'operatingSystem': 'All',
@@ -1592,10 +1592,10 @@ export default function PuffBreak() {
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               'name': 'PuffBreak',
-              'url': 'https://puff-break.vercel.app',
+              'url': 'https://puffbreak.app',
               'potentialAction': {
                 '@type': 'SearchAction',
-                'target': 'https://puff-break.vercel.app/?q={search_term_string}',
+                'target': 'https://puffbreak.app/?q={search_term_string}',
                 'query-input': 'required name=search_term_string'
               }
             },

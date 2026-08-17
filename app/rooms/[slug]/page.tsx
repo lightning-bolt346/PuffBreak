@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ROOMS, getRoomBySlug } from '@/lib/rooms';
 
-const SITE_URL = 'https://puff-break.vercel.app';
+const SITE_URL = 'https://puffbreak.app';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -77,7 +77,7 @@ export default async function RoomPage({ params }: Props) {
             name: `How do I enter the ${room.name}?`,
             acceptedAnswer: {
               '@type': 'Answer',
-              text: `Open puff-break.vercel.app/?room=${room.id} or open the app and choose ${room.name} in the room picker.`,
+              text: `Open puffbreak.app/?room=${room.id} or open the app and choose ${room.name} in the room picker.`,
             },
           },
           {
@@ -97,7 +97,7 @@ export default async function RoomPage({ params }: Props) {
     { q: `What is the ${room.name} in PuffBreak?`, a: room.longDescription },
     {
       q: `How do I enter the ${room.name}?`,
-      a: `Open puff-break.vercel.app/?room=${room.id} or open the app and choose ${room.name} in the room picker.`,
+      a: `Open puffbreak.app/?room=${room.id} or open the app and choose ${room.name} in the room picker.`,
     },
     { q: `Is the ${room.name} free?`, a: 'Yes — every PuffBreak room is free, anonymous and requires no sign-up.' },
   ];

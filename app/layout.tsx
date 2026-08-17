@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { FAQ_ITEMS } from '@/lib/faq';
 
-const SITE_URL = 'https://puff-break.vercel.app';
+const SITE_URL = 'https://puffbreak.app';
 const SITE_NAME = 'PuffBreak';
 const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
@@ -141,7 +141,12 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'vrbomKYzEEs6XZErAY-s0kDR1hYHzBbmS0iHK3WVxTg',
+    // puffbreak.app — Google Search Console URL-prefix verification token.
+    // NOTE: domain-property verification also needs the TXT record
+    // google-site-verification=2X6Ba5HEpnBAZ0LLSvyF-2mmRA1C3W-NvHZY-ZIffWU
+    // added at the DNS provider (Vercel DNS or registrar) — a DNS TXT record
+    // cannot be deployed from this repo.
+    google: '2X6Ba5HEpnBAZ0LLSvyF-2mmRA1C3W-NvHZY-ZIffWU',
   },
   alternates: {
     canonical: SITE_URL,
@@ -169,7 +174,6 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
   },
   // Verification tags — add actual codes when you verify in Search Console / Bing
-  // verification: { google: 'XXXX', bing: 'YYYY' },
   category: 'health & wellness',
   creator: 'PuffBreak Team',
   publisher: SITE_NAME,
@@ -206,7 +210,7 @@ const jsonLdOrganization = {
   ],
   contactPoint: {
     '@type': 'ContactPoint',
-    email: 'sgbro33@gmail.com',
+    email: 'hello@puffbreak.app',
     contactType: 'customer support',
     availableLanguage: ['English', 'Hindi', 'Korean', 'Japanese', 'Spanish', 'Arabic', 'French', 'German', 'Portuguese'],
   },

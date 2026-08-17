@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { ROOMS } from '@/lib/rooms';
 
-const SITE_URL = 'https://puff-break.vercel.app';
+const SITE_URL = 'https://puffbreak.app';
 
 export const metadata: Metadata = {
   title: 'Break Rooms — 8 Immersive Ambient Spaces',

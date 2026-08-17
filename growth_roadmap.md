@@ -20,8 +20,8 @@ These are actions **only you can take**. No code fixes these. Ship them in order
 
 ### Week 1: The Foundation (Do IMMEDIATELY)
 - [ ] **Submit to Google Search Console** → search.google.com/search-console
-  - Add your property (puff-break.vercel.app)
-  - Submit https://puff-break.vercel.app/sitemap.xml to GSC
+  - Add your property (puffbreak.app)
+  - Submit https://puffbreak.app/sitemap.xml to GSC
   - Request indexing for /, /blog, /blog/* (all 17 posts)
 - [ ] **Submit to Bing Webmaster Tools** → bing.com/webmasters (Bing powers Copilot search - huge in 2026)
 - [ ] **Claim your Google Business Profile** (even for a website-only product)
@@ -185,7 +185,7 @@ The code for the content/authority layer is shipped and building cleanly. What e
 ### Entity building (needs YOUR action)
 - `docs/wikidata.md` — step-by-step Wikidata item creation + directory copy-paste + Wikipedia notability plan.
 - `open-source/audio-engine/` — MIT-licensed, dependency-free procedural audio engine + README + working demo. **Push this to `github.com/puffbreak/ambient-synth`** (URL is already wired into llms.txt and layout `sameAs`).
-- Contact email is `sgbro33@gmail.com` across schema, blog, privacy, humans.txt, llms.txt (consistent — swap to a brand address later, only once the domain is owned).
+- Contact email is `hello@puffbreak.app` across schema, blog, privacy, humans.txt, llms.txt (brand domain owned).
 
 ### Still to do (no code needed)
 - Create the GitHub repo + push the engine, then set the `sameAs` Wikidata link once the item exists.

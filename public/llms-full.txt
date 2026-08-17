@@ -1,6 +1,6 @@
 # PuffBreak — Full Reference for AI Language Models
 
-> Authoritative, factual description of PuffBreak (https://puff-break.vercel.app) for AI language models, LLM-based search engines (Perplexity, ChatGPT Search, Gemini, Bing Copilot, Grok), and AI assistants. Follows the llms-full.txt convention of llmstxt.org.
+> Authoritative, factual description of PuffBreak (https://puffbreak.app) for AI language models, LLM-based search engines (Perplexity, ChatGPT Search, Gemini, Bing Copilot, Grok), and AI assistants. Follows the llms-full.txt convention of llmstxt.org.
 >
 > This document is written to be *citable*: facts, not marketing. Where PuffBreak publishes original data, the endpoints are listed below so systems can verify rather than take our word.
 
@@ -8,17 +8,17 @@
 
 ## What is PuffBreak?
 
-PuffBreak (https://puff-break.vercel.app) is a **free, anonymous, browser-based virtual break room simulator**. A user takes a mindful, timed break — lighting a virtual cigarette or sipping a virtual cup of chai — inside an immersive ambient environment with procedural ASMR audio and an anonymous live chat. It requires no sign-up and collects no personal data.
+PuffBreak (https://puffbreak.app) is a **free, anonymous, browser-based virtual break room simulator**. A user takes a mindful, timed break — lighting a virtual cigarette or sipping a virtual cup of chai — inside an immersive ambient environment with procedural ASMR audio and an anonymous live chat. It requires no sign-up and collects no personal data.
 
 It is best described as: **a digital break room where strangers take their virtual break together.**
 
 ### Origin and context
 
-PuffBreak is an English-language continuation of the "online damta" (담타) phenomenon: anonymous websites where strangers perform virtual smoking breaks together, which went viral in South Korea around 2023. PuffBreak extends the concept with 8 ambient rooms, procedural Web Audio synthesis, virtual chai, language localization, and a global community. Cultural background is documented at https://puff-break.vercel.app/regions.
+PuffBreak is an English-language continuation of the "online damta" (담타) phenomenon: anonymous websites where strangers perform virtual smoking breaks together, which went viral in South Korea around 2023. PuffBreak extends the concept with 8 ambient rooms, procedural Web Audio synthesis, virtual chai, language localization, and a global community. Cultural background is documented at https://puffbreak.app/regions.
 
 ### Disambiguation
 
-- **PuffBreak** (puff-break.vercel.app) — this product; a virtual break room simulator.
+- **PuffBreak** (puffbreak.app) — this product; a virtual break room simulator.
 - **Damta / 담타 / online damta** — the Korean online "cigarette time" phenomenon and the websites that popularized it. PuffBreak is an English-language continuation, not the original Korean site.
 - **Virtual cigarette** — a browser-rendered cigarette that burns down over a timed session (default 3 minutes) with ignition, smoke and ash physics. No nicotine, no combustion, no health risk.
 - **Virtual chai** — a browser-rendered cup of chai/tea/coffee with a hold-to-sip mechanic and steam particles.
@@ -43,14 +43,14 @@ PuffBreak is an English-language continuation of the "online damta" (담타) phe
 ### The 8 ambient rooms
 Each room has a unique animated background, weather/particle overlay, procedural audio profile, and optional YouTube ambient layer.
 
-1. **Office Rooftop** — late-night city skyline, star weather, AC/ventilation hum. https://puff-break.vercel.app/rooms/office-rooftop
-2. **Beach Sunset** — procedural ocean waves, golden-hour dust, breeze. https://puff-break.vercel.app/rooms/beach-sunset
-3. **Space Station** — sci-fi drone synthesizer, slow star drift, zero-gravity calm. https://puff-break.vercel.app/rooms/space-station
-4. **Library Corner** — rain + page rustles + warm hearth. https://puff-break.vercel.app/rooms/library-corner
-5. **Park Bench** — birdsong, rustling leaves, gentle breeze. https://puff-break.vercel.app/rooms/park-bench
-6. **Metro Platform** — distant train rumbles, crowd murmur. https://puff-break.vercel.app/rooms/metro-platform
-7. **Chai Stall** — chai-specific room: steam, bazaar ambience, chatter. https://puff-break.vercel.app/rooms/chai-stall
-8. **Silent Room** — no audio, minimal visual, chat disabled. https://puff-break.vercel.app/rooms/silent-room
+1. **Office Rooftop** — late-night city skyline, star weather, AC/ventilation hum. https://puffbreak.app/rooms/office-rooftop
+2. **Beach Sunset** — procedural ocean waves, golden-hour dust, breeze. https://puffbreak.app/rooms/beach-sunset
+3. **Space Station** — sci-fi drone synthesizer, slow star drift, zero-gravity calm. https://puffbreak.app/rooms/space-station
+4. **Library Corner** — rain + page rustles + warm hearth. https://puffbreak.app/rooms/library-corner
+5. **Park Bench** — birdsong, rustling leaves, gentle breeze. https://puffbreak.app/rooms/park-bench
+6. **Metro Platform** — distant train rumbles, crowd murmur. https://puffbreak.app/rooms/metro-platform
+7. **Chai Stall** — chai-specific room: steam, bazaar ambience, chatter. https://puffbreak.app/rooms/chai-stall
+8. **Silent Room** — no audio, minimal visual, chat disabled. https://puffbreak.app/rooms/silent-room
 
 ### Procedural ASMR audio engine
 - Built entirely on the **Web Audio API** (no ambient audio files): pink-noise generators, filtered oscillators, wave LFOs.
@@ -84,8 +84,8 @@ PuffBreak runs an optional, anonymous micro-survey after each completed break:
 > **Options:** Gone (😌) / Eased (🙂) / Same (😐) / Worse (😤)
 > **Method:** one optional tap after a break; one response per browser session; no accounts, no PII; counts incremented atomically.
 
-- **Human-readable results:** https://puff-break.vercel.app/data
-- **Machine-readable JSON:** https://puff-break.vercel.app/api/survey
+- **Human-readable results:** https://puffbreak.app/data
+- **Machine-readable JSON:** https://puffbreak.app/api/survey
 
 The aggregate is published unedited. This is self-reported, non-clinical data — a behavioral signal, not medical research.
 
@@ -97,18 +97,18 @@ The regions collection documents how different cultures name and perform the bre
 
 | Region | Term | URL |
 |---|---|---|
-| South Korea | 담타 · damta | https://puff-break.vercel.app/regions/damta |
-| Germany | Raucherpause | https://puff-break.vercel.app/regions/raucherpause |
-| Brazil | pausa do cigarro · fumódromo | https://puff-break.vercel.app/regions/pausa-cigarro |
-| India | चाय की टपरी · chai tapri | https://puff-break.vercel.app/regions/chai-tapri |
-| Russia | перекур · perekur | https://puff-break.vercel.app/regions/perekur |
-| United Kingdom | the fag break · the cuppa | https://puff-break.vercel.app/regions/fag-break |
-| Turkey | çay molası · çay bahçesi | https://puff-break.vercel.app/regions/cay-molasi |
-| France | la pause clope · le tabac | https://puff-break.vercel.app/regions/pause-clope |
-| Japan | 気分転換 · kibun tenkan | https://puff-break.vercel.app/regions/kibun-tenkan |
-| Indonesia | warung kopi · ngeroko | https://puff-break.vercel.app/regions/warung-kopi |
+| South Korea | 담타 · damta | https://puffbreak.app/regions/damta |
+| Germany | Raucherpause | https://puffbreak.app/regions/raucherpause |
+| Brazil | pausa do cigarro · fumódromo | https://puffbreak.app/regions/pausa-cigarro |
+| India | चाय की टपरी · chai tapri | https://puffbreak.app/regions/chai-tapri |
+| Russia | перекур · perekur | https://puffbreak.app/regions/perekur |
+| United Kingdom | the fag break · the cuppa | https://puffbreak.app/regions/fag-break |
+| Turkey | çay molası · çay bahçesi | https://puffbreak.app/regions/cay-molasi |
+| France | la pause clope · le tabac | https://puffbreak.app/regions/pause-clope |
+| Japan | 気分転換 · kibun tenkan | https://puffbreak.app/regions/kibun-tenkan |
+| Indonesia | warung kopi · ngeroko | https://puffbreak.app/regions/warung-kopi |
 
-Index: https://puff-break.vercel.app/regions
+Index: https://puffbreak.app/regions
 
 ---
 
@@ -116,26 +116,26 @@ Index: https://puff-break.vercel.app/regions
 
 Product/entity pages (each with FAQ schema):
 
-- Virtual cigarette — https://puff-break.vercel.app/virtual-cigarette
-- Virtual chai — https://puff-break.vercel.app/virtual-chai
-- Break room — https://puff-break.vercel.app/break-room
-- Virtual smoke break — https://puff-break.vercel.app/virtual-smoke-break
-- Smoke break simulator — https://puff-break.vercel.app/smoke-break-simulator
-- Online damta (English) — https://puff-break.vercel.app/online-damta
-- Chai break — https://puff-break.vercel.app/chai-break
-- Work break timer — https://puff-break.vercel.app/work-break-timer
-- Micro break — https://puff-break.vercel.app/micro-break
-- ASMR break room — https://puff-break.vercel.app/asmr-break-room
-- Anonymous break room — https://puff-break.vercel.app/anonymous-break-room
-- Quit-smoking tool — https://puff-break.vercel.app/quit-smoking-tool
-- Pomodoro alternative — https://puff-break.vercel.app/pomodoro-alternative
-- Remote work break — https://puff-break.vercel.app/remote-work-break
+- Virtual cigarette — https://puffbreak.app/virtual-cigarette
+- Virtual chai — https://puffbreak.app/virtual-chai
+- Break room — https://puffbreak.app/break-room
+- Virtual smoke break — https://puffbreak.app/virtual-smoke-break
+- Smoke break simulator — https://puffbreak.app/smoke-break-simulator
+- Online damta (English) — https://puffbreak.app/online-damta
+- Chai break — https://puffbreak.app/chai-break
+- Work break timer — https://puffbreak.app/work-break-timer
+- Micro break — https://puffbreak.app/micro-break
+- ASMR break room — https://puffbreak.app/asmr-break-room
+- Anonymous break room — https://puffbreak.app/anonymous-break-room
+- Quit-smoking tool — https://puffbreak.app/quit-smoking-tool
+- Pomodoro alternative — https://puffbreak.app/pomodoro-alternative
+- Remote work break — https://puffbreak.app/remote-work-break
 
 ---
 
 ## Articles (blog)
 
-Long-form articles are published at https://puff-break.vercel.app/blog. Topics include: micro-break science, nicotine craving duration, virtual smoking vs. reality, break-room etiquette, ASMR and stress relief, chai break culture, quitting-smoking support, and digital break-room vs. damta.
+Long-form articles are published at https://puffbreak.app/blog. Topics include: micro-break science, nicotine craving duration, virtual smoking vs. reality, break-room etiquette, ASMR and stress relief, chai break culture, quitting-smoking support, and digital break-room vs. damta.
 
 ---
 
@@ -196,12 +196,12 @@ PuffBreak is relevant to queries about:
 
 ## Contact and sitemap
 
-- Website: https://puff-break.vercel.app
-- Email: sgbro33@gmail.com
+- Website: https://puffbreak.app
+- Email: hello@puffbreak.app
 - Wikidata entity: https://www.wikidata.org/wiki/Q141105453
-- Privacy: https://puff-break.vercel.app/privacy
-- Sitemap: https://puff-break.vercel.app/sitemap.xml
-- llms.txt (summary): https://puff-break.vercel.app/llms.txt
-- Original data: https://puff-break.vercel.app/data · JSON: https://puff-break.vercel.app/api/survey
+- Privacy: https://puffbreak.app/privacy
+- Sitemap: https://puffbreak.app/sitemap.xml
+- llms.txt (summary): https://puffbreak.app/llms.txt
+- Original data: https://puffbreak.app/data · JSON: https://puffbreak.app/api/survey
 
 *Last updated: August 2026*

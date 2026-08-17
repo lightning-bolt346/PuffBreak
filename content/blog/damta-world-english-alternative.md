@@ -48,7 +48,7 @@ tags:
 
         <h2>How to Use PuffBreak (The English Damta)</h2>
         <ol>
-          <li>Open <strong>puff-break.vercel.app</strong> — no sign-up, no download.</li>
+          <li>Open <strong>puffbreak.app</strong> — no sign-up, no download.</li>
           <li>Choose your room: Office Rooftop, Beach Sunset, Library Corner, Chai Stall, and more.</li>
           <li>Click the cigarette (or tea cup) to light up and start your 3-minute break.</li>
           <li>Chat anonymously with others in the break room.</li>
@@ -57,6 +57,6 @@ tags:
 
         <p>Whether you found Damta World and wished it was in English, or you're simply looking for a mindful virtual break room for the global community — PuffBreak is your home.</p>
 
-        <p>Try it now: <a href="https://puff-break.vercel.app">puff-break.vercel.app</a></p>
+        <p>Try it now: <a href="https://puffbreak.app">puffbreak.app</a></p>
       </div>
     

@@ -51,7 +51,7 @@ tags:
           <li>That ritual can be: a walk, a tea, a breathing exercise — or a virtual cigarette break</li>
         </ul>
 
-        <div class="pb-callout">🚬 <strong>PuffBreak is engineered for the Pomodoro break slot.</strong> 3 minutes. A defined sensory ritual. Full cognitive disengagement. No nicotine. Try it: <a href="https://puff-break.vercel.app">puff-break.vercel.app</a></div>
+        <div class="pb-callout">🚬 <strong>PuffBreak is engineered for the Pomodoro break slot.</strong> 3 minutes. A defined sensory ritual. Full cognitive disengagement. No nicotine. Try it: <a href="https://puffbreak.app">puffbreak.app</a></div>
 
         <h2>The Verdict</h2>
         <p>Neither system is perfect alone. Pomodoro without a proper break ritual fails. Smoke breaks without structure lead to hour-long "breaks" that tank productivity.</p>

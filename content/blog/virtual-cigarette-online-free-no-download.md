@@ -42,7 +42,7 @@ tags:
         <div class="pb-callout">🎯 <strong>3-minute timer:</strong> Each session is exactly 3 minutes — the average smoke break and the peak window of a nicotine craving. Perfectly designed.</div>
 
         <h2>Is It Free? Does It Require Download?</h2>
-        <p><strong>100% free. No download. No sign-up. No account.</strong> Just open <a href="https://puff-break.vercel.app">puff-break.vercel.app</a> in any browser on any device — desktop, tablet, or mobile.</p>
+        <p><strong>100% free. No download. No sign-up. No account.</strong> Just open <a href="https://puffbreak.app">puffbreak.app</a> in any browser on any device — desktop, tablet, or mobile.</p>
         <p>You can also install it as a PWA (Progressive Web App) from your mobile browser's menu — it will appear on your home screen like a real app, with no App Store required.</p>
 
         <h2>Beyond the Cigarette: 8 Environments</h2>
@@ -58,6 +58,6 @@ tags:
           <li>🔇 Silent Room — pure silence for focus</li>
         </ul>
 
-        <p>Ready? <a href="https://puff-break.vercel.app">Light up your first virtual cigarette →</a></p>
+        <p>Ready? <a href="https://puffbreak.app">Light up your first virtual cigarette →</a></p>
       </div>
     

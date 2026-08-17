@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Support',
   description: 'Support the solo developer behind PuffBreak. Keep the servers running and the project free of ads.',
   alternates: {
-    canonical: 'https://puff-break.vercel.app/support',
+    canonical: 'https://puffbreak.app/support',
   },
 };
 

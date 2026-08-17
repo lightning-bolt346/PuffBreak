@@ -42,14 +42,14 @@ Create at https://www.wikidata.org/wiki/Special:NewItem
 | Property | Value |
 |---|---|
 | **instance of** (P31) | `web application` (Q739015) |
-| **official website** (P856) | `https://puff-break.vercel.app` |
+| **official website** (P856) | `https://puffbreak.app` |
 | **developer** (P178) | create or link an item for the maker, e.g. `PuffBreak` (Organization) |
 | **software version** (P348) | leave to versioning discipline — optional |
 | **platform** (P400) | `web browser` (Q1048041) |
 | **programming language** (P277) | `TypeScript` (Q23765333), `JavaScript` (Q2005) |
 | **uses** (P2283) | `Web Audio API` (Q7974762), `Firebase` (Q1892563) |
 | **inception** (P571) | month/year of first public launch |
-| **official blog** (P1581) | `https://puff-break.vercel.app/blog` |
+| **official blog** (P1581) | `https://puffbreak.app/blog` |
 | **Stack Exchange tag** etc. | skip |
 
 ### Step 4 — link a related item for "online damta"
@@ -85,7 +85,7 @@ These are quick wins: consistent NAP-ish facts (name, URL, description, category
 across directories helps entity matching. Use the **exact same description** everywhere:
 
 > **Name:** PuffBreak
-> **URL:** https://puff-break.vercel.app
+> **URL:** https://puffbreak.app
 > **One-liner:** Free anonymous virtual break room — light a virtual cigarette or sip virtual chai in 8 ambient rooms with ASMR audio.
 > **Description:** PuffBreak is a free, anonymous, browser-based virtual break room simulator. Take a mindful 3-minute digital break in 8 immersive ambient environments (office rooftop, beach sunset, space station, library, park, metro, chai stall, silent) with procedural ASMR audio and ephemeral anonymous chat. No sign-up, no accounts, no personal data. An English continuation of the Korean "online damta" phenomenon.
 > **Category:** Health & Fitness · Productivity · Relaxation
@@ -101,8 +101,8 @@ across directories helps entity matching. Use the **exact same description** eve
 7. **Open-source repo (GitHub)** — see `open-source/audio-engine/`; a public repo is itself an entity and backlinks the site.
 
 ### Consistency checklist
-- Email: `sgbro33@gmail.com` everywhere (current contact — swap to a brand address like `hello@puffbreak.app` only **after** you own that domain and can receive mail at it; until then keep one consistent address).
-- URL: `https://puff-break.vercel.app` everywhere.
+- Email: `hello@puffbreak.app` everywhere (the brand domain is owned — use this everywhere).
+- URL: `https://puffbreak.app` everywhere.
 - Same one-liner + description (above) everywhere.
 
 ---

@@ -2,7 +2,7 @@
 
 > **The ultimate 3-minute mental sanctuary for modern knowledge workers, developers, and creatives. Reset your mind, resist cravings, and connect with a global community of mindful breakers—completely free and anonymously.**
 
-[![Visit PuffBreak](https://img.shields.io/badge/Launch-PuffBreak%20Live-emerald?style=for-the-badge&logo=vercel)](https://puff-break.vercel.app)
+[![Visit PuffBreak](https://img.shields.io/badge/Launch-PuffBreak%20Live-emerald?style=for-the-badge&logo=vercel)](https://puffbreak.app)
 
 ---
 
@@ -78,4 +78,4 @@ Need to hide the break room quickly?
 
 ---
 
-**Step away from the keyboard. Teleport to your sanctuary. [Take a break on PuffBreak](https://puff-break.vercel.app).**
+**Step away from the keyboard. Teleport to your sanctuary. [Take a break on PuffBreak](https://puffbreak.app).**

@@ -6,7 +6,7 @@ synthesizes calming room soundscapes in real time with the Web Audio API and
 and oscillators, so nothing ever loops or repeats.
 
 This is the reference implementation of the audio engine behind
-[PuffBreak](https://puff-break.vercel.app), a free anonymous virtual break room.
+[PuffBreak](https://puffbreak.app), a free anonymous virtual break room.
 
 ![license](https://img.shields.io/badge/license-MIT-blue) ![size](https://img.shields.io/badge/minified-%3C4KB-informational) ![deps](https://img.shields.io/badge/dependencies-0-brightgreen)
 

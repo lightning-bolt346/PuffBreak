@@ -42,4 +42,4 @@ Allow: /
 User-agent: LinkedInBot
 Allow: /
 
-Sitemap: https://puff-break.vercel.app/sitemap.xml
+Sitemap: https://puffbreak.app/sitemap.xml

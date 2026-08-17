@@ -6,7 +6,7 @@ export const metadata = {
   title: 'Privacy Policy',
   description: 'Read the PuffBreak privacy policy. Anonymity by design: no accounts, no personal data collection, and only privacy-respecting aggregate analytics.',
   alternates: {
-    canonical: 'https://puff-break.vercel.app/privacy',
+    canonical: 'https://puffbreak.app/privacy',
   },
 };
 
@@ -106,7 +106,7 @@ export default function PrivacyPolicy() {
 
           <h2>7. Contact Us</h2>
           <p>
-            If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:sgbro33@gmail.com" className="text-emerald-400 hover:text-emerald-300">sgbro33@gmail.com</a>
+            If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:hello@puffbreak.app" className="text-emerald-400 hover:text-emerald-300">hello@puffbreak.app</a>
           </p>
         </div>
       </main>

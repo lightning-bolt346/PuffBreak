@@ -39,7 +39,7 @@ tags:
 
         <h2>The Global Chai Break Movement</h2>
         <p>Remote work has created a generation of workers who have never experienced tapri culture, or who have lost access to it. PuffBreak's Chai Room is a small contribution to reclaiming this: a 3-minute window to hold something warm (digitally), breathe, and return to work with a clearer head.</p>
-        <p>Whether you are in Bangalore, Berlin, or Boston — the chai break is available at puff-break.vercel.app, any time, for free.</p>
+        <p>Whether you are in Bangalore, Berlin, or Boston — the chai break is available at puffbreak.app, any time, for free.</p>
 
         <div class="pb-stat-block">
           <div class="pb-stat"><span class="pb-stat-number">🍵</span><span class="pb-stat-label">3-minute chai session</span></div>

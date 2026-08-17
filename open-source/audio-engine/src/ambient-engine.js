@@ -3,7 +3,7 @@
  *
  * Synthesizes calming room soundscapes in the browser with the Web Audio API and
  * zero audio files. This is the reference implementation behind PuffBreak's
- * ambient rooms (https://puff-break.vercel.app).
+ * ambient rooms (https://puffbreak.app).
  *
  * Rooms:
  *   office   → AC ventilation hum (bandpass noise, ~120 Hz)

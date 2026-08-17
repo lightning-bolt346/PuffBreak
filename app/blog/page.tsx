@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getAllBlogPosts } from '@/lib/blog';
 
-const SITE_URL = 'https://puff-break.vercel.app';
+const SITE_URL = 'https://puffbreak.app';
 
 // ── God-level SEO metadata ──────────────────────────────────────────────────
 export const metadata: Metadata = {

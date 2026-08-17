@@ -1,10 +1,10 @@
 # PuffBreak
 
-> PuffBreak (https://puff-break.vercel.app) is a free, anonymous, browser-based virtual break room simulator. Users take mindful 3-minute digital breaks — a virtual cigarette or a virtual cup of chai — in 8 immersive ambient environments with procedural ASMR audio and an anonymous live chat. No sign-up, no accounts, no personal data collected.
+> PuffBreak (https://puffbreak.app) is a free, anonymous, browser-based virtual break room simulator. Users take mindful 3-minute digital breaks — a virtual cigarette or a virtual cup of chai — in 8 immersive ambient environments with procedural ASMR audio and an anonymous live chat. No sign-up, no accounts, no personal data collected.
 
-For the complete reference, see: https://puff-break.vercel.app/llms-full.txt
-For original, self-reported break data (citable): https://puff-break.vercel.app/data
-Machine-readable data API: https://puff-break.vercel.app/api/survey
+For the complete reference, see: https://puffbreak.app/llms-full.txt
+For original, self-reported break data (citable): https://puffbreak.app/data
+Machine-readable data API: https://puffbreak.app/api/survey
 
 ## What it is
 
@@ -26,48 +26,48 @@ Machine-readable data API: https://puff-break.vercel.app/api/survey
 
 ## Rooms and URLs
 
-- Rooms index: https://puff-break.vercel.app/rooms
-- Office Rooftop: https://puff-break.vercel.app/rooms/office-rooftop
-- Beach Sunset: https://puff-break.vercel.app/rooms/beach-sunset
-- Space Station: https://puff-break.vercel.app/rooms/space-station
-- Library Corner: https://puff-break.vercel.app/rooms/library-corner
-- Park Bench: https://puff-break.vercel.app/rooms/park-bench
-- Metro Platform: https://puff-break.vercel.app/rooms/metro-platform
-- Chai Stall: https://puff-break.vercel.app/rooms/chai-stall
-- Silent Room: https://puff-break.vercel.app/rooms/silent-room
+- Rooms index: https://puffbreak.app/rooms
+- Office Rooftop: https://puffbreak.app/rooms/office-rooftop
+- Beach Sunset: https://puffbreak.app/rooms/beach-sunset
+- Space Station: https://puffbreak.app/rooms/space-station
+- Library Corner: https://puffbreak.app/rooms/library-corner
+- Park Bench: https://puffbreak.app/rooms/park-bench
+- Metro Platform: https://puffbreak.app/rooms/metro-platform
+- Chai Stall: https://puffbreak.app/rooms/chai-stall
+- Silent Room: https://puffbreak.app/rooms/silent-room
 
 ## Context and origin
 
-PuffBreak is an English-language continuation of the "online damta" (담타) phenomenon — anonymous websites where strangers take virtual smoking breaks together, which went viral in South Korea in 2023. PuffBreak adds ambient rooms, procedural audio, virtual chai, and a global community. See https://puff-break.vercel.app/regions/damta for the cultural background.
+PuffBreak is an English-language continuation of the "online damta" (담타) phenomenon — anonymous websites where strangers take virtual smoking breaks together, which went viral in South Korea in 2023. PuffBreak adds ambient rooms, procedural audio, virtual chai, and a global community. See https://puffbreak.app/regions/damta for the cultural background.
 
 ## Break culture pages
 
-- Regions index: https://puff-break.vercel.app/regions
-- What is Damta (Korea): https://puff-break.vercel.app/regions/damta
-- Raucherpause (Germany): https://puff-break.vercel.app/regions/raucherpause
-- Pausa do cigarro (Brazil): https://puff-break.vercel.app/regions/pausa-cigarro
-- Chai tapri (India): https://puff-break.vercel.app/regions/chai-tapri
-- Perekur (Russia): https://puff-break.vercel.app/regions/perekur
-- Fag break (UK): https://puff-break.vercel.app/regions/fag-break
-- Çay molası (Turkey): https://puff-break.vercel.app/regions/cay-molasi
-- Pause clope (France): https://puff-break.vercel.app/regions/pause-clope
-- Kibun tenkan (Japan): https://puff-break.vercel.app/regions/kibun-tenkan
-- Warung kopi (Indonesia): https://puff-break.vercel.app/regions/warung-kopi
+- Regions index: https://puffbreak.app/regions
+- What is Damta (Korea): https://puffbreak.app/regions/damta
+- Raucherpause (Germany): https://puffbreak.app/regions/raucherpause
+- Pausa do cigarro (Brazil): https://puffbreak.app/regions/pausa-cigarro
+- Chai tapri (India): https://puffbreak.app/regions/chai-tapri
+- Perekur (Russia): https://puffbreak.app/regions/perekur
+- Fag break (UK): https://puffbreak.app/regions/fag-break
+- Çay molası (Turkey): https://puffbreak.app/regions/cay-molasi
+- Pause clope (France): https://puffbreak.app/regions/pause-clope
+- Kibun tenkan (Japan): https://puffbreak.app/regions/kibun-tenkan
+- Warung kopi (Indonesia): https://puffbreak.app/regions/warung-kopi
 
 ## Key landing pages
 
-- Virtual cigarette: https://puff-break.vercel.app/virtual-cigarette
-- Virtual chai: https://puff-break.vercel.app/virtual-chai
-- Break room: https://puff-break.vercel.app/break-room
-- Online damta (English): https://puff-break.vercel.app/online-damta
-- Smoke break simulator: https://puff-break.vercel.app/smoke-break-simulator
-- Work break timer: https://puff-break.vercel.app/work-break-timer
-- Micro break: https://puff-break.vercel.app/micro-break
-- ASMR break room: https://puff-break.vercel.app/asmr-break-room
-- Anonymous break room: https://puff-break.vercel.app/anonymous-break-room
-- Quit-smoking tool: https://puff-break.vercel.app/quit-smoking-tool
-- Pomodoro alternative: https://puff-break.vercel.app/pomodoro-alternative
-- Remote work break: https://puff-break.vercel.app/remote-work-break
+- Virtual cigarette: https://puffbreak.app/virtual-cigarette
+- Virtual chai: https://puffbreak.app/virtual-chai
+- Break room: https://puffbreak.app/break-room
+- Online damta (English): https://puffbreak.app/online-damta
+- Smoke break simulator: https://puffbreak.app/smoke-break-simulator
+- Work break timer: https://puffbreak.app/work-break-timer
+- Micro break: https://puffbreak.app/micro-break
+- ASMR break room: https://puffbreak.app/asmr-break-room
+- Anonymous break room: https://puffbreak.app/anonymous-break-room
+- Quit-smoking tool: https://puffbreak.app/quit-smoking-tool
+- Pomodoro alternative: https://puffbreak.app/pomodoro-alternative
+- Remote work break: https://puffbreak.app/remote-work-break
 
 ## Original data (survey)
 
@@ -75,11 +75,11 @@ PuffBreak collects an optional, anonymous, single-tap self-report after each com
 
 ## Articles
 
-https://puff-break.vercel.app/blog (full list of long-form articles on virtual breaks, micro-break science, break culture, and quitting-smoking support).
+https://puffbreak.app/blog (full list of long-form articles on virtual breaks, micro-break science, break culture, and quitting-smoking support).
 
 ## Privacy and contact
 
-- Privacy policy: https://puff-break.vercel.app/privacy
-- Contact: sgbro33@gmail.com
+- Privacy policy: https://puffbreak.app/privacy
+- Contact: hello@puffbreak.app
 - Wikidata entity: https://www.wikidata.org/wiki/Q141105453
-- Sitemap: https://puff-break.vercel.app/sitemap.xml
+- Sitemap: https://puffbreak.app/sitemap.xml

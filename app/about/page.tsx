@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'About',
   description: 'Learn about the story behind PuffBreak, the solo developer building it, and why we believe in the power of the 3-minute digital break.',
   alternates: {
-    canonical: 'https://puff-break.vercel.app/about',
+    canonical: 'https://puffbreak.app/about',
   },
 };
 

@@ -100,7 +100,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
                   </a>
                 </li>
                 <li>
-                  <a href="mailto:sgbro33@gmail.com" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">
+                  <a href="mailto:hello@puffbreak.app" className="text-sm text-gray-400 hover:text-emerald-400 transition-colors">
                     Contact
                   </a>
                 </li>
@@ -123,7 +123,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               © {new Date().getFullYear()} PuffBreak. Free forever. No data collected.
             </p>
             <p className="text-xs text-gray-700 font-mono">
-              <Link href="/" className="hover:text-gray-400 transition-colors">puff-break.vercel.app</Link>
+              <Link href="/" className="hover:text-gray-400 transition-colors">puffbreak.app</Link>
             </p>
           </div>
 

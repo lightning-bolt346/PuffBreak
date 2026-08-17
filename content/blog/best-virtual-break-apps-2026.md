@@ -29,7 +29,7 @@ tags:
         </ul>
         <p>We focus on the fourth category, which is the most underexplored and arguably the most effective for knowledge workers.</p>
 
-        <h2>🏆 #1: PuffBreak (puff-break.vercel.app)</h2>
+        <h2>🏆 #1: PuffBreak (puffbreak.app)</h2>
         <p><strong>Best for:</strong> Former smokers, remote workers, ASMR fans, nicotine craving management</p>
         <p>PuffBreak is the most feature-complete virtual break simulator available, and it is completely free. The particle physics engine, multi-room ASMR audio synthesizer, and anonymous community chat combine into a genuinely immersive 3-minute ritual that feels nothing like looking at a timer.</p>
         <ul>
@@ -60,6 +60,6 @@ tags:
 
         <h2>The Verdict</h2>
         <p>If you want a break tool that <em>actually</em> feels like a break — not a timer, not a reminder, but a genuine sensory ritual — PuffBreak is the answer. It is the only tool on this list designed from the ground up to make the break itself feel worthwhile.</p>
-        <p>Open it at <a href="https://puff-break.vercel.app">puff-break.vercel.app</a>. No download. No account. Just the break you actually need.</p>
+        <p>Open it at <a href="https://puffbreak.app">puffbreak.app</a>. No download. No account. Just the break you actually need.</p>
       </div>
     

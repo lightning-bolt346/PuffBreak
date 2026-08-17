@@ -44,7 +44,7 @@ Keep everything honest and human. Don't overclaim (it's a wellness tool, not a m
 >
 > No accounts, no ads, no tracking. It's a solo project; the community keeps it alive.
 >
-> [puff-break.vercel.app](https://puff-break.vercel.app) — happy to answer questions about the audio synthesis or the anonymous presence system.
+> [puffbreak.app](https://puffbreak.app) — happy to answer questions about the audio synthesis or the anonymous presence system.
 
 **Tip:** Post on Sunday ~9am ET for max visibility.
 
@@ -78,7 +78,7 @@ Keep everything honest and human. Don't overclaim (it's a wellness tool, not a m
 >
 > 5/ Free. Anonymous. No sign-up. No ads. Built by one person, for everyone who needs a real pause.
 >
-> → puff-break.vercel.app
+> → puffbreak.app
 > #buildinpublic #indiehacker #wellness
 
 ---
