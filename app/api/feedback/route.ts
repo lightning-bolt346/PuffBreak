@@ -6,6 +6,7 @@ const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 5;
 const MAX_FEEDBACK_LENGTH = 2_000;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const MAX_REQUEST_BYTES = 16 * 1024 * 1024;
 
 type RateEntry = { count: number; resetAt: number };
 const globalForFeedback = globalThis as typeof globalThis & { puffBreakFeedbackRate?: Map<string, RateEntry> };
@@ -64,6 +65,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const declaredBytes = Number(request.headers.get('content-length') ?? 0);
+    if (Number.isFinite(declaredBytes) && declaredBytes > MAX_REQUEST_BYTES) {
+      return NextResponse.json({ error: 'Feedback upload is too large.' }, { status: 413 });
+    }
+
     const contentType = request.headers.get('content-type') ?? '';
 
     if (contentType.includes('multipart/form-data')) {

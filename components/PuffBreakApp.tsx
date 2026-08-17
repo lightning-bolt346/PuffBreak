@@ -16,7 +16,7 @@ import { FAQ_ITEMS } from '@/lib/faq';
 import { getLocalizedGreeting, getCultureProfile, getDailyVibe } from '@/lib/i18n';
 import { CUP_STYLES, getWarmDrink } from '@/lib/cups';
 import { ROOMS, type Room, type RoomId, type WeatherType } from '@/lib/rooms';
-import { DEFAULT_RADIO_ID, getRadioStation } from '@/lib/radio';
+import { DEFAULT_RADIO_ID, RADIO_STATIONS, getRadioStation } from '@/lib/radio';
 import { track } from '@/lib/analytics';
 import { submitSurvey, hasAnsweredSurvey, SURVEY_OPTIONS, type SurveyFelt } from '@/lib/survey';
 import { useSessionId } from '@/hooks/useSessionId';
@@ -490,6 +490,8 @@ export default function PuffBreak() {
   const matchstickBufferRef   = useRef<AudioBuffer | null>(null);
   const smokeBlowBufferRef    = useRef<AudioBuffer | null>(null);
   const currentSfxSourceRef   = useRef<AudioBufferSourceNode | null>(null);
+  const lastBlowSfxAtRef      = useRef(0);
+  const blowDuckTimerRef      = useRef<number | null>(null);
   const ignitionIntentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ignitionTokenRef       = useRef(0);
   const ignitionHeldRef        = useRef(false);
@@ -840,7 +842,15 @@ export default function PuffBreak() {
   // or share links). Runs client-side on mount so it survives SSR/hydration.
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const roomParam = new URLSearchParams(window.location.search).get('room');
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get('room');
+    const stationParam = params.get('station');
+    const station = RADIO_STATIONS.find((item) => item.id === stationParam);
+    if (station) {
+      setRadioStationId(station.id);
+      radioStationIdRef.current = station.id;
+      if (params.get('radio') === '1') setRadioLibraryOpen(true);
+    }
     if (!roomParam) return;
     const target = ROOMS.find((r) => r.id === roomParam);
     if (target && target.id !== currentRoom.id) {
@@ -1008,7 +1018,8 @@ export default function PuffBreak() {
       return false;
     }
     try {
-      player.setVolume(Math.round(Math.min(1, Math.max(0, musicVolume)) * 100));
+      const audibleVolume = musicVolume > 0 ? musicVolume : (prevMusicVolumeRef.current || 1);
+      player.setVolume(musicOnRef.current ? Math.round(Math.min(1, Math.max(0, audibleVolume)) * 100) : 0);
       player.setLoop(true);
       if (randomize || youtubeNeedsRandomStartRef.current) {
         player.setShuffle(true);
@@ -1025,7 +1036,23 @@ export default function PuffBreak() {
         }
       } else {
         player.playVideo();
+        // Calling playVideo on a catalogue that is already advancing silently
+        // does not always emit a new PLAYING event. Synchronize the UI now.
+        if (player.getPlayerState?.() === 1) {
+          setRadioPlaybackState(musicOnRef.current ? 'playing' : 'paused');
+        }
       }
+      // Some browsers do not emit a new PLAYING event when an already-running
+      // muted catalogue is made audible again. Reconcile twice after the
+      // command so the UI cannot sit on “Connecting…” while audio is live.
+      [250, 1000].forEach((delay) => window.setTimeout(() => {
+        if (radioStationIdRef.current !== station.id || !musicOnRef.current) return;
+        try {
+          const state = player.getPlayerState?.();
+          if (state === 1) setRadioPlaybackState('playing');
+          else if (state === 2 || state === 5) player.playVideo();
+        } catch {}
+      }, delay));
       return true;
     } catch {
       setRadioPlaybackState('error');
@@ -1037,19 +1064,14 @@ export default function PuffBreak() {
     initAudio();
     const audio = radioRef.current;
     const station = getRadioStation(radioStationIdRef.current);
-    if (station.source === 'youtube-external') {
-      window.open(station.url, '_blank', 'noopener,noreferrer');
-      musicOnRef.current = false;
-      setMusicOn(false);
-      setRadioPlaybackState('paused');
-      setRadioToast(`Opening ${station.name} on YouTube Music — use its Shuffle control there.`);
-      return;
-    }
     if (musicOnRef.current) {
       musicOnRef.current = false;
       setMusicOn(false);
       if (station.source === 'youtube-playlist') {
-        try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
+        try {
+          youtubeRadioPlayerRef.current?.setVolume(0);
+          youtubeRadioPlayerRef.current?.playVideo();
+        } catch {}
       } else {
         audio?.pause();
       }
@@ -1118,10 +1140,6 @@ export default function PuffBreak() {
     setMusicVolume(level);
     if (level > 0) {
       prevMusicVolumeRef.current = level;
-      if (station.source === 'youtube-external') {
-        setRadioToast(`${station.name} plays on YouTube Music because its official playlist blocks embedded playback.`);
-        return;
-      }
       if (station.source === 'youtube-playlist') {
         try { youtubeRadioPlayerRef.current?.setVolume(Math.round(level * 100)); } catch {}
       }
@@ -1149,7 +1167,10 @@ export default function PuffBreak() {
       musicOnRef.current = false;
       setMusicOn(false);
       if (station.source === 'youtube-playlist') {
-        try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
+        try {
+          youtubeRadioPlayerRef.current?.setVolume(0);
+          youtubeRadioPlayerRef.current?.playVideo();
+        } catch {}
       } else {
         radioRef.current?.pause();
       }
@@ -1168,14 +1189,6 @@ export default function PuffBreak() {
     const audio = radioRef.current;
     try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
     youtubeNeedsRandomStartRef.current = station.source === 'youtube-playlist';
-    if (station.source === 'youtube-external') {
-      audio?.pause();
-      musicOnRef.current = false;
-      setMusicOn(false);
-      setRadioPlaybackState('paused');
-      setRadioToast(`${station.name} is ready — press play to open its official YouTube Music station.`);
-      return;
-    }
     if (station.source === 'youtube-playlist') {
       audio?.pause();
       setYoutubeRadioMounted(true);
@@ -1322,7 +1335,17 @@ export default function PuffBreak() {
       }
     } else {
       ambientMusicGainRef.current?.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
-      try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
+      if (selectedRadio.source === 'youtube-playlist') {
+        // A catalogue behaves like a broadcast: turning it off mutes the
+        // current sequence but does not freeze time. It resumes wherever the
+        // silent playback has reached.
+        try {
+          youtubeRadioPlayerRef.current?.setVolume(0);
+          if (youtubeRadioPlayerRef.current?.getPlayerState?.() === 1) youtubeRadioPlayerRef.current.playVideo();
+        } catch {}
+      } else {
+        try { youtubeRadioPlayerRef.current?.pauseVideo(); } catch {}
+      }
       if (radioRef.current && !radioRef.current.paused) {
         radioRef.current.pause();
       }
@@ -1360,6 +1383,7 @@ export default function PuffBreak() {
       if (closingTimerRef.current) clearTimeout(closingTimerRef.current);
       if (retreatTimerRef.current) clearTimeout(retreatTimerRef.current);
       if (matchFlameTimerRef.current) clearTimeout(matchFlameTimerRef.current);
+      if (blowDuckTimerRef.current !== null) clearTimeout(blowDuckTimerRef.current);
       if (currentSfxSourceRef.current) {
         try { currentSfxSourceRef.current.stop(); } catch {}
         currentSfxSourceRef.current = null;
@@ -2008,22 +2032,91 @@ export default function PuffBreak() {
   const playBlowSfx = useCallback((intensity: number) => {
     const ctx = audioCtxRef.current;
     if (!ctx || ctx.state === 'suspended') return;
+    // Respect an explicit effects mute and prevent rapid stacked whooshes.
+    if (crackleVolume <= 0) return;
+    const wallNow = Date.now();
+    if (wallNow - lastBlowSfxAtRef.current < 650) return;
+    lastBlowSfxAtRef.current = wallNow;
     const buf = smokeBlowBufferRef.current;
-    if (!buf) return;
     try {
-      const source = ctx.createBufferSource();
-      source.buffer = buf;
-      // Slight organic pitch variation so repeated blows never sound identical
-      source.playbackRate.value = 0.95 + Math.random() * 0.1;
-      const gain = ctx.createGain();
-      // Louder for harder holds, floored so short blows stay audible
-      const base = Math.max(crackleVolume, 0.5);
-      gain.gain.value = base * (0.55 + Math.min(1, intensity) * 0.45);
-      source.connect(gain);
-      gain.connect(ctx.destination);
-      source.start(0);
+      const strength = Math.min(1, Math.max(0, intensity));
+      const now = ctx.currentTime;
+
+      // Brief, shallow mix duck: enough space for the breath cue, but too short
+      // and too gentle to feel like the music is being interrupted.
+      const selectedRadio = getRadioStation(radioStationIdRef.current);
+      if (musicOnRef.current) {
+        if (selectedRadio.source === 'youtube-playlist') {
+          const player = youtubeRadioPlayerRef.current;
+          try { player?.setVolume(Math.round(musicVolume * 72)); } catch {}
+        } else if (ambientMusicGainRef.current) {
+          const musicGain = ambientMusicGainRef.current.gain;
+          musicGain.cancelScheduledValues(now);
+          musicGain.setValueAtTime(musicGain.value, now);
+          musicGain.linearRampToValueAtTime(musicVolume * 0.68, now + 0.045);
+          musicGain.setTargetAtTime(musicVolume, now + 0.48, 0.14);
+        }
+      }
+      if (asmrOn && ambientVolume > 0) {
+        currentRoom.ytIds.forEach((id) => {
+          const player = ytPlayersRef.current[id];
+          const multiplier = (currentRoom.ytIds.length > 1 ? 0.6 : 1) * (currentRoom.ytVol || 1);
+          try { player?.setVolume(Math.min(100, ambientVolume * 100 * multiplier * 0.72)); } catch {}
+        });
+      }
+
+      if (blowDuckTimerRef.current !== null) window.clearTimeout(blowDuckTimerRef.current);
+      blowDuckTimerRef.current = window.setTimeout(() => {
+        if (musicOnRef.current && selectedRadio.source === 'youtube-playlist') {
+          try { youtubeRadioPlayerRef.current?.setVolume(Math.round(musicVolume * 100)); } catch {}
+        }
+        if (asmrOn && ambientVolume > 0) {
+          currentRoom.ytIds.forEach((id) => {
+            const player = ytPlayersRef.current[id];
+            const multiplier = (currentRoom.ytIds.length > 1 ? 0.6 : 1) * (currentRoom.ytVol || 1);
+            try { player?.setVolume(Math.min(100, ambientVolume * 100 * multiplier)); } catch {}
+          });
+        }
+        blowDuckTimerRef.current = null;
+      }, 720);
+
+      if (buf) {
+        const source = ctx.createBufferSource();
+        source.buffer = buf;
+        source.playbackRate.value = 0.96 + Math.random() * 0.07;
+
+        const highpass = ctx.createBiquadFilter();
+        highpass.type = 'highpass'; highpass.frequency.value = 95;
+        const presence = ctx.createBiquadFilter();
+        presence.type = 'peaking'; presence.frequency.value = 1450; presence.Q.value = 0.75; presence.gain.value = 3.2;
+        const compressor = ctx.createDynamicsCompressor();
+        compressor.threshold.value = -30; compressor.knee.value = 18; compressor.ratio.value = 3.2;
+        compressor.attack.value = 0.006; compressor.release.value = 0.2;
+        const gain = ctx.createGain();
+        const peak = Math.max(0.62, crackleVolume) * (0.78 + strength * 0.18);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(peak, now + 0.028);
+        gain.gain.setTargetAtTime(0.0001, now + Math.min(0.82, Math.max(0.42, buf.duration * 0.58)), 0.18);
+        source.connect(highpass); highpass.connect(presence); presence.connect(compressor); compressor.connect(gain); gain.connect(ctx.destination);
+        source.start(0);
+      }
+
+      // A very soft procedural air layer adds the missing upper-mid cue that
+      // makes an exhale readable over rain or music without making it louder.
+      const airDuration = 0.64;
+      const airBuffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * airDuration), ctx.sampleRate);
+      const air = airBuffer.getChannelData(0);
+      for (let i = 0; i < air.length; i++) {
+        const t = i / air.length;
+        const envelope = Math.sin(Math.PI * t) ** 1.7;
+        air[i] = (Math.random() * 2 - 1) * envelope;
+      }
+      const airSource = ctx.createBufferSource(); airSource.buffer = airBuffer;
+      const airBand = ctx.createBiquadFilter(); airBand.type = 'bandpass'; airBand.frequency.value = 1750; airBand.Q.value = 0.55;
+      const airGain = ctx.createGain(); airGain.gain.value = 0.075 + strength * 0.035;
+      airSource.connect(airBand); airBand.connect(airGain); airGain.connect(ctx.destination); airSource.start(0);
     } catch (e) { /* non-fatal */ }
-  }, [crackleVolume]);
+  }, [ambientVolume, asmrOn, crackleVolume, currentRoom.ytIds, currentRoom.ytVol, musicVolume]);
 
   // ── Spawn smoke ring (DOM-based) ──────────────────────────────────────────
   const spawnSmokeRing = useCallback((intensity = 0) => {
@@ -2177,10 +2270,10 @@ export default function PuffBreak() {
     >
       {/* Visually Hidden, Screen Reader and SEO Crawler Friendly Semantics */}
       <div className="sr-only">
-        <h1>PuffBreak — Your Digital Break Room | Mindful Virtual Smoke & Tea Breaks</h1>
-        <h2>A mindful 3-minute digital break ritual</h2>
+        <h1>PuffBreak — Your 3-Minute Digital Break Room</h1>
+        <h2>Music, chai, ASMR, anonymous company, or a virtual smoke ritual</h2>
         <p>
-          Take a short, relaxing mental pause with PuffBreak. Light a virtual cigarette or sip a hot cup of chai tea in immersive ambient environments. Listen to relaxing ASMR audio, watch realistic smoke or steam rise, and exchange whispers anonymously with other breakers.
+          Take an intentional three-minute pause with PuffBreak. Tune into human-curated global radio, sip virtual chai, settle into an ASMR room, hang out anonymously, or keep the familiar rhythm of a virtual smoke break.
         </p>
         <h2>Global music radio and an independent sound mixer</h2>
         <p>
@@ -4363,7 +4456,7 @@ export default function PuffBreak() {
             onReady={(event) => {
               youtubeRadioPlayerRef.current = event.target;
               youtubeRadioReadyRef.current = true;
-              event.target.setVolume(Math.round(musicVolume * 100));
+              event.target.setVolume(musicOnRef.current ? Math.round(musicVolume * 100) : 0);
               if (currentRadio.videoIds?.length) event.target.cuePlaylist(currentRadio.videoIds, 0, 0);
               else if (currentRadio.playlistId) event.target.cuePlaylist({ listType: 'playlist', list: currentRadio.playlistId, index: 0, startSeconds: 0 });
             }}
@@ -4372,14 +4465,14 @@ export default function PuffBreak() {
               // -1 unstarted · 0 ended · 1 playing · 2 paused · 3 buffering · 5 cued
               if (event.data === 1) {
                 youtubeRadioErrorCountRef.current = 0;
-                setRadioPlaybackState('playing');
+                setRadioPlaybackState(musicOnRef.current ? 'playing' : 'paused');
               }
               if (event.data === 2 && !musicOnRef.current) setRadioPlaybackState('paused');
-              if (event.data === 3) setRadioPlaybackState('loading');
+              if (event.data === 3) setRadioPlaybackState(musicOnRef.current ? 'loading' : 'paused');
               if (event.data === 5 && musicOnRef.current) {
                 startYoutubeRadio(youtubeNeedsRandomStartRef.current);
               }
-              if (event.data === 0 && musicOnRef.current) event.target.playVideo();
+              if (event.data === 0) event.target.playVideo();
             }}
             onError={(event) => {
               if (radioStationIdRef.current === currentRadio.id) {
@@ -4388,7 +4481,7 @@ export default function PuffBreak() {
                   youtubeRadioErrorCountRef.current += 1;
                   const currentIndex = Math.max(0, event.target.getPlaylistIndex?.() ?? 0);
                   event.target.playVideoAt((currentIndex + 1) % playlist.length);
-                  setRadioToast('One video is unavailable here — skipping to the next song.');
+                  if (musicOnRef.current) setRadioToast('One video is unavailable here — skipping to the next song.');
                   return;
                 }
                 musicOnRef.current = false;

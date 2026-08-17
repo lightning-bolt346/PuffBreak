@@ -18,7 +18,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: 'Does PuffBreak collect my data?',
-    a: "PuffBreak collects zero personal data and has no accounts. All preferences (break streak, volume settings, nickname) are stored in your browser's localStorage and never leave your device. The only third-party services are privacy-respecting, aggregate analytics (Vercel Analytics and Google Analytics) used to measure overall traffic — never to identify you or serve ads.",
+    a: "PuffBreak has no accounts and does not ask for your name, email, or profile. Preferences such as your streak, volume settings, nickname, and saved stations stay in your browser. Anonymous room presence, temporary chat, break and survey totals, and aggregate analytics use third-party infrastructure; starting YouTube ambience or live radio also connects your browser to that provider. See the Privacy Policy for the full list.",
   },
   {
     q: 'Can PuffBreak help me quit smoking?',
@@ -34,7 +34,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: 'What music and radio can I listen to?',
-    a: 'PuffBreak includes a human-curated library of live music stations from around the world. Browse by mood, region, language, genre, or artist; save favourites; then balance radio, room ambience, and cigarette crackle independently in the Mixer. Stream availability can change because stations are operated by third parties.',
+    a: 'PuffBreak includes human-curated live music stations and checked in-app artist catalogues. Browse by mood, region, language, genre, or artist; save favourites; then balance radio, room ambience, and cigarette crackle independently in the Mixer. Stream and embedded-video availability can change because playback comes from third-party providers.',
   },
   {
     q: 'What ambient rooms are available in PuffBreak?',

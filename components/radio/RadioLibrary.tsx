@@ -107,7 +107,7 @@ function StationCard({
           <span className="truncate text-[13px] font-semibold text-white/90">{station.name}</span>
           {active && playing && <Equalizer />}
         </span>
-        <span className="mt-0.5 block truncate text-[11px] text-white/38">{station.source === 'youtube-playlist' ? 'YouTube · ' : station.source === 'youtube-external' ? 'Official playlist ↗ · ' : ''}{station.country} · {station.genres.slice(0, 2).join(' · ')}</span>
+        <span className="mt-0.5 block truncate text-[11px] text-white/38">{station.source === 'youtube-playlist' ? 'In-app catalogue · ' : ''}{station.country} · {station.genres.slice(0, 2).join(' · ')}</span>
       </span>
       <button
         type="button"
@@ -270,7 +270,7 @@ export default function RadioLibrary({
               </div>
 
               <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-emerald-300/15 bg-emerald-300/[0.055] p-2.5 sm:p-3">
-                <button type="button" onClick={onTogglePlayback} className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-emerald-300 text-[#06110d] shadow-[0_8px_24px_-10px_rgba(52,211,153,0.9)] transition-transform active:scale-95" aria-label={isPlaying ? 'Pause live radio' : 'Play live radio'}>
+                <button type="button" onClick={onTogglePlayback} className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-emerald-300 text-[#06110d] shadow-[0_8px_24px_-10px_rgba(52,211,153,0.9)] transition-transform active:scale-95" aria-label={isPlaying ? 'Pause radio' : 'Play radio'}>
                   {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
                 </button>
                 <div className="min-w-0 flex-1">
@@ -359,7 +359,7 @@ export default function RadioLibrary({
               <section className="mt-7">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/42">{mode === 'artists' ? 'Artist frequencies' : mode === 'saved' ? 'Your saved stations' : 'All frequencies'}</h3>
-                  <span className="text-[10px] tabular-nums text-white/24">{filtered.length} live</span>
+                  <span className="text-[10px] tabular-nums text-white/24">{filtered.length} {mode === 'artists' ? 'frequencies' : 'live'}</span>
                 </div>
                 {filtered.length ? (
                   <div className="grid gap-2 sm:grid-cols-2">

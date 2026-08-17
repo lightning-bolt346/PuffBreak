@@ -5,16 +5,16 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 
 const SITE_URL = 'https://puffbreak.app';
 const SITE_NAME = 'PuffBreak';
-const OG_IMAGE = `${SITE_URL}/og-image.png`;
+const OG_IMAGE = `${SITE_URL}/og-image-v2.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'PuffBreak — Virtual Break Room | Digital Smoke & Chai Break Simulator',
+    default: 'PuffBreak — 3-Minute Digital Break Room with Radio, Chai & ASMR',
     template: '%s | PuffBreak',
   },
   description:
-    'Take a mindful 3-minute digital break with a virtual cigarette or chai, 8 ambient rooms, human-curated global music radio, and an independent sound mixer. Free and no sign-up.',
+    'Your three-minute digital break room for live music, chai, ASMR ambience, anonymous company, or a virtual smoke ritual. Free, smooth, and no sign-up.',
   keywords: [
     // Core product terms
     'virtual smoke break',
@@ -103,9 +103,9 @@ export const metadata: Metadata = {
     title: SITE_NAME,
   },
   openGraph: {
-    title: 'PuffBreak — Virtual Break Room | Digital Smoke & Chai Simulator',
+    title: 'PuffBreak — Your 3-Minute Digital Break Room',
     description:
-      'Step away for 3 minutes with a virtual cigarette or chai, 8 immersive rooms, global music radio, an independent sound mixer, and anonymous company. No sign-up.',
+      'Step away for three minutes with live global radio, chai, ASMR ambience, anonymous company, or a virtual smoke ritual. Free and no sign-up.',
     url: SITE_URL,
     siteName: SITE_NAME,
     images: [
@@ -175,8 +175,10 @@ export const metadata: Metadata = {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
     ],
-    apple: [{ url: '/favicon.svg' }],
+    apple: [{ url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' }],
     shortcut: '/favicon.ico',
   },
   // Verification tags — add actual codes when you verify in Search Console / Bing
@@ -205,13 +207,24 @@ export const viewport: Viewport = {
 const jsonLdOrganization = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': `${SITE_URL}/#organization`,
   name: SITE_NAME,
+  alternateName: ['Puff Break', 'Puff-Break'],
   url: SITE_URL,
-  logo: `${SITE_URL}/favicon.svg`,
+  logo: {
+    '@type': 'ImageObject',
+    '@id': `${SITE_URL}/#logo`,
+    url: `${SITE_URL}/icon-512.png`,
+    contentUrl: `${SITE_URL}/icon-512.png`,
+    width: 512,
+    height: 512,
+    caption: SITE_NAME,
+  },
+  image: { '@id': `${SITE_URL}/#primaryimage` },
   description:
-    'PuffBreak is a free, anonymous virtual break room simulator for mindful micro-breaks. Light a digital cigarette or enjoy virtual chai in 8 immersive ambient environments.',
+    'PuffBreak is a free digital break room for intentional three-minute pauses with live global radio, virtual chai, ASMR ambience, anonymous company, and an optional virtual smoke ritual.',
   sameAs: [
-    'https://twitter.com/puffbreak',
+    'https://x.com/PuffBreak',
     'https://www.wikidata.org/wiki/Q141105453',
   ],
   contactPoint: {
@@ -225,14 +238,16 @@ const jsonLdOrganization = {
 const jsonLdWebApp = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
+  '@id': `${SITE_URL}/#webapp`,
   name: SITE_NAME,
+  alternateName: ['Puff Break', 'Puff-Break'],
   url: SITE_URL,
-  applicationCategory: 'HealthApplication',
-  applicationSubCategory: 'Stress Relief',
+  applicationCategory: 'LifestyleApplication',
+  applicationSubCategory: 'Digital break room and music radio',
   operatingSystem: 'Web, iOS, Android (PWA)',
   browserRequirements: 'Requires JavaScript. Works on Chrome, Firefox, Safari, Edge.',
   description:
-    'A mindful virtual break room with a virtual cigarette or chai, 8 ambient rooms, curated global music radio, an independent sound mixer, and anonymous live company. Free and no account needed.',
+    'A three-minute digital break room with curated global radio, virtual chai, ASMR ambience, anonymous company, and an optional virtual smoke ritual. Free and no account needed.',
   offers: {
     '@type': 'Offer',
     price: '0',
@@ -253,12 +268,18 @@ const jsonLdWebApp = {
     'No accounts or personal profiles; preferences stored locally',
   ],
   screenshot: OG_IMAGE,
-  image: OG_IMAGE,
-  author: {
-    '@type': 'Organization',
-    name: SITE_NAME,
-    url: SITE_URL,
+  image: {
+    '@type': 'ImageObject',
+    '@id': `${SITE_URL}/#primaryimage`,
+    url: OG_IMAGE,
+    contentUrl: OG_IMAGE,
+    width: 1200,
+    height: 630,
+    caption: 'PuffBreak — Your 3-Minute Digital Break Room',
   },
+  author: { '@id': `${SITE_URL}/#organization` },
+  publisher: { '@id': `${SITE_URL}/#organization` },
+  isPartOf: { '@id': `${SITE_URL}/#website` },
   inLanguage: ['en', 'hi', 'ko', 'ja', 'es', 'ar', 'fr', 'de', 'pt'],
   isAccessibleForFree: true,
   isFamilyFriendly: false,
@@ -267,10 +288,14 @@ const jsonLdWebApp = {
 const jsonLdWebSite = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
   name: SITE_NAME,
+  alternateName: ['Puff Break', 'Puff-Break'],
   url: SITE_URL,
-  description: 'Free virtual break room with digital smoke and chai rituals, ambient rooms, curated global music radio, and a flexible sound mixer.',
+  description: 'A free three-minute digital break room with curated global radio, chai, ASMR ambience, anonymous company, and an optional virtual smoke ritual.',
   inLanguage: 'en',
+  publisher: { '@id': `${SITE_URL}/#organization` },
+  mainEntity: { '@id': `${SITE_URL}/#webapp` },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

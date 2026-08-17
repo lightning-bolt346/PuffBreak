@@ -7,7 +7,9 @@ const H = { 'Origin': 'https://puffbreak.app', 'Range': 'bytes=0-', 'User-Agent'
 
 const filter = process.argv.slice(2).join(' ').trim().toLowerCase();
 const candidates = RADIO_STATIONS
-  .filter(({ source }) => source !== 'youtube-playlist')
+  // YouTube-backed artist entries open or play through the official YouTube
+  // surface; only direct streams need audio-byte and CORS validation here.
+  .filter(({ source }) => source !== 'youtube-playlist' && source !== 'youtube-external')
   .filter(({ id, name }) => !filter || id.includes(filter) || name.toLowerCase().includes(filter))
   .map(({ name, url }) => [name, url]);
 

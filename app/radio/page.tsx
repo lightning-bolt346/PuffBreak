@@ -2,17 +2,30 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Globe2, Headphones, Radio, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { RADIO_STATIONS } from '@/lib/radio';
+import { RADIO_GUIDES } from '@/lib/radio-pages';
 import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Free Global Music Radio for Your Break',
-  description: 'Browse PuffBreak’s human-curated live music radio by mood, genre, region, language, or artist. Mix radio with room ambience and crackle, free with no account.',
+  title: 'Free Global and Artist Radio for Your Break',
+  description: 'Browse PuffBreak’s human-curated live stations and in-app artist radio by mood, genre, region, language, or artist. Free with no account.',
   alternates: { canonical: `${SITE_URL}/radio` },
   openGraph: {
     title: 'PuffBreak Radio — Find Your Frequency',
     description: 'Human-curated live music for a better three-minute break: global stations, artist frequencies, mood discovery, and an independent sound mixer.',
     url: `${SITE_URL}/radio`,
     type: 'website',
+    images: [{
+      url: `${SITE_URL}/radio-og.png`,
+      width: 1200,
+      height: 630,
+      alt: 'PuffBreak Frequencies — human-picked global radio for a three-minute reset',
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PuffBreak Radio — Find Your Frequency',
+    description: 'Human-picked global radio for a better three-minute reset.',
+    images: [`${SITE_URL}/radio-og.png`],
   },
 };
 
@@ -24,17 +37,32 @@ const regions = Array.from(new Set(publicStations.map((station) => station.regio
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
+  '@id': `${SITE_URL}/radio#webpage`,
   name: 'PuffBreak Global Music Radio',
   url: `${SITE_URL}/radio`,
   description: 'A human-curated live music radio library inside PuffBreak, searchable by mood, genre, region, language, and artist.',
-  isPartOf: { '@type': 'WebSite', name: 'PuffBreak', url: SITE_URL },
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  primaryImageOfPage: {
+    '@type': 'ImageObject',
+    url: `${SITE_URL}/radio-og.png`,
+    width: 1200,
+    height: 630,
+  },
   mainEntity: {
-    '@type': 'ItemList',
-    name: 'PuffBreak music radio collection',
-    numberOfItems: RADIO_STATIONS.length,
-    itemListElement: RADIO_STATIONS.slice(0, 12).map((station, index) => ({
-      '@type': 'ListItem', position: index + 1, name: station.name,
-    })),
+    '@type': 'SoftwareApplication',
+    '@id': `${SITE_URL}/#webapp`,
+    name: 'PuffBreak',
+    applicationCategory: 'MusicApplication',
+    operatingSystem: 'Web',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    featureList: [
+      `${publicStations.length} human-curated live stations`,
+      `${artistStations.length} artist frequencies`,
+      'Discovery by mood, genre, region, language, and artist',
+      'Independent radio, room ambience, and crackle volume controls',
+      'Saved favourites without an account',
+    ],
   },
 };
 
@@ -50,9 +78,9 @@ export default function RadioPage() {
 
       <section className="relative mx-auto max-w-6xl px-5 pb-24 pt-16 sm:px-8 sm:pt-24">
         <div className="max-w-3xl">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-300/15 bg-emerald-300/[0.06] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-200/70"><Radio className="h-3 w-3" /> Human-picked, live music</div>
-          <h1 className="text-5xl font-semibold tracking-[-0.055em] sm:text-7xl">Find the sound your break needs.</h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-white/48 sm:text-lg">No infinite feed and no pile of near-identical playlists. PuffBreak keeps a deliberate, global radio shelf and lets you choose by feeling, place, language, genre, or artist.</p>
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-300/15 bg-emerald-300/[0.06] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-200/70"><Radio className="h-3 w-3" /> Live stations + in-app artist radio</div>
+          <h1 className="text-4xl font-semibold tracking-[-0.05em] min-[420px]:text-5xl sm:text-7xl">Find the sound your break needs.</h1>
+          <p className="mt-6 max-w-2xl text-base leading-7 text-white/48 sm:text-lg">No infinite feed and no pile of near-identical playlists. Choose a dependable live station or shuffle a checked artist catalogue—without leaving PuffBreak.</p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/" className="rounded-full bg-emerald-300 px-5 py-3 text-sm font-bold text-[#07110d] transition-transform hover:scale-[1.02]">Open the radio library</Link>
             <Link href="/about" className="rounded-full border border-white/10 bg-white/[0.035] px-5 py-3 text-sm font-semibold text-white/60 hover:bg-white/[0.07] hover:text-white">Why PuffBreak exists</Link>
@@ -77,6 +105,19 @@ export default function RadioPage() {
           </div>
           <div className="mt-8 flex flex-wrap gap-2">
             {['Lo-Fi', 'Bhajan', 'Hip-Hop', 'R&B', 'J-Pop', 'K-Pop', 'Bollywood', 'Jazz', 'Classical', 'Afrobeats', 'Amapiano', 'Latin Urban', 'City Pop', 'Indie'].map((genre) => <span key={genre} className="rounded-full border border-white/[0.07] bg-white/[0.025] px-3 py-1.5 text-[11px] text-white/45">{genre}</span>)}
+          </div>
+        </section>
+
+        <section className="mt-20 border-t border-white/[0.07] pt-12">
+          <div className="max-w-2xl"><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-300/60">Editorial frequencies</div><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em]">Start with a feeling, not a directory.</h2><p className="mt-3 text-sm leading-6 text-white/38">Small listening guides with tested streams, honest context and zero keyword-stuffed filler.</p></div>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {RADIO_GUIDES.map((guide, index) => (
+              <Link key={guide.slug} href={`/radio/${guide.slug}`} className="group rounded-[22px] border border-white/[0.07] bg-white/[0.025] p-5 transition-colors hover:border-white/[0.15] hover:bg-white/[0.05]">
+                <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.17em] text-white/25"><span>{guide.eyebrow}</span><span>{String(index + 1).padStart(2, '0')}</span></div>
+                <h3 className="mt-8 text-lg font-semibold tracking-[-0.025em] text-white/85 transition-colors group-hover:text-white">{guide.hook}</h3>
+                <p className="mt-2 line-clamp-2 text-xs leading-5 text-white/35">{guide.description}</p>
+              </Link>
+            ))}
           </div>
         </section>
 

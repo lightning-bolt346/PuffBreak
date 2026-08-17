@@ -3,6 +3,7 @@ import { getAllBlogPosts } from '@/lib/blog';
 import { ROOMS } from '@/lib/rooms';
 import { REGIONS } from '@/lib/regions';
 import { LANDING_PAGES } from '@/lib/landing';
+import { RADIO_GUIDES } from '@/lib/radio-pages';
 import { SITE_URL } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -32,6 +33,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(),
     changeFrequency: 'monthly',
     priority: 0.7,
+  }));
+
+  const radioGuides: MetadataRoute.Sitemap = RADIO_GUIDES.map((guide) => ({
+    url: `${SITE_URL}/radio/${guide.slug}`,
+    lastModified: new Date('2026-08-17'),
+    changeFrequency: 'monthly',
+    priority: 0.75,
   }));
 
   return [
@@ -68,6 +76,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
+    ...radioGuides,
     {
       url: `${SITE_URL}/about`,
       lastModified: new Date(),

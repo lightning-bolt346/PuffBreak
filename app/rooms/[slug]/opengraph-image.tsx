@@ -10,14 +10,25 @@ export function generateStaticParams() {
   return ROOMS.map((room) => ({ slug: room.slug }));
 }
 
+// next/og may try to download fallback fonts for emoji/non-Latin glyphs while
+// rendering. Social cards must remain buildable without a third-party font
+// request, so this renderer deliberately uses an ASCII-safe monogram and copy.
+const safeOgText = (value: string) => value
+  .normalize('NFKD')
+  .replace(/[–—]/g, '-')
+  .replace(/[’]/g, "'")
+  .replace(/[^\x20-\x7E]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
 export default async function RoomOGImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const room = getRoomBySlug(slug);
-  const name = room?.name ?? 'PuffBreak';
-  const icon = room?.icon ?? '🌬️';
+  const name = safeOgText(room?.name ?? 'PuffBreak');
+  const monogram = (room?.id ?? 'pb').slice(0, 2).toUpperCase();
   const accent = room?.accent ?? '#10b981';
   const bg = room?.bg ?? '#0a0a0f';
-  const desc = room?.seoDescription ?? 'A free, anonymous 3-minute ambient break room.';
+  const desc = safeOgText(room?.seoDescription ?? 'A free, anonymous 3-minute ambient break room.');
 
   return new ImageResponse(
     (
@@ -48,7 +59,21 @@ export default async function RoomOGImage({ params }: { params: Promise<{ slug: 
             borderRadius: '50%',
           }}
         />
-        <div style={{ fontSize: '110px', lineHeight: 1, marginBottom: '36px' }}>{icon}</div>
+        <div style={{
+          width: '116px',
+          height: '116px',
+          borderRadius: '32px',
+          border: `2px solid ${accent}66`,
+          background: `${accent}18`,
+          color: accent,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '38px',
+          fontWeight: 800,
+          letterSpacing: '0.08em',
+          marginBottom: '36px',
+        }}>{monogram}</div>
         <div
           style={{
             color: '#ffffff',

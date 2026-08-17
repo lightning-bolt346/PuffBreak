@@ -1,3 +1,5 @@
+import { REQUESTED_ARTIST_STATIONS } from './artist-catalogues';
+
 // Production radio catalogue. Every URL must pass the browser-accurate probe in
 // scripts/_test_radio_cors.mjs before it is shipped: the app routes streams
 // through Web Audio, so permissive CORS and real audio bytes are both required.
@@ -18,7 +20,7 @@ export interface RadioStation {
   featured?: boolean;
   artist?: string;
   /** Direct streams use HTMLAudio/Web Audio; playlists use the official YouTube iframe player. */
-  source?: 'stream' | 'youtube-playlist' | 'youtube-external';
+  source?: 'stream' | 'youtube-playlist';
   playlistId?: string;
   videoIds?: string[];
   /** ISO date used by the audition lab to surface the newest testing batch automatically. */
@@ -40,6 +42,36 @@ export const RADIO_STATIONS: RadioStation[] = [
     id: 'radioparadise-mellow', name: 'Radio Paradise Mellow', icon: '☾', region: 'Global', country: 'USA',
     tagline: 'Soft, warm and low-key', url: 'https://stream.radioparadise.com/mellow-192',
     genres: ['Mellow', 'Acoustic', 'Electronic'], languages: ['English', 'Mixed'], moods: ['Unwind', 'Focus'], featured: true,
+  },
+  {
+    id: 'somafm-indie-pop-rocks', name: 'SomaFM Indie Pop Rocks!', icon: 'IP', region: 'North America', country: 'USA',
+    tagline: 'Melodic indie without the algorithm', url: 'https://ice1.somafm.com/indiepop-128-mp3',
+    genres: ['Indie', 'Indie Pop', 'Alternative'], languages: ['English'], moods: ['Discover', 'Energy'], featured: true,
+    addedAt: '2026-08-17',
+  },
+  {
+    id: 'somafm-groove-salad', name: 'SomaFM Groove Salad', icon: 'GS', region: 'North America', country: 'USA',
+    tagline: 'Downtempo rhythm with soft edges', url: 'https://ice1.somafm.com/groovesalad-128-mp3',
+    genres: ['Downtempo', 'Chillout', 'Electronic'], languages: ['Instrumental', 'Mixed'], moods: ['Unwind', 'Focus'], featured: true,
+    addedAt: '2026-08-17',
+  },
+  {
+    id: 'somafm-lush', name: 'SomaFM Lush', icon: 'LU', region: 'North America', country: 'USA',
+    tagline: 'Mellow electronic with female vocals', url: 'https://ice1.somafm.com/lush-128-mp3',
+    genres: ['Electronic', 'Dream Pop', 'Vocal'], languages: ['English', 'Mixed'], moods: ['Unwind', 'Discover'],
+    addedAt: '2026-08-17',
+  },
+  {
+    id: 'somafm-beat-blender', name: 'SomaFM Beat Blender', icon: 'BB', region: 'North America', country: 'USA',
+    tagline: 'Deep beats for a low-key reset', url: 'https://ice1.somafm.com/beatblender-128-mp3',
+    genres: ['Downtempo', 'Chill Beats', 'Electronic'], languages: ['Instrumental', 'Mixed'], moods: ['Focus', 'Unwind'],
+    addedAt: '2026-08-17',
+  },
+  {
+    id: 'somafm-drone-zone', name: 'SomaFM Drone Zone', icon: 'DZ', region: 'North America', country: 'USA',
+    tagline: 'Deep-space ambient, almost weightless', url: 'https://ice1.somafm.com/dronezone-128-mp3',
+    genres: ['Ambient', 'Drone', 'Space Music'], languages: ['Instrumental'], moods: ['Focus', 'Unwind'], featured: true,
+    addedAt: '2026-08-17',
   },
   {
     id: 'kexp', name: 'KEXP', icon: 'K', region: 'North America', country: 'USA',
@@ -95,6 +127,12 @@ export const RADIO_STATIONS: RadioStation[] = [
     id: 'los40', name: 'LOS40', icon: '40', region: 'Europe', country: 'Spain',
     tagline: 'Spanish pop and Latin hits', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3',
     genres: ['Pop', 'Latin'], languages: ['Spanish'], moods: ['Energy'],
+  },
+  {
+    id: 'capital-fm-uk', name: 'Capital FM UK', icon: 'CF', region: 'Europe', country: 'United Kingdom',
+    tagline: 'Current chart pop and global hits', url: 'https://media-ice.musicradio.com/CapitalMP3',
+    genres: ['Pop', 'Dance', 'Global Hits'], languages: ['English'], moods: ['Energy', 'Discover'], featured: true,
+    addedAt: '2026-08-17',
   },
   {
     id: 'radio-mirchi', name: 'Radio Mirchi', icon: 'M', region: 'South Asia', country: 'India',
@@ -221,6 +259,63 @@ export const RADIO_STATIONS: RadioStation[] = [
     genres: ['80s', 'Pop', 'New Wave'], languages: ['English'], moods: ['Nostalgia', 'Energy'],
   },
   // Artist frequencies: deliberately small and globally recognisable.
+  ...REQUESTED_ARTIST_STATIONS,
+  {
+    id: 'artist-cigarettes-after-sex', name: 'Cigarettes After Sex', icon: 'CAS', region: 'Artist Radio', country: 'USA',
+    tagline: 'Cigarettes After Sex · official videos on shuffle',
+    url: 'https://music.youtube.com/search?q=Cigarettes%20After%20Sex',
+    genres: ['Dream Pop', 'Ambient Pop', 'Slowcore'], languages: ['English'], moods: ['Unwind', 'Nostalgia', 'Focus'],
+    artist: 'Cigarettes After Sex', source: 'youtube-playlist', addedAt: '2026-08-17', featured: true,
+    videoIds: ['sElE_BfQ67s', '3XqqkrJENB4', 'L4sbDxR22z4', 's1QCL9AGbO0', 'pZ31pyTZdh0', 'PDJPpG8e4n4', '5-rbSNzU_b8', 'UwTqcctD1rw', '8XjYw8Wuv6Q', '5soixb2U6xM', 'BrzXW140-HM', '--JuMkludKM', 'mL6659-jwaM', 'VlBIeZi3Ko4', 'KrTHeCgGdGA'],
+  },
+  {
+    id: 'artist-joji', name: 'Joji', icon: 'JJ', region: 'Artist Radio', country: 'Japan / USA',
+    tagline: 'Joji · official videos on shuffle',
+    url: 'https://music.youtube.com/search?q=Joji',
+    genres: ['Alternative R&B', 'Lo-Fi Pop', 'Bedroom Pop'], languages: ['English'], moods: ['Unwind', 'Nostalgia'],
+    artist: 'Joji', source: 'youtube-playlist', addedAt: '2026-08-17', featured: true,
+    videoIds: ['LUXu4aTnK7E', 'ZEY9UCzzbcQ', 'FvOpPeKSf_4', 'kIEWJ1ljEro', '8X40-5zCoa0', 'QH9vvwPPBS8', 'UGB_Bsm5Unk', 'AeO81mfRook', 'ujriV3vkC9w', 'DCp4nUe9ZUs', 'z9gVoelEjws', 'UnzFVZ7jMN0', 'vljirbsjYMc', '4N4P-Y0DyXs', '08xzc6pZ0m8'],
+  },
+  {
+    id: 'artist-lana-del-rey', name: 'Lana Del Rey', icon: 'LDR', region: 'Artist Radio', country: 'USA',
+    tagline: 'Lana Del Rey · official videos on shuffle',
+    url: 'https://music.youtube.com/search?q=Lana%20Del%20Rey',
+    genres: ['Dream Pop', 'Baroque Pop', 'Alternative'], languages: ['English'], moods: ['Unwind', 'Nostalgia'],
+    artist: 'Lana Del Rey', source: 'youtube-playlist', addedAt: '2026-08-17', featured: true,
+    videoIds: ['T5xcnjAG8pE', 'Te11UaHOHMQ', 'DCYmJDO2_IE', 'jvm6DpqqbLk', 'EJSk2RySqKg', 'QbLGjeR9bvI', 'b6UazdAlqhs', 'o7e4IfE0ScI', 'sEetXo3R-aM', 'uNuMH2i6wdI', 'GVQON-muEFc', 'dvSZQ4oMHGM', 'MiAoetOXKcY', 'vBHild0PiTE', 'o3SqUUoJjW8'],
+  },
+  {
+    id: 'artist-beach-house', name: 'Beach House', icon: 'BH', region: 'Artist Radio', country: 'USA',
+    tagline: 'Beach House · official videos on shuffle',
+    url: 'https://music.youtube.com/search?q=Beach%20House',
+    genres: ['Dream Pop', 'Indie', 'Psychedelic Pop'], languages: ['English'], moods: ['Unwind', 'Focus', 'Nostalgia'],
+    artist: 'Beach House', source: 'youtube-playlist', addedAt: '2026-08-17',
+    videoIds: ['BfzFVbkutFE', 'OS6duOoxctw', '2j1_qPBuBMk', 'Er0leZrMaqc', 'm_DZZqqHwv0', '6xCWGBRzXtU', '08qd-vsHbaY', 'njbmwfndFH4', 'KYmWZv2n7oM', 'hkSmueKk1Lw', 'GAFwrXOsL68', 'Bv7IcjmxjGo', 'jjgs5sZ-8s4', 'AfvJYvb9j0E', '0qz0IJXQ720'],
+  },
+  {
+    id: 'artist-men-i-trust', name: 'Men I Trust', icon: 'MIT', region: 'Artist Radio', country: 'Canada',
+    tagline: 'Men I Trust · official videos on shuffle',
+    url: 'https://music.youtube.com/search?q=Men%20I%20Trust',
+    genres: ['Indie Pop', 'Dream Pop', 'Chillwave'], languages: ['English'], moods: ['Unwind', 'Focus'],
+    artist: 'Men I Trust', source: 'youtube-playlist', addedAt: '2026-08-17', featured: true,
+    videoIds: ['OZRYzH0Q0pU', '9IZKcb3LndA', 'TNsSBhl_2LI', 'xAz_DzPUjrM', 'HSGwL5wORJY', '93rM4qnUyGA', '0LMwgWFzDjU', 'DviID8Ni7Ns', 'e6k4-S4HlHk', 'bCDQN8iDCzo', 'qmVeQEysvtk', 'FJHFSr1Q4Qc', 'FqrRaQO3gZI', 'cVijWC8x7B4', 'PWbyRgAfESk'],
+  },
+  {
+    id: 'artist-mac-demarco', name: 'Mac DeMarco', icon: 'MD', region: 'Artist Radio', country: 'Canada',
+    tagline: 'Mac DeMarco · official videos on shuffle',
+    url: 'https://music.youtube.com/search?q=Mac%20DeMarco',
+    genres: ['Indie Rock', 'Slacker Rock', 'Psychedelic Pop'], languages: ['English'], moods: ['Unwind', 'Nostalgia', 'Discover'],
+    artist: 'Mac DeMarco', source: 'youtube-playlist', addedAt: '2026-08-17',
+    videoIds: ['lPeJMoms_Ag', '463ychC4qIM', 'kXC8kzgY9tw', 'MJoSyNdffGo', 'rxaKVeiBiOE', 'MeRIAew8eXc', '_R3B2Xr8kwQ', '6Lk3NFWw9Fg', 'gbg27oT8Z9M', 'KtuA6Qylpyo', '2lxQsEOSuAU', 'pJS4UsVCzS4', 'qBoQzo98EpQ'],
+  },
+  {
+    id: 'artist-the-marias', name: 'The Marías', icon: 'TM', region: 'Artist Radio', country: 'USA',
+    tagline: 'The Marías · official videos on shuffle',
+    url: 'https://music.youtube.com/search?q=The%20Mar%C3%ADas',
+    genres: ['Psychedelic Pop', 'Dream Pop', 'Indie Pop'], languages: ['English', 'Spanish'], moods: ['Unwind', 'Discover'],
+    artist: 'The Marías', source: 'youtube-playlist', addedAt: '2026-08-17', featured: true,
+    videoIds: ['4kCVGodVS88', 'Qn8F_u0vBNI', '9NOlqJHvAZo', 'RpR8DDOK1r0', 'cQZDH4NWmaU', '6jiu9TlR11o', 'YPHn4xSvjNM', 'YzKM5g_FwYU', 'jFy03i_LRO8', 'EiS7cKfuf6w', 'QHVp9xiUr9U', '3moMHMhiq7c', 'IqT3WzY8wwo', 'qrqywuDWz_Q', 'El8eL8oRTB4'],
+  },
   {
     id: 'artist-taylor-swift', name: 'Taylor Swift Radio', icon: 'TS', region: 'Artist Radio', country: 'Global',
     tagline: 'Taylor Swift, all eras', url: 'https://streaming.exclusive.radio/er/taylorswift/icecast.audio',
@@ -282,7 +377,7 @@ export const RADIO_STATIONS: RadioStation[] = [
     tagline: 'Prateek Kuhad · official essentials on shuffle',
     url: 'https://music.youtube.com/playlist?list=RDCLAK5uy_mM47gZ3c74tlWWkmRE9nb44vugyvZFXoI',
     genres: ['Indie Folk', 'Singer-Songwriter', 'Hindi Indie'], languages: ['Hindi', 'English'], moods: ['Unwind', 'Nostalgia', 'Focus'],
-    artist: 'Prateek Kuhad', source: 'youtube-external', playlistId: 'RDCLAK5uy_mM47gZ3c74tlWWkmRE9nb44vugyvZFXoI',
+    artist: 'Prateek Kuhad', source: 'youtube-playlist', playlistId: 'RDCLAK5uy_mM47gZ3c74tlWWkmRE9nb44vugyvZFXoI',
     videoIds: [
       'sDeaMm5Wg6c', 'VriRXxOjdiU', 'pRLOXUlIUG0', 'R9FovwkbFIM', 'j6rVGgJUONs', 'vt4jX0iRgCg',
       '1NEEJjTZknY', 'wkwwQgZ_kL4', '9lYQpmKU-GQ', '71s5tNDvPN0', 'BmUe3-sfr7E', '-BpDVIv_860',
@@ -300,7 +395,7 @@ export const RADIO_STATIONS: RadioStation[] = [
     tagline: 'Tame Impala · official essentials on shuffle',
     url: 'https://music.youtube.com/playlist?list=RDCLAK5uy_lncN931oN6KUNOw36oAtvAGDRdrlj4LGY',
     genres: ['Psychedelic Pop', 'Psychedelic Rock', 'Electronic'], languages: ['English'], moods: ['Discover', 'Unwind', 'Energy'],
-    artist: 'Tame Impala', source: 'youtube-external', playlistId: 'RDCLAK5uy_lncN931oN6KUNOw36oAtvAGDRdrlj4LGY',
+    artist: 'Tame Impala', source: 'youtube-playlist', playlistId: 'RDCLAK5uy_lncN931oN6KUNOw36oAtvAGDRdrlj4LGY',
     videoIds: [
       'pFptt7Cargc', 'xnP7qKxwzjg', 'pyUOSaQZmxw', 'KN8nJFLu1Rk', 'ulkdUfItyxI', '47YNsf-7Y7c',
       'Y0U6u2D8cMU', 'sBzrzS1Ag_g', 'utCjuKDXQsE', 's3a4OQR-10M', 'wycjnCCgUes', 'gs-MtItyOFc',

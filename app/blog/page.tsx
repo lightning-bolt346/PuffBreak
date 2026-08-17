@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     alternateLocale: ['hi_IN', 'ko_KR'],
     images: [
       {
-        url: `${SITE_URL}/og-image.png`,
+        url: `${SITE_URL}/og-image-v2.png`,
         width: 1200,
         height: 630,
         alt: 'PuffBreak Journal — Virtual Break Room Blog',
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     title: 'PuffBreak Journal — Mindful Break Guides & Quit Smoking Tips',
     description:
       'Virtual break culture, ASMR science, chai tapri vibes, and nicotine craving guides — for smokers everywhere.',
-    images: [`${SITE_URL}/og-image.png`],
+    images: [`${SITE_URL}/og-image-v2.png`],
   },
   robots: {
     index: true,
@@ -87,6 +87,40 @@ export const metadata: Metadata = {
     },
   },
 };
+
+const CATEGORY_ACCENTS: Record<string, string> = {
+  ASMR: '#22d3ee',
+  Community: '#2dd4bf',
+  Comparison: '#818cf8',
+  Culture: '#f472b6',
+  Guides: '#34d399',
+  Health: '#fbbf24',
+  Productivity: '#60a5fa',
+  Science: '#a78bfa',
+  Wellness: '#34d399',
+};
+
+function EditorialVisual({ category, large = false }: { category: string; large?: boolean }) {
+  const accent = CATEGORY_ACCENTS[category] ?? '#34d399';
+
+  return (
+    <div
+      aria-hidden="true"
+      className={`relative overflow-hidden border-b border-white/[0.06] ${large ? '-mx-8 -mt-8 mb-8 h-36 sm:-mx-12 sm:-mt-12 sm:h-44' : '-mx-8 -mt-8 mb-7 h-24'}`}
+      style={{
+        background: `radial-gradient(circle at 82% 28%, ${accent}38 0%, transparent 31%), radial-gradient(circle at 68% 130%, ${accent}18 0%, transparent 42%), linear-gradient(135deg, #111318 0%, #090a0d 72%)`,
+      }}
+    >
+      <div className="absolute -right-8 -top-16 h-48 w-48 rounded-full border border-white/10" />
+      <div className="absolute right-9 top-1/2 h-20 w-20 -translate-y-1/2 rounded-full border border-white/[0.08]" />
+      <div className="absolute inset-y-0 left-7 flex items-center">
+        <span className="font-mono-display text-[10px] font-bold uppercase tracking-[0.26em]" style={{ color: accent }}>
+          {category || 'Journal'}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 // ── Component ──────────────────────────────────────────────────────────────
 export default function BlogIndex() {
@@ -104,7 +138,9 @@ export default function BlogIndex() {
       url: SITE_URL,
       logo: {
         '@type': 'ImageObject',
-        url: `${SITE_URL}/favicon.svg`,
+        url: `${SITE_URL}/icon-512.png`,
+        width: 512,
+        height: 512,
       },
     },
     inLanguage: ['en', 'hi', 'ko'],
@@ -114,6 +150,7 @@ export default function BlogIndex() {
       url: `${SITE_URL}/blog/${post.slug}`,
       datePublished: post.date,
       description: post.excerpt,
+      image: `${SITE_URL}/blog/${post.slug}/opengraph-image`,
       author: {
         '@type': 'Organization',
         name: post.author,
@@ -187,6 +224,7 @@ export default function BlogIndex() {
           <Link href={`/blog/${featuredPost.slug}`} className="block group">
             <article className="relative rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl p-8 sm:p-12 transition-all duration-500 hover:bg-white/10 hover:border-emerald-500/30 hover:shadow-[0_0_40px_rgba(16,185,129,0.12)] hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <EditorialVisual category={featuredPost.category} large />
               <div className="flex gap-2 mb-6 flex-wrap">
                 {featuredPost.tags.map((tag) => (
                   <span
@@ -230,6 +268,7 @@ export default function BlogIndex() {
           {remainingPosts.map((post) => (
             <Link href={`/blog/${post.slug}`} key={post.slug} className="block group h-full">
               <article className="h-full flex flex-col p-8 rounded-3xl border border-white/5 bg-white/[0.02] backdrop-blur-lg transition-all duration-300 hover:bg-white/[0.06] hover:border-emerald-500/20 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-500/5">
+                <EditorialVisual category={post.category} />
                 <div className="flex flex-wrap gap-2 mb-6">
                   {post.tags.map((tag) => (
                     <span

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/rooms`,
     siteName: 'PuffBreak',
     type: 'website',
-    images: [{ url: `${SITE_URL}/og-image.png`, width: 1200, height: 630 }],
+    images: [{ url: `${SITE_URL}/og-image-v2.png`, width: 1200, height: 630 }],
   },
   twitter: { card: 'summary_large_image', title: 'Break Rooms | PuffBreak', description: '8 immersive ambient break rooms, free and anonymous.' },
 };

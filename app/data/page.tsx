@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/data`,
     siteName: 'PuffBreak',
     type: 'website',
-    images: [{ url: `${SITE_URL}/og-image.png`, width: 1200, height: 630 }],
+    images: [{ url: `${SITE_URL}/og-image-v2.png`, width: 1200, height: 630 }],
   },
   robots: { index: true, follow: true },
 };

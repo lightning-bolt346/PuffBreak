@@ -4,14 +4,25 @@ import { getBlogPostBySlug, getAllBlogPosts } from '@/lib/blog';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+// Keep OG rendering deterministic and offline-safe. Emoji or non-Latin glyphs
+// make next/og fetch fallback fonts at request/build time, which can turn an
+// otherwise valid social card into a 500 response when that network call fails.
+const safeOgText = (value: string) => value
+  .normalize('NFKD')
+  .replace(/[–—]/g, '-')
+  .replace(/[’]/g, "'")
+  .replace(/[^\x20-\x7E]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
 export default async function BlogOGImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getBlogPostBySlug(slug);
 
-  const title = post?.title ?? 'PuffBreak Journal';
-  const excerpt = post?.excerpt ?? 'Mindful breaks, chai culture, and quit-smoking guides.';
-  const category = post?.category ?? 'Article';
-  const readTime = post?.readTime ?? '3 min read';
+  const title = safeOgText(post?.title ?? 'PuffBreak Journal') || 'PuffBreak Journal';
+  const excerpt = safeOgText(post?.excerpt ?? 'Mindful breaks, chai culture, and quit-smoking guides.');
+  const category = safeOgText(post?.category ?? 'Article') || 'Article';
+  const readTime = safeOgText(post?.readTime ?? '3 min read');
 
   // Category → accent color mapping
   const accentMap: Record<string, string> = {
@@ -82,7 +93,7 @@ export default async function BlogOGImage({ params }: { params: Promise<{ slug: 
                 fontSize: '22px',
               }}
             >
-              🚬
+              PB
             </div>
             <span style={{ color: '#ffffff', fontSize: '18px', fontWeight: 700, letterSpacing: '0.05em' }}>
               PuffBreak Journal
@@ -131,7 +142,7 @@ export default async function BlogOGImage({ params }: { params: Promise<{ slug: 
               overflow: 'hidden',
             }}
           >
-            {excerpt.slice(0, 120)}{excerpt.length > 120 ? '…' : ''}
+            {excerpt.slice(0, 120)}{excerpt.length > 120 ? '...' : ''}
           </p>
         </div>
 

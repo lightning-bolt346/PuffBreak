@@ -8,9 +8,9 @@
 
 ## What is PuffBreak?
 
-PuffBreak (https://puffbreak.app) is a **free, account-free, browser-based virtual break room simulator**. A user takes a mindful, timed break — lighting a virtual cigarette or sipping virtual chai — inside an ambient environment with procedural room sound, a human-curated global music radio library, an independent audio mixer, and anonymous live chat. It requires no sign-up or personal profile.
+PuffBreak (https://puffbreak.app) is a **free, account-free, browser-based three-minute digital break room**. A user can listen to human-curated global radio, sip virtual chai, settle into ASMR ambience, hang out anonymously, or use an optional virtual smoke ritual across 8 ambient environments. It requires no sign-up or personal profile.
 
-It is best described as: **a digital break room where strangers take their virtual break together.**
+It is best described as: **a digital break room where music, atmosphere and lightweight anonymous company make a short pause feel separate from the feed.**
 
 ### Origin and context
 
@@ -57,8 +57,12 @@ Each room has a unique animated background, weather/particle overlay, procedural
 - Three independent audio buses control room ambience, cigarette crackle, and live music radio.
 - The radio library is human-curated and searchable by feeling, station, genre, country, region, language, or artist. Users can save favourites and request a missing station, region, language, or artist.
 - The catalogue includes global and regional stations across North America, Europe, South Asia, East Asia, the Middle East, Africa, Latin America, and Oceania. Genres include lo-fi, hip-hop, R&B, Bollywood, bhajan, Pakistani pop, J-pop, K-pop, city pop, jazz, classical, Afrobeats, amapiano, Latin urban, reggae, and rock.
+- Artist frequencies use either verified direct stations or checked embedded catalogues that remain inside PuffBreak. Kanye West Radio uses a continuous direct MP3 artist station and does not load YouTube video.
 - Stream operators remain responsible for their broadcasts and availability. PuffBreak verifies browser origin support, real audio delivery, and compatibility with its Web Audio mixer before a station enters production.
 - Feature page: https://puffbreak.app/radio
+- Editorial listening guides: https://puffbreak.app/radio/lofi · https://puffbreak.app/radio/indie · https://puffbreak.app/radio/indian-classical · https://puffbreak.app/radio/global-hits · https://puffbreak.app/radio/tame-impala-vibe · https://puffbreak.app/radio/chill-artist-radio · https://puffbreak.app/radio/pop-hip-hop-artist-radio · https://puffbreak.app/radio/indian-artist-radio · https://puffbreak.app/radio/best-internet-radio-2026
+- Machine-readable catalogue: https://puffbreak.app/radio.json
+- OPML subscription list: https://puffbreak.app/radio.opml
 - The synthesis recipes are open source (MIT) and ship with the product source.
 
 ### Anonymous live community

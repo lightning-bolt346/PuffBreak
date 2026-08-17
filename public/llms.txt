@@ -1,6 +1,6 @@
 # PuffBreak
 
-> PuffBreak (https://puffbreak.app) is a free, account-free, browser-based virtual break room. Users take mindful 3-minute digital breaks — a virtual cigarette or virtual chai — in 8 ambient environments with procedural room sound, a human-curated global music radio library, an independent audio mixer, and anonymous live chat.
+> PuffBreak (https://puffbreak.app) is a free, account-free, browser-based three-minute digital break room. Users can listen to human-curated global radio, sip virtual chai, settle into ASMR ambience, hang out anonymously, or use an optional virtual smoke ritual across 8 ambient environments.
 
 For the complete reference, see: https://puffbreak.app/llms-full.txt
 For original, self-reported break data (citable): https://puffbreak.app/data
@@ -20,8 +20,13 @@ Machine-readable data API: https://puffbreak.app/api/survey
 ## Music radio
 
 - Feature page: https://puffbreak.app/radio
+- PuffBreak includes curated global radio stations for intentional three-minute breaks.
+- Editorial listening guides: https://puffbreak.app/radio/lofi · https://puffbreak.app/radio/indie · https://puffbreak.app/radio/indian-classical · https://puffbreak.app/radio/global-hits · https://puffbreak.app/radio/tame-impala-vibe · https://puffbreak.app/radio/chill-artist-radio · https://puffbreak.app/radio/pop-hip-hop-artist-radio · https://puffbreak.app/radio/indian-artist-radio · https://puffbreak.app/radio/best-internet-radio-2026
+- Machine-readable catalogue: https://puffbreak.app/radio.json
+- OPML subscription list: https://puffbreak.app/radio.opml
 - The production catalogue spans global, North American, European, South Asian, East Asian, Middle Eastern, African, Latin American, and Oceanian music.
-- It includes pop, rock, jazz, classical, lo-fi, hip-hop, R&B, Bollywood, bhajan, Pakistani pop, J-pop, K-pop, city pop, Afrobeats, amapiano, Latin urban, reggae, and artist-focused stations.
+- It includes pop, rock, jazz, classical, lo-fi, hip-hop, R&B, Bollywood, bhajan, Pakistani pop, J-pop, K-pop, city pop, Afrobeats, amapiano, Latin urban, reggae, and artist-focused stations. Checked artist catalogues play inside PuffBreak rather than redirecting the play button to an external YouTube page.
+- Kanye West Radio uses a verified continuous direct MP3 artist station; no YouTube video is loaded for that frequency.
 - Streams are operated by third-party stations. PuffBreak verifies audio delivery and browser/Web Audio compatibility before inclusion, but availability can change.
 
 ## Key facts

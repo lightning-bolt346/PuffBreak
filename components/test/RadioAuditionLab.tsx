@@ -123,13 +123,6 @@ export default function RadioAuditionLab() {
     setPlaybackStatus('loading');
     setPlaybackError('');
 
-    if (station.source === 'youtube-external') {
-      window.open(station.url, '_blank', 'noopener,noreferrer');
-      setPlaybackStatus('idle');
-      setActiveId(null);
-      return;
-    }
-
     if (station.source === 'youtube-playlist') {
       audio.pause();
       audio.removeAttribute('src');
@@ -327,9 +320,9 @@ export default function RadioAuditionLab() {
                   type="button"
                   onClick={() => audition(station)}
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition ${isPlaying ? 'border-cyan-300/50 bg-cyan-400 text-[#071014]' : 'border-white/10 bg-white/[0.06] text-gray-300 hover:border-cyan-400/35 hover:text-cyan-300'}`}
-                  aria-label={station.source === 'youtube-external' ? `Open ${station.name} on YouTube Music` : isPlaying ? `Stop ${station.name}` : `Play ${station.name}`}
+                  aria-label={isPlaying ? `Stop ${station.name}` : `Play ${station.name}`}
                 >
-                  {station.source === 'youtube-external' ? <span className="text-base leading-none">↗</span> : <PlayGlyph playing={isPlaying} loading={isLoading} />}
+                  <PlayGlyph playing={isPlaying} loading={isLoading} />
                 </button>
 
                 <div className="min-w-0 flex-1">

@@ -1,7 +1,7 @@
-﻿{
-  "name": "PuffBreak â€” Virtual Break Room",
+{
+  "name": "PuffBreak — 3-Minute Digital Break Room",
   "short_name": "PuffBreak",
-  "description": "Take a mindful 3-minute digital break. Light a virtual cigarette or sip chai in 8 immersive ambient rooms. 100% free, anonymous, no sign-up.",
+  "description": "A free three-minute digital break room with global radio, chai, ASMR ambience, anonymous company, and an optional virtual smoke ritual.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -10,18 +10,35 @@
   "lang": "en",
   "dir": "ltr",
   "scope": "/",
-  "categories": ["health", "lifestyle", "productivity", "entertainment"],
+  "categories": [
+    "health",
+    "lifestyle",
+    "productivity",
+    "entertainment"
+  ],
   "icons": [
     {
       "src": "/favicon.svg",
       "type": "image/svg+xml",
       "sizes": "any",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/og-image.png",
+      "src": "/og-image-v2.png",
       "type": "image/png",
       "sizes": "1200x630",
       "label": "PuffBreak Virtual Break Room â€” Office Rooftop ambience"
@@ -33,14 +50,24 @@
       "short_name": "Smoke Break",
       "description": "Start a virtual cigarette break immediately",
       "url": "/?mode=cigarette",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any"
+        }
+      ]
     },
     {
       "name": "Take a Chai Break",
       "short_name": "Chai Break",
       "description": "Start a virtual chai tea break immediately",
       "url": "/?mode=chai",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any"
+        }
+      ]
     }
   ],
   "related_applications": [],
